@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte TMF — 16.02.2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b27;
+    --card: #1c2333;
+    --border: #2d3748;
+    --accent: #6366f1;
+    --accent2: #8b5cf6;
+    --green: #10b981;
+    --red: #f43f5e;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --header-font: 'Playfair Display', serif;
+    --body-font: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body-font); font-size: 13px; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #13192a 60%, #0f1520 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 22px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 { font-family: var(--header-font); font-size: 24px; font-weight: 600; color: #f0f4ff; letter-spacing: 0.3px; }
+  .header-badge { display: inline-block; background: rgba(99,102,241,0.15); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-left: 10px; }
+  header .meta { color: var(--muted); font-size: 12px; text-align: right; line-height: 1.8; }
+  header .meta span { color: var(--accent); font-weight: 600; }
+
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+  }
+  nav button {
+    background: none; border: none; color: var(--muted);
+    font-family: var(--body-font); font-size: 12.5px; font-weight: 500;
+    padding: 13px 18px; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.2px;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { padding: 26px 32px; }
+  .tab-panel { display: none; animation: fadeIn 0.2s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* KPI */
+  .kpi-grid { display: grid; gap: 14px; margin-bottom: 26px; }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 15px 17px; position: relative; overflow: hidden;
+  }
+  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .kpi.indigo::before { background: var(--accent); }
+  .kpi.green::before { background: var(--green); }
+  .kpi.red::before { background: var(--red); }
+  .kpi.yellow::before { background: var(--yellow); }
+  .kpi.purple::before { background: var(--accent2); }
+  .kpi.teal::before { background: #14b8a6; }
+
+  .kpi-label { color: var(--muted); font-size: 10.5px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 7px; }
+  .kpi-value { font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .kpi-sub { color: var(--muted); font-size: 11px; }
+  .kpi-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
+  .badge-up { background: rgba(16,185,129,0.15); color: var(--green); }
+  .badge-down { background: rgba(244,63,94,0.15); color: var(--red); }
+  .badge-n { background: rgba(99,102,241,0.15); color: var(--accent); }
+
+  /* SECTION */
+  .section-title {
+    font-family: var(--header-font); font-size: 15px; font-weight: 400; color: #c8d5f0;
+    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  /* TABLE */
+  .table-wrap { 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 10px; 
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    background: var(--surface); color: var(--muted); font-weight: 600;
+    text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.5px;
+    padding: 11px 14px; text-align: right; border-bottom: 1px solid var(--border);
+    cursor: pointer; white-space: nowrap; user-select: none;
+  }
+  thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 2; }
+  thead th:hover { color: var(--text); }
+  tbody tr:hover { background: rgba(99,102,241,0.05); }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid rgba(45,55,72,0.6); text-align: right; }
+  tbody td:first-child { 
+    text-align: left; 
+    font-weight: 600;
+    position: sticky; 
+    left: 0; 
+    background: var(--card);
+    z-index: 1;
+  }
+  tbody tr:hover td:first-child { background: rgba(99,102,241,0.05); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .chip-green { background: rgba(16,185,129,0.15); color: var(--green); }
+  .chip-red { background: rgba(244,63,94,0.15); color: var(--red); }
+  .chip-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+  /* HBAR */
+  .hbar { display: flex; flex-direction: column; gap: 6px; }
+  .hbar-row { display: flex; align-items: center; gap: 10px; }
+  .hbar-label { width: 36px; font-size: 11px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .hbar-track { flex: 1; height: 17px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
+  .hbar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 6px; font-size: 10px; font-weight: 600; min-width: 2px; }
+  .hbar-val { width: 56px; font-size: 11px; text-align: right; flex-shrink: 0; }
+
+  /* CHARTS */
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .chart-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+
+  /* FILTER */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+  .filter-bar input, .filter-bar select {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    font-family: var(--body-font); font-size: 12px; padding: 7px 12px; border-radius: 7px; outline: none;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
+  .filter-btn { background: var(--accent); color: #fff; border: none; font-family: var(--body-font); font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 7px; cursor: pointer; }
+  .filter-btn.secondary { background: var(--card); border: 1px solid var(--border); color: var(--muted); }
+
+  /* LAYOUTS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .mt-20 { margin-top: 20px; }
+
+  /* ALERTS */
+  .alerts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .alert { background: var(--card); border: 1px solid var(--border); border-left: 3px solid; border-radius: 8px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .alert-red { border-left-color: var(--red); }
+  .alert-yellow { border-left-color: var(--yellow); }
+  .alert-green { border-left-color: var(--green); }
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-weight: 600; font-size: 12.5px; margin-bottom: 3px; }
+  .alert-body { color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .alert-stores { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+  .store-tag { background: rgba(255,255,255,0.07); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 600; }
+
+  /* RANK */
+  .rank-num { color: var(--muted); font-size: 11px; font-weight: 700; }
+  .rank-1 { color: #fbbf24; }
+  .rank-2 { color: #94a3b8; }
+  .rank-3 { color: #cd7f32; }
+
+  /* PROGRESS BAR */
+  .bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .bar-track { width: 80px; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+
+  /* COMPARISON */
+  .compare-banner {
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .compare-item { text-align: center; }
+  .compare-label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .compare-value { font-size: 20px; font-weight: 700; }
+  .compare-sub { font-size: 10.5px; color: var(--muted); }
+  .compare-divider { width: 1px; height: 40px; background: var(--border); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    body { font-size: 12px; }
+    
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 20px;
+    }
+    header h1 { font-size: 20px; }
+    header .meta { text-align: left; font-size: 11px; }
+    .header-badge { display: block; margin-left: 0; margin-top: 6px; }
+
+    nav { 
+      padding: 0 12px; 
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button { 
+      padding: 12px 14px; 
+      font-size: 11.5px; 
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    main { padding: 16px 12px; }
+
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px;
+    }
+    .kpi { padding: 12px 14px; }
+    .kpi-label { font-size: 9.5px; }
+    .kpi-value { font-size: 18px; }
+    .kpi-sub { font-size: 10px; }
+
+    .section-title { font-size: 14px; margin-bottom: 10px; }
+
+    .two-col, .three-col { 
+      grid-template-columns: 1fr !important; 
+      gap: 16px; 
+    }
+
+    .alerts { gap: 8px; }
+    .alert { 
+      padding: 10px 12px; 
+      flex-direction: column;
+      gap: 8px;
+    }
+    .alert-icon { font-size: 14px; }
+    .alert-title { font-size: 11.5px; }
+    .alert-body { font-size: 11px; }
+    .store-tag { font-size: 10px; padding: 1px 6px; }
+
+    .chart-card { padding: 14px; }
+    .chart-title { font-size: 10px; margin-bottom: 12px; }
+
+    .hbar-label { width: 32px; font-size: 10px; }
+    .hbar-track { height: 15px; }
+    .hbar-fill { font-size: 9px; }
+    .hbar-val { width: 48px; font-size: 10px; }
+
+    .table-wrap { 
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    .table-wrap::after {
+      content: '← Desliza →';
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(99,102,241,0.2);
+      color: var(--accent);
+      font-size: 9px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+      opacity: 0.7;
+      letter-spacing: 0.3px;
+    }
+    table { 
+      font-size: 11px;
+      min-width: 600px;
+    }
+    thead th { 
+      padding: 9px 10px; 
+      font-size: 9.5px;
+    }
+    tbody td { padding: 8px 10px; }
+    tbody td:first-child {
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chip { font-size: 10px; padding: 2px 6px; }
+
+    .filter-bar { 
+      flex-direction: column; 
+      align-items: stretch; 
+      gap: 8px; 
+    }
+    .filter-bar input, 
+    .filter-bar select,
+    .filter-btn { 
+      width: 100%; 
+      font-size: 11px;
+      padding: 10px 12px;
+      min-height: 44px;
+    }
+
+    .bar-track { width: 60px; }
+
+    .compare-banner { 
+      flex-direction: column; 
+      gap: 16px; 
+      padding: 12px 16px; 
+    }
+    .compare-divider { display: none; }
+    .compare-value { font-size: 18px; }
+
+    .kpi-badge { font-size: 9px; }
+    
+    /* Better touch targets */
+    nav button { min-height: 44px; }
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 18px; }
+    .kpi-grid { grid-template-columns: 1fr !important; }
+    .kpi-value { font-size: 20px; }
+    table { min-width: 500px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Reporte TMF <span class="header-badge">Tiendas Multimarca</span></h1>
+    <div style="color:var(--muted);font-size:12px;margin-top:4px;">Corte <span style="color:var(--accent)">16 de febrero, 2026</span></div>
+  </div>
+  <div class="meta">
+    <div>15 tiendas activas</div>
+    <div>Sobre meta: <span style="color:var(--green)">5</span> &nbsp;·&nbsp; Bajo meta: <span style="color:var(--red)">10</span></div>
+    <div>Consolidado: <span>94.5%</span> cumplimiento</div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="switchTab('resumen')">📋 Resumen Ejecutivo</button>
+  <button onclick="switchTab('cumplimiento')">🎯 Cumplimiento</button>
+  <button onclick="switchTab('rentabilidad')">💰 Rentabilidad</button>
+  <button onclick="switchTab('clientes')">👥 Clientes</button>
+  <button onclick="switchTab('inventario')">📦 Inventario & M²</button>
+  <button onclick="switchTab('ranking')">🏆 Ranking General</button>
+</nav>
+
+<main>
+
+<!-- ============ RESUMEN ============ -->
+<div id="tab-resumen" class="tab-panel active">
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr)">
+    <div class="kpi indigo">
+      <div class="kpi-label">Ventas Ejecutadas</div>
+      <div class="kpi-value" style="font-size:17px">$1,154M</div>
+      <div class="kpi-sub">Red de tiendas</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Utilidad Total</div>
+      <div class="kpi-value" style="font-size:17px">$609M</div>
+      <div class="kpi-badge badge-up">Acum 2026</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Cumplimiento Red</div>
+      <div class="kpi-value">94.5%</div>
+      <div class="kpi-sub">vs. ppto corte</div>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Rent. Promedio</div>
+      <div class="kpi-value">53.4%</div>
+      <div class="kpi-badge badge-up">▲ vs 44.1% (2025)</div>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">Efectividad Prom</div>
+      <div class="kpi-value">66.6%</div>
+      <div class="kpi-sub">ing. clientes → compra</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Bajo Meta</div>
+      <div class="kpi-value">10 / 15</div>
+      <div class="kpi-sub">67% de la red</div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="section-title"><div class="dot"></div> Señales Críticas</div>
+  <div class="alerts">
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <div class="alert-title">T22: situación crítica — cumplimiento 69.6%</div>
+        <div class="alert-body">T22 acumula el peor desempeño de la red con −30.3 puntos de variación en utilidad respecto a 2025 y la mayor caída de clientes (−36.3%). Con una efectividad del 21.3% y 38,508 unidades en inventario sin rotar adecuadamente, requiere intervención inmediata.</div>
+        <div class="alert-stores"><span class="store-tag">T22 Cump 69.6%</span><span class="store-tag">Util −31.7%</span><span class="store-tag">Clientes −36.3%</span></div>
+      </div>
+    </div>
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <div class="alert-title">T08 pierde −14% de utilidad y −15.7% de clientes</div>
+        <div class="alert-body">T08 es la tienda de mayor volumen de la red ($127M ejecutados) pero registra una caída significativa en utilidad (−14%) y la segunda peor pérdida de clientes. Con 52,335 unidades en inventario (el mayor de la red), hay un problema serio de conversión y rotación.</div>
+        <div class="alert-stores"><span class="store-tag">T08</span><span class="store-tag">Inv: 52,335 unds</span></div>
+      </div>
+    </div>
+    <div class="alert alert-yellow">
+      <div class="alert-icon">🟡</div>
+      <div>
+        <div class="alert-title">13 de 15 tiendas pierden clientes compradores vs 2025</div>
+        <div class="alert-body">El problema de retención de clientes es generalizado en TMF. Solo T18 (+9.7%), T13 (+2.5%) y T05 (+5.5%) crecen en clientes. T22 (−36.3%) y T19 (−13.7%) son los casos más graves.</div>
+        <div class="alert-stores"><span class="store-tag">T22 −36.3%</span><span class="store-tag">T19 −13.7%</span><span class="store-tag">T08 −15.7%</span><span class="store-tag">T02 −16.4%</span></div>
+      </div>
+    </div>
+    <div class="alert alert-yellow">
+      <div class="alert-icon">🟡</div>
+      <div>
+        <div class="alert-title">T19 segunda peor en cumplimiento (87.2%) y alta caída de unidades (−11.7%)</div>
+        <div class="alert-body">T19 combina bajo cumplimiento con pérdida de unidades vendidas y de clientes (−13.7%). A pesar de tener la mejor rentabilidad de la red (56.5%), el volumen cae de forma preocupante.</div>
+        <div class="alert-stores"><span class="store-tag">T19</span></div>
+      </div>
+    </div>
+    <div class="alert alert-green">
+      <div class="alert-icon">🟢</div>
+      <div>
+        <div class="alert-title">T18 lidera el crecimiento con +111.4% de cumplimiento y +25.2% de utilidad</div>
+        <div class="alert-body">T18 es la tienda estrella del período: mayor cumplimiento (111.4%), mejor efectividad (96.8%), crecimiento de clientes (+9.7%), mayor ticket promedio 2026 ($95,118) y sólido crecimiento de unidades (+9.2%).</div>
+        <div class="alert-stores"><span class="store-tag">T18 ⭐</span></div>
+      </div>
+    </div>
+    <div class="alert alert-green">
+      <div class="alert-icon">🟢</div>
+      <div>
+        <div class="alert-title">Rentabilidad estructural mejora +9.3pp vs 2025</div>
+        <div class="alert-body">El promedio de rentabilidad de TMF pasó de 44.1% (2025) a 53.4% (2026), un salto de más de 9 puntos porcentuales. T19 lidera con 56.5%, seguida por T18 (55.7%) y T11 (55.6%).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-card">
+      <div class="chart-title">Cumplimiento por Tienda</div>
+      <div class="hbar" id="hbar-cump"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Variación Utilidad 2026 vs 2025</div>
+      <div class="hbar" id="hbar-util"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ CUMPLIMIENTO ============ -->
+<div id="tab-cumplimiento" class="tab-panel">
+  <div class="filter-bar">
+    <input type="text" id="cump-search" placeholder="🔍 Buscar tienda..." oninput="renderCumpTable()">
+    <select id="cump-filter" onchange="renderCumpTable()">
+      <option value="all">Todas</option>
+      <option value="over">Sobre meta ≥100%</option>
+      <option value="under">Bajo meta &lt;100%</option>
+    </select>
+    <button class="filter-btn secondary" onclick="document.getElementById('cump-search').value=''; renderCumpTable()">✕ Limpiar</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortCump('tienda')">Tienda ↕</th>
+          <th onclick="sortCump('ejecutado')">Ejecutado ($) ↕</th>
+          <th onclick="sortCump('pptoCorte')">Ppto Corte ($) ↕</th>
+          <th onclick="sortCump('cump')">Cumplimiento ↕</th>
+          <th onclick="sortCump('diferencia')">Diferencia ($) ↕</th>
+          <th>Visual</th>
+          <th onclick="sortCump('varUtil')">Var Utilidad ↕</th>
+          <th onclick="sortCump('varUnds')">Var Unds ↕</th>
+        </tr>
+      </thead>
+      <tbody id="cump-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ RENTABILIDAD ============ -->
+<div id="tab-rentabilidad" class="tab-panel">
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi green">
+      <div class="kpi-label">Rent. Prom 2026</div>
+      <div class="kpi-value">53.4%</div>
+      <div class="kpi-badge badge-up">▲ +9.3pp vs 2025</div>
+    </div>
+    <div class="kpi indigo">
+      <div class="kpi-label">Mayor Rent. 2026</div>
+      <div class="kpi-value">56.5%</div>
+      <div class="kpi-sub">T19</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Menor Rent. 2026</div>
+      <div class="kpi-value">47.5%</div>
+      <div class="kpi-sub">T08</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Mejor Var. Utilidad</div>
+      <div class="kpi-value">+28.9%</div>
+      <div class="kpi-sub">T13</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="section-title"><div class="dot"></div> Rentabilidad 2026 por Tienda</div>
+      <div class="chart-card"><div class="hbar" id="hbar-rent"></div></div>
+    </div>
+    <div>
+      <div class="section-title"><div class="dot"></div> Detalle Rentabilidad</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortRent('tienda')">Tienda ↕</th>
+              <th onclick="sortRent('rent2026')">Rent 2026 ↕</th>
+              <th onclick="sortRent('rent2025')">Rent 2025 ↕</th>
+              <th onclick="sortRent('varRent')">Var (pp) ↕</th>
+              <th onclick="sortRent('varUtil')">Var Utilidad ↕</th>
+            </tr>
+          </thead>
+          <tbody id="rent-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CLIENTES ============ -->
+<div id="tab-clientes" class="tab-panel">
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi indigo">
+      <div class="kpi-label">Efectividad Prom</div>
+      <div class="kpi-value">66.6%</div>
+      <div class="kpi-sub">Clientes que compran / ingresan</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Ganando Clientes</div>
+      <div class="kpi-value">3 / 15</div>
+      <div class="kpi-sub">T18, T13, T05</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Perdiendo Clientes</div>
+      <div class="kpi-value">12 / 15</div>
+      <div class="kpi-sub">80% de la red</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Mejor Ticket 2026</div>
+      <div class="kpi-value">$95,118</div>
+      <div class="kpi-sub">T18</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="section-title"><div class="dot"></div> Efectividad por Tienda</div>
+      <div class="chart-card"><div class="hbar" id="hbar-efect"></div></div>
+    </div>
+    <div>
+      <div class="section-title"><div class="dot"></div> Variación Clientes 2026 vs 2025</div>
+      <div class="chart-card"><div class="hbar" id="hbar-clientes"></div></div>
+    </div>
+  </div>
+  <div class="mt-20">
+    <div class="section-title"><div class="dot"></div> Detalle Clientes</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortClientes('tienda')">Tienda ↕</th>
+            <th onclick="sortClientes('efectividad')">Efectividad ↕</th>
+            <th onclick="sortClientes('varClientes')">Var Clientes ↕</th>
+            <th onclick="sortClientes('promCompra2026')">Prom Compra 2026 ↕</th>
+            <th onclick="sortClientes('promCompra2025')">Prom Compra 2025 ↕</th>
+            <th>Var Ticket</th>
+          </tr>
+        </thead>
+        <tbody id="clientes-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ INVENTARIO ============ -->
+<div id="tab-inventario" class="tab-panel">
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi indigo">
+      <div class="kpi-label">Mayor Stock (Unds)</div>
+      <div class="kpi-value">52,335</div>
+      <div class="kpi-sub">T08</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Mayor Vta x M² 2026</div>
+      <div class="kpi-value">$215,454</div>
+      <div class="kpi-sub">T05</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Mayor PxM² (prendas/m²)</div>
+      <div class="kpi-value">75.0</div>
+      <div class="kpi-sub">T05</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Menor PxM²</div>
+      <div class="kpi-value">33.1</div>
+      <div class="kpi-sub">T01</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="section-title"><div class="dot"></div> Unidades en Inventario</div>
+      <div class="chart-card"><div class="hbar" id="hbar-inv"></div></div>
+    </div>
+    <div>
+      <div class="section-title"><div class="dot"></div> Venta por M²</div>
+      <div class="chart-card"><div class="hbar" id="hbar-vtam2"></div></div>
+    </div>
+  </div>
+  <div class="mt-20">
+    <div class="section-title"><div class="dot"></div> Detalle Inventario & Productividad</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortInv('tienda')">Tienda ↕</th>
+            <th onclick="sortInv('undsInv')">Unds Inventario ↕</th>
+            <th onclick="sortInv('unds2026')">Unds Vendidas 2026 ↕</th>
+            <th onclick="sortInv('varUnds')">Var Unds ↕</th>
+            <th onclick="sortInv('pxm2')">PxM² ↕</th>
+            <th onclick="sortInv('vtaM2')">Vta x M² 2026 ↕</th>
+          </tr>
+        </thead>
+        <tbody id="inv-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RANKING ============ -->
+<div id="tab-ranking" class="tab-panel">
+  <div class="section-title"><div class="dot"></div> Ranking General TMF</div>
+  <div class="filter-bar">
+    <select id="rank-sort" onchange="renderRanking()">
+      <option value="cump">Ordenar por: Cumplimiento</option>
+      <option value="rent2026">Rentabilidad 2026</option>
+      <option value="varUtil">Variación Utilidad</option>
+      <option value="efectividad">Efectividad</option>
+      <option value="vtaM2">Venta x M²</option>
+      <option value="ejecutado">Ventas Ejecutadas</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Tienda</th>
+          <th>Ejecutado ($)</th>
+          <th>Cump (%)</th>
+          <th>Rent 2026</th>
+          <th>Var Utilidad</th>
+          <th>Efectividad</th>
+          <th>Var Clientes</th>
+          <th>Vta x M²</th>
+          <th>PxM²</th>
+        </tr>
+      </thead>
+      <tbody id="rank-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<script>
+const STORES = [{"tienda": "T01", "ejecutado": 77186113.99, "pptoCorte": 83085783.5393, "diferencia": -5899669.5493, "cump": 0.9289930322856085, "rent2026": 0.5492283577780879, "rent2025": 0.4423813959327941, "varRent": 0.2415267975272763, "utilidad": 42392802.63, "varUtil": -0.002730956113793259, "efectividad": 0.7295504789977891, "varClientes": -0.05982905982905984, "vtaM2": 81248.54104210525, "unds2026": 2121.0, "unds2025": 2367.0, "varUnds": -0.1039290240811154, "promCompra2026": 77965.7717070707, "promCompra2025": 75967.2791927825, "undsInv": 31454.0, "pxm2": 33.10947368421053}, {"tienda": "T02", "ejecutado": 47585289.99, "pptoCorte": 46643268.8, "diferencia": 942021.1900000051, "cump": 1.020196294432949, "rent2026": 0.559240694878447, "rent2025": 0.409408718961774, "varRent": 0.3659716292721713, "utilidad": 26611630.64, "varUtil": 0.1791403649053112, "efectividad": 0.6233766233766234, "varClientes": -0.164179104477612, "vtaM2": 105745.0888666667, "unds2026": 1429.0, "unds2025": 1696.0, "varUnds": -0.1574292452830188, "promCompra2026": 70811.4434375, "promCompra2025": 55729.092039801, "undsInv": 19252.0, "pxm2": 42.78222222222222}, {"tienda": "T03", "ejecutado": 63406963.0, "pptoCorte": 70095904.989, "diferencia": -6688941.988999993, "cump": 0.9045744257093239, "rent2026": 0.5495652870174526, "rent2025": 0.4302457272918816, "varRent": 0.2773288661728506, "utilidad": 34846265.81999999, "varUtil": 0.02460327653331684, "efectividad": 0.8181818181818182, "varClientes": -0.1290322580645161, "vtaM2": 88681.06713286713, "unds2026": 1771.0, "unds2025": 2080.0, "varUnds": -0.1485576923076923, "promCompra2026": 75755.03345280765, "promCompra2025": 67899.70342351717, "undsInv": 29685.0, "pxm2": 41.51748251748252}, {"tienda": "T04", "ejecutado": 113901211.0, "pptoCorte": 117935863.3132884, "diferencia": -4034652.313288406, "cump": 0.9657894367333316, "rent2026": 0.4834224285815538, "rent2025": 0.4331447461903424, "varRent": 0.1160759372782909, "utilidad": 55062400.03999999, "varUtil": 0.007812066694361296, "efectividad": 0.7183037646040675, "varClientes": -0.01483679525222547, "vtaM2": 158196.1263888889, "unds2026": 3455.0, "unds2025": 3438.0, "varUnds": 0.004944735311227522, "promCompra2026": 68615.18734939759, "promCompra2025": 61921.46290801187, "undsInv": 36017.0, "pxm2": 50.02361111111111}, {"tienda": "T05", "ejecutado": 92214148.98, "pptoCorte": 89012081.02172057, "diferencia": 3202067.958279431, "cump": 1.035973408570215, "rent2026": 0.5184046435256708, "rent2025": 0.4630043183752484, "varRent": 0.1196540139081868, "utilidad": 47804243.03, "varUtil": 0.1014702175711457, "efectividad": 0.4589214621787912, "varClientes": 0.05490848585690511, "vtaM2": 215453.6191121496, "unds2026": 2488.0, "unds2025": 2168.0, "varUnds": 0.1476014760147601, "promCompra2026": 72724.0922555205, "promCompra2025": 65800.1544342762, "undsInv": 32098.0, "pxm2": 74.99532710280374}, {"tienda": "T06", "ejecutado": 112212501.0, "pptoCorte": 124086974.0, "diferencia": -11874473.0, "cump": 0.9043052415799905, "rent2026": 0.5215023786877364, "rent2025": 0.4456727706985747, "varRent": 0.1701463786317969, "utilidad": 58519086.19, "varUtil": -0.06354134005804002, "efectividad": 0.7172172172172172, "varClientes": -0.08726114649681527, "vtaM2": 155850.6958333333, "unds2026": 3198.0, "unds2025": 3418.0, "varUnds": -0.0643651258045641, "promCompra2026": 78306.00209351012, "promCompra2025": 74512.6178343949, "undsInv": 32377.0, "pxm2": 44.96805555555556}, {"tienda": "T07", "ejecutado": 77995223.0, "pptoCorte": 74911987.7, "diferencia": 3083235.299999997, "cump": 1.041158102924026, "rent2026": 0.5419134235951859, "rent2025": 0.4513887481424867, "varRent": 0.2005470358426478, "utilidad": 42266658.31999999, "varUtil": 0.09263506974676061, "efectividad": 0.8760984182776801, "varClientes": -0.05137963843958138, "vtaM2": 127861.0213114754, "unds2026": 2033.0, "unds2025": 2095.0, "varUnds": -0.02959427207637233, "promCompra2026": 78229.91273821464, "promCompra2025": 68289.31303520457, "undsInv": 33887.0, "pxm2": 55.55245901639344}, {"tienda": "T08", "ejecutado": 126957025.5, "pptoCorte": 138766980.0, "diferencia": -11809954.5, "cump": 0.9148936259908517, "rent2026": 0.4750356509415857, "rent2025": 0.4189274069257272, "varRent": 0.1339330945845856, "utilidad": 60309113.25, "varUtil": -0.1402624204179856, "efectividad": 0.613671875, "varClientes": -0.1571888412017167, "vtaM2": 119770.7787735849, "unds2026": 3625.0, "unds2025": 4059.0, "varUnds": -0.1069228874106923, "promCompra2026": 80812.87428389561, "promCompra2025": 73546.2339055794, "undsInv": 52335.0, "pxm2": 49.37264150943396}, {"tienda": "T09", "ejecutado": 61803325.0, "pptoCorte": 65115449.5, "diferencia": -3312124.5, "cump": 0.9491345828765261, "rent2026": 0.5466337866126134, "rent2025": 0.4430456582493325, "varRent": 0.2338091490899674, "utilidad": 33783785.56999999, "varUtil": 0.1358124525671989, "efectividad": 0.813953488372093, "varClientes": -0.0193965517241379, "vtaM2": 103005.5416666667, "unds2026": 1724.0, "unds2025": 1836.0, "varUnds": -0.06100217864923752, "promCompra2026": 67915.74175824175, "promCompra2025": 60252.19827586207, "undsInv": 26394.0, "pxm2": 43.99}, {"tienda": "T10", "ejecutado": 67220173.15, "pptoCorte": 68722889.45380722, "diferencia": -1502716.303807214, "cump": 0.978133685650437, "rent2026": 0.5180420113214184, "rent2025": 0.4640941932837445, "varRent": 0.1162432515174576, "utilidad": 34822873.7, "varUtil": -0.009974733916574219, "efectividad": 0.6749291784702548, "varClientes": 0.0181623931623931, "vtaM2": 114710.1930887372, "unds2026": 2070.0, "unds2025": 1878.0, "varUnds": 0.1022364217252396, "promCompra2026": 70535.33384050368, "promCompra2025": 68368.47756410256, "undsInv": 28820.0, "pxm2": 49.18088737201365}, {"tienda": "T11", "ejecutado": 81580079.0, "pptoCorte": 90820199.988, "diferencia": -9240120.988000005, "cump": 0.8982591869515714, "rent2026": 0.556386339978906, "rent2025": 0.4385933551486283, "varRent": 0.2685699257581333, "utilidad": 45390041.57, "varUtil": 0.05181635735254253, "efectividad": 0.641798418972332, "varClientes": -0.05320699708454812, "vtaM2": 201930.8886138614, "unds2026": 2374.0, "unds2025": 2652.0, "varUnds": -0.1048265460030165, "promCompra2026": 62802.21632024633, "promCompra2025": 59545.79445335278, "undsInv": 24999.0, "pxm2": 61.87871287128713}, {"tienda": "T13", "ejecutado": 47868160.0, "pptoCorte": 43779844.06439707, "diferencia": 4088315.935602925, "cump": 1.09338351981312, "rent2026": 0.5199862676986122, "rent2025": 0.3884603152529712, "varRent": 0.3385827259085381, "utilidad": 24890785.86, "varUtil": 0.2896289444321412, "efectividad": 0.6424870466321243, "varClientes": 0.02479338842975198, "vtaM2": 102282.3931623932, "unds2026": 1402.0, "unds2025": 1389.0, "varUnds": 0.009359251259899226, "promCompra2026": 64338.9247311828, "promCompra2025": 54691.43655647383, "undsInv": 28423.0, "pxm2": 60.73290598290598}, {"tienda": "T18", "ejecutado": 69055548.5, "pptoCorte": 61971984.0, "diferencia": 7083564.5, "cump": 1.114302690389903, "rent2026": 0.5574991176849462, "rent2025": 0.4697609128429537, "varRent": 0.1867720417839964, "utilidad": 38498407.36000001, "varUtil": 0.2522686080286483, "efectividad": 0.968, "varClientes": 0.09667673716012093, "vtaM2": 130293.4877358491, "unds2026": 1750.0, "unds2025": 1603.0, "varUnds": 0.09170305676855905, "promCompra2026": 95117.83539944903, "promCompra2025": 83763.39879154079, "undsInv": 24131.0, "pxm2": 45.53018867924528}, {"tienda": "T19", "ejecutado": 67126105.0, "pptoCorte": 76969707.38663208, "diferencia": -9843602.386632085, "cump": 0.8721106949622924, "rent2026": 0.5648945662793933, "rent2025": 0.458464998759221, "varRent": 0.2321432776945039, "utilidad": 37919171.97000001, "varUtil": 0.001817027452475362, "efectividad": 0.5219414893617021, "varClientes": -0.1373626373626373, "vtaM2": 149169.1222222222, "unds2026": 1766.0, "unds2025": 2000.0, "varUnds": -0.117, "promCompra2026": 85510.96178343949, "promCompra2025": 76330.19230769231, "undsInv": 24226.0, "pxm2": 53.83555555555556}, {"tienda": "T22", "ejecutado": 48875058.5, "pptoCorte": 70231785.75, "diferencia": -21356727.25, "cump": 0.6959108041760137, "rent2026": 0.5491283037543576, "rent2025": 0.4643391111957739, "varRent": 0.18260187547035, "utilidad": 26838677.97, "varUtil": -0.3169075511474964, "efectividad": 0.213013449654671, "varClientes": -0.3630434782608696, "vtaM2": 64735.17682119205, "unds2026": 1281.0, "unds2025": 1934.0, "varUnds": -0.3376421923474663, "promCompra2026": 83404.5366894198, "promCompra2025": 77668.45107608696, "undsInv": 38508.0, "pxm2": 51.00397350993377}];
+
+// ---- UTILS ----
+const fmt = (n, d=1) => isNaN(n) || n===0 ? '—' : (n*100).toFixed(d)+'%';
+const fmtM = n => { if(!n||isNaN(n)) return '—'; if(n>=1e9) return '$'+(n/1e9).toFixed(2)+'B'; if(n>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; return '$'+n.toLocaleString('es-CO',{maximumFractionDigits:0}); };
+const fmtN = n => (!n||isNaN(n)) ? '—' : n.toLocaleString('es-CO',{maximumFractionDigits:0});
+const chip = v => { const c=v>0?'chip-green':v<0?'chip-red':'chip-yellow'; const s=v>0?'+':''; return `<span class="chip ${c}">${s}${(v*100).toFixed(1)}%</span>`; };
+const chipCump = v => { const c=v>=1?'chip-green':v>=0.9?'chip-yellow':'chip-red'; return `<span class="chip ${c}">${(v*100).toFixed(1)}%</span>`; };
+
+// ---- TABS ----
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+  renderTab(id);
+}
+function renderTab(id) {
+  if(id==='resumen') { renderHbar('hbar-cump', [...STORES].sort((a,b)=>b.cump-a.cump).map(s=>({label:s.tienda,value:s.cump})), v=>v>=1?'#10b981':v>=0.9?'#fbbf24':'#f43f5e', v=>(v*100).toFixed(1)+'%', 1.2);
+    renderHbar('hbar-util', [...STORES].sort((a,b)=>b.varUtil-a.varUtil).map(s=>({label:s.tienda,value:s.varUtil})), v=>v>=0?'#10b981':'#f43f5e', v=>(v>=0?'+':'')+(v*100).toFixed(1)+'%'); }
+  if(id==='cumplimiento') renderCumpTable();
+  if(id==='rentabilidad') { renderHbar('hbar-rent',[...STORES].sort((a,b)=>b.rent2026-a.rent2026).map(s=>({label:s.tienda,value:s.rent2026})),v=>v>=0.55?'#10b981':v>=0.50?'#6366f1':'#fbbf24',v=>(v*100).toFixed(1)+'%',0.6); renderRentTable(); }
+  if(id==='clientes') { renderHbar('hbar-efect',[...STORES].sort((a,b)=>b.efectividad-a.efectividad).map(s=>({label:s.tienda,value:s.efectividad})),v=>v>=0.8?'#10b981':v>=0.5?'#6366f1':'#f43f5e',v=>(v*100).toFixed(1)+'%',1); renderHbar('hbar-clientes',[...STORES].sort((a,b)=>b.varClientes-a.varClientes).map(s=>({label:s.tienda,value:s.varClientes})),v=>v>=0?'#10b981':'#f43f5e',v=>(v>=0?'+':'')+(v*100).toFixed(1)+'%'); renderClientesTable(); }
+  if(id==='inventario') { renderHbar('hbar-inv',[...STORES].filter(s=>s.undsInv>0).sort((a,b)=>b.undsInv-a.undsInv).map(s=>({label:s.tienda,value:s.undsInv})),v=>'#6366f1',v=>v.toLocaleString('es-CO')); renderHbar('hbar-vtam2',[...STORES].filter(s=>s.vtaM2>0).sort((a,b)=>b.vtaM2-a.vtaM2).map(s=>({label:s.tienda,value:s.vtaM2})),v=>'#8b5cf6',v=>'$'+(v/1000).toFixed(0)+'K'); renderInvTable(); }
+  if(id==='ranking') renderRanking();
+}
+
+// ---- HBAR ----
+function renderHbar(id, data, colorFn, labelFn, maxVal) {
+  const el = document.getElementById(id); if(!el) return;
+  const max = maxVal || Math.max(...data.map(d=>Math.abs(d.value)));
+  el.innerHTML = data.map(d => {
+    const pct = Math.min(Math.abs(d.value)/max*100, 100);
+    const color = colorFn(d.value);
+    return `<div class="hbar-row">
+      <div class="hbar-label">${d.label}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="hbar-val" style="color:${color}">${labelFn(d.value)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ---- SORT STATE ----
+let cumpSort = {key:'cump',dir:-1}, rentSort = {key:'rent2026',dir:-1};
+let clientesSort = {key:'efectividad',dir:-1}, invSort = {key:'undsInv',dir:-1};
+
+function sortCump(k) { cumpSort = {key:k,dir:cumpSort.key===k?-cumpSort.dir:-1}; renderCumpTable(); }
+function sortRent(k) { rentSort = {key:k,dir:rentSort.key===k?-rentSort.dir:-1}; renderRentTable(); }
+function sortClientes(k) { clientesSort = {key:k,dir:clientesSort.key===k?-clientesSort.dir:-1}; renderClientesTable(); }
+function sortInv(k) { invSort = {key:k,dir:invSort.key===k?-invSort.dir:-1}; renderInvTable(); }
+
+function sortRows(arr, key, dir) {
+  return [...arr].sort((a,b) => {
+    const av = a[key]||0, bv = b[key]||0;
+    return dir * (typeof av==='string' ? av.localeCompare(bv) : bv - av);
+  });
+}
+
+function renderCumpTable() {
+  const search = document.getElementById('cump-search').value.toLowerCase();
+  const filter = document.getElementById('cump-filter').value;
+  let rows = STORES.filter(r => (!search || r.tienda.toLowerCase().includes(search)) &&
+    (filter==='all' || (filter==='over'&&r.cump>=1) || (filter==='under'&&r.cump<1)));
+  rows = sortRows(rows, cumpSort.key, cumpSort.dir);
+  document.getElementById('cump-tbody').innerHTML = rows.map(r => {
+    const color = r.cump>=1?'#10b981':r.cump>=0.9?'#fbbf24':'#f43f5e';
+    return `<tr>
+      <td>${r.tienda}</td>
+      <td>${fmtM(r.ejecutado)}</td>
+      <td>${fmtM(r.pptoCorte)}</td>
+      <td>${chipCump(r.cump)}</td>
+      <td style="color:${r.diferencia>=0?'#10b981':'#f43f5e'}">${r.diferencia>=0?'+':''}${fmtM(Math.abs(r.diferencia))}</td>
+      <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:${Math.min(r.cump/1.2*100,100)}%;background:${color}"></div></div></div></td>
+      <td>${chip(r.varUtil)}</td>
+      <td>${chip(r.varUnds)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRentTable() {
+  document.getElementById('rent-tbody').innerHTML = sortRows(STORES, rentSort.key, rentSort.dir).map(r =>
+    `<tr><td>${r.tienda}</td><td>${fmt(r.rent2026)}</td><td>${fmt(r.rent2025)}</td><td>${r.varRent>0?chip(r.varRent):'—'}</td><td>${r.varUtil!==0?chip(r.varUtil):'—'}</td></tr>`
+  ).join('');
+}
+
+function renderClientesTable() {
+  document.getElementById('clientes-tbody').innerHTML = sortRows(STORES, clientesSort.key, clientesSort.dir).map(r => {
+    const varTicket = r.promCompra2026>0&&r.promCompra2025>0 ? chip((r.promCompra2026-r.promCompra2025)/r.promCompra2025) : '—';
+    return `<tr><td>${r.tienda}</td><td>${fmt(r.efectividad)}</td><td>${chip(r.varClientes)}</td><td>${r.promCompra2026>0?fmtM(r.promCompra2026):'—'}</td><td>${r.promCompra2025>0?fmtM(r.promCompra2025):'—'}</td><td>${varTicket}</td></tr>`;
+  }).join('');
+}
+
+function renderInvTable() {
+  document.getElementById('inv-tbody').innerHTML = sortRows(STORES, invSort.key, invSort.dir).map(r =>
+    `<tr><td>${r.tienda}</td><td>${r.undsInv>0?fmtN(r.undsInv):'—'}</td><td>${fmtN(r.unds2026)}</td><td>${chip(r.varUnds)}</td><td>${r.pxm2>0?r.pxm2.toFixed(1):'—'}</td><td>${r.vtaM2>0?fmtM(r.vtaM2):'—'}</td></tr>`
+  ).join('');
+}
+
+function renderRanking() {
+  const key = document.getElementById('rank-sort').value;
+  sortRows(STORES, key, -1).forEach((r, i) => {
+    const rank = i+1;
+    const rc = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'';
+    document.getElementById('rank-tbody').innerHTML = sortRows(STORES,key,-1).map((r,i)=>{
+      const rn=i+1, rc2=rn===1?'rank-1':rn===2?'rank-2':rn===3?'rank-3':'';
+      return `<tr><td><span class="rank-num ${rc2}">#${rn}</span></td><td><b>${r.tienda}</b></td><td>${fmtM(r.ejecutado)}</td><td>${chipCump(r.cump)}</td><td>${fmt(r.rent2026)}</td><td>${r.varUtil!==0?chip(r.varUtil):'—'}</td><td>${fmt(r.efectividad)}</td><td>${chip(r.varClientes)}</td><td>${r.vtaM2>0?fmtM(r.vtaM2):'—'}</td><td>${r.pxm2>0?r.pxm2.toFixed(1):'—'}</td></tr>`;
+    }).join('');
+  });
+}
+
+// INIT
+renderTab('resumen');
+</script>
+</body>
+</html>
