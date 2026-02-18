@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Métricas de Órdenes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:        #F0F4F8;
+    --surface:   #FFFFFF;
+    --surface2:  #F4F7FB;
+    --border:    rgba(0,0,0,0.07);
+    --conf:      #0E9E78;
+    --conf-dim:  rgba(14,158,120,0.10);
+    --pend:      #D93A47;
+    --pend-dim:  rgba(217,58,71,0.10);
+    --proc:      #C88B00;
+    --proc-dim:  rgba(200,139,0,0.10);
+    --total:     #3A5FCC;
+    --total-dim: rgba(58,95,204,0.10);
+    --text:      #1A2333;
+    --muted:     #7A90AA;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 48px 32px; }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 48px; padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.6s ease both;
+  }
+  .header-left {}
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--conf); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before {
+    content: ''; display: inline-block; width: 20px; height: 1px; background: var(--conf);
+  }
+  h1 {
+    font-family: var(--font-head); font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  h1 span { color: var(--conf); }
+  .period-badge {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 16px;
+    font-size: 12px; color: var(--muted); letter-spacing: 0.05em;
+    text-align: right; line-height: 1.8;
+  }
+  .period-badge strong { color: var(--text); display: block; font-size: 13px; }
+
+  /* ─── KPI GRID ─── */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    cursor: default;
+  }
+  .kpi-card:hover { transform: translateY(-3px); }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .kpi-card.c-total::before  { background: var(--total); }
+  .kpi-card.c-conf::before   { background: var(--conf); }
+  .kpi-card.c-pend::before   { background: var(--pend); }
+  .kpi-card.c-proc::before   { background: var(--proc); }
+  .kpi-card:nth-child(1) { animation-delay: 0.1s; }
+  .kpi-card:nth-child(2) { animation-delay: 0.15s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.2s; }
+  .kpi-card:nth-child(4) { animation-delay: 0.25s; }
+  .kpi-glow {
+    position: absolute; top: -40px; right: -40px;
+    width: 120px; height: 120px; border-radius: 50%;
+    opacity: 0.15; filter: blur(30px);
+  }
+  .c-total .kpi-glow { background: var(--total); }
+  .c-conf  .kpi-glow { background: var(--conf); }
+  .c-pend  .kpi-glow { background: var(--pend); }
+  .c-proc  .kpi-glow { background: var(--proc); }
+  .kpi-label {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px; font-weight: 500;
+  }
+  .kpi-value {
+    font-family: var(--font-head); font-size: 36px; font-weight: 800;
+    line-height: 1; margin-bottom: 8px; letter-spacing: -0.02em;
+  }
+  .c-total .kpi-value { color: var(--total); }
+  .c-conf  .kpi-value { color: var(--conf); }
+  .c-pend  .kpi-value { color: var(--pend); }
+  .c-proc  .kpi-value { color: var(--proc); }
+  .kpi-sub {
+    font-size: 12px; color: var(--muted);
+  }
+  .kpi-pct {
+    display: inline-block; margin-left: 6px; font-size: 11px;
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .c-conf .kpi-pct  { background: var(--conf-dim); color: var(--conf); }
+  .c-pend .kpi-pct  { background: var(--pend-dim); color: var(--pend); }
+  .c-proc .kpi-pct  { background: var(--proc-dim); color: var(--proc); }
+
+  /* ─── SECTION TITLE ─── */
+  .section-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: var(--font-head); font-size: 15px; font-weight: 700;
+    letter-spacing: -0.01em; color: var(--text);
+  }
+  .section-tag {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px;
+    background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
+  }
+
+  /* ─── CHARTS ROW ─── */
+  .charts-row {
+    display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px;
+    margin-bottom: 20px;
+  }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+  .chart-wrap { position: relative; }
+
+  /* ─── MINI METRICS ROW ─── */
+  .mini-row {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+    margin-bottom: 20px;
+  }
+  .mini-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    animation: fadeUp 0.6s ease 0.35s both;
+  }
+  .mini-dot {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .mini-dot.c-conf  { background: var(--conf-dim); }
+  .mini-dot.c-pend  { background: var(--pend-dim); }
+  .mini-dot.c-proc  { background: var(--proc-dim); }
+  .mini-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+  .mini-value { font-family: var(--font-head); font-size: 22px; font-weight: 700; }
+  .mini-value.c-conf { color: var(--conf); }
+  .mini-value.c-pend { color: var(--pend); }
+  .mini-value.c-proc { color: var(--proc); }
+
+  /* ─── TABLE ─── */
+  .table-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    animation: fadeUp 0.6s ease 0.4s both;
+  }
+  .table-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-scroll { overflow-x: auto; max-height: 460px; overflow-y: auto; }
+  .table-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead { position: sticky; top: 0; z-index: 2; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 12px 16px; text-align: right;
+    font-size: 9px; font-weight: 500; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  th:first-child { text-align: left; }
+  
+  th.h-conf { color: var(--conf); }
+  th.h-pend { color: var(--pend); }
+  th.h-proc { color: var(--proc); }
+
+  td {
+    padding: 10px 16px; text-align: right;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+    transition: background 0.15s;
+  }
+  td:first-child { text-align: left; color: var(--muted); font-size: 11px; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr:last-child td { border-bottom: none; }
+
+  .td-total { color: var(--text); font-weight: 500; }
+  .td-conf  { color: var(--conf); }
+  .td-pend  { color: var(--pend); }
+  .td-proc  { color: var(--proc); }
+
+  .pct-pill {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 10px; font-weight: 500;
+  }
+  .pct-pill.c-conf { background: var(--conf-dim); color: var(--conf); }
+  .pct-pill.c-pend { background: var(--pend-dim); color: var(--pend); }
+  .pct-pill.c-proc { background: var(--proc-dim); color: var(--proc); }
+
+  .bar-inline {
+    display: inline-flex; height: 3px; border-radius: 2px;
+    margin-left: 8px; vertical-align: middle; min-width: 2px;
+    opacity: 0.7;
+  }
+
+  /* Total row */
+  tfoot tr td {
+    background: var(--surface2); font-weight: 600;
+    border-top: 1px solid var(--border); color: var(--text);
+    font-size: 11px; padding: 14px 16px;
+  }
+  tfoot td:first-child { color: var(--text); font-family: var(--font-head); }
+
+  /* ─── LEGEND ─── */
+  .legend {
+    display: flex; gap: 20px; align-items: center;
+    font-size: 11px; color: var(--muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.08em;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1024px) {
+    .kpi-grid    { grid-template-columns: repeat(2, 1fr); }
+    .charts-row  { grid-template-columns: 1fr; }
+    .mini-row    { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .wrapper { padding: 24px 16px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .mini-row { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+    header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="eyebrow">Análisis Operativo</div>
+      <h1>Métricas Diarias<br>de <span>Órdenes</span></h1>
+    </div>
+    <div class="period-badge">
+      <strong>ENE 01 — FEB 17, 2026</strong>
+      48 días analizados<br>
+      Fuente: DATA_CONFIRMACIONES
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpis"></div>
+
+  <!-- MINI STATS -->
+  <div class="mini-row" id="mini-row"></div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="section-head">
+        <span class="section-title">Volumen Diario por Estado</span>
+        <span class="section-tag">Barras apiladas</span>
+      </div>
+      <div class="chart-wrap" style="position:relative;height:240px;"><canvas id="chartBar"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="section-head">
+        <span class="section-title">Evolución % Confirmadas</span>
+        <span class="section-tag">Tendencia</span>
+      </div>
+      <div class="chart-wrap" style="position:relative;height:240px;"><canvas id="chartLine"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="section-head" style="margin-bottom:0">
+        <span class="section-title">Detalle por Fecha</span>
+        <span class="section-tag">48 registros</span>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--conf)"></div>Confirmada</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--pend)"></div>Pendiente</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--proc)"></div>En Proceso</div>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th class="h-conf">Confirmadas</th>
+            <th class="h-conf">% Conf</th>
+            <th class="h-pend">Pendientes</th>
+            <th class="h-pend">% Pend</th>
+            <th class="h-proc">En Proceso</th>
+            <th class="h-proc">% Proc</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+        <tfoot id="table-foot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <span>MÉTRICAS DIARIAS · ENE–FEB 2026</span>
+    <span>ID Orden únicos por fecha de creación</span>
+  </footer>
+
+</div>
+
+<script>
+const DATA = [{"Fecha":"2026-01-01","total":849,"conf":720,"pend":129,"proc":0},{"Fecha":"2026-01-02","total":1248,"conf":1020,"pend":228,"proc":0},{"Fecha":"2026-01-03","total":1227,"conf":982,"pend":244,"proc":1},{"Fecha":"2026-01-04","total":1459,"conf":1220,"pend":239,"proc":0},{"Fecha":"2026-01-05","total":1350,"conf":1088,"pend":261,"proc":1},{"Fecha":"2026-01-06","total":1230,"conf":1016,"pend":214,"proc":0},{"Fecha":"2026-01-07","total":1193,"conf":1015,"pend":177,"proc":1},{"Fecha":"2026-01-08","total":1072,"conf":908,"pend":164,"proc":0},{"Fecha":"2026-01-09","total":1091,"conf":934,"pend":157,"proc":0},{"Fecha":"2026-01-10","total":994,"conf":839,"pend":155,"proc":0},{"Fecha":"2026-01-11","total":883,"conf":780,"pend":103,"proc":0},{"Fecha":"2026-01-12","total":1037,"conf":932,"pend":105,"proc":0},{"Fecha":"2026-01-13","total":977,"conf":852,"pend":125,"proc":0},{"Fecha":"2026-01-14","total":984,"conf":885,"pend":99,"proc":0},{"Fecha":"2026-01-15","total":1061,"conf":911,"pend":149,"proc":1},{"Fecha":"2026-01-16","total":926,"conf":813,"pend":113,"proc":0},{"Fecha":"2026-01-17","total":851,"conf":686,"pend":165,"proc":0},{"Fecha":"2026-01-18","total":1000,"conf":861,"pend":139,"proc":0},{"Fecha":"2026-01-19","total":912,"conf":757,"pend":155,"proc":0},{"Fecha":"2026-01-20","total":897,"conf":712,"pend":185,"proc":0},{"Fecha":"2026-01-21","total":1017,"conf":810,"pend":207,"proc":0},{"Fecha":"2026-01-22","total":894,"conf":699,"pend":195,"proc":0},{"Fecha":"2026-01-23","total":896,"conf":723,"pend":173,"proc":0},{"Fecha":"2026-01-24","total":939,"conf":803,"pend":136,"proc":0},{"Fecha":"2026-01-25","total":1100,"conf":924,"pend":176,"proc":0},{"Fecha":"2026-01-26","total":966,"conf":804,"pend":162,"proc":0},{"Fecha":"2026-01-27","total":1028,"conf":858,"pend":170,"proc":0},{"Fecha":"2026-01-28","total":883,"conf":751,"pend":132,"proc":0},{"Fecha":"2026-01-29","total":856,"conf":714,"pend":142,"proc":0},{"Fecha":"2026-01-30","total":721,"conf":637,"pend":84,"proc":0},{"Fecha":"2026-01-31","total":759,"conf":643,"pend":116,"proc":0},{"Fecha":"2026-02-01","total":1065,"conf":897,"pend":166,"proc":2},{"Fecha":"2026-02-02","total":877,"conf":792,"pend":85,"proc":0},{"Fecha":"2026-02-03","total":922,"conf":764,"pend":158,"proc":0},{"Fecha":"2026-02-04","total":881,"conf":752,"pend":129,"proc":0},{"Fecha":"2026-02-05","total":886,"conf":748,"pend":138,"proc":0},{"Fecha":"2026-02-06","total":871,"conf":715,"pend":155,"proc":1},{"Fecha":"2026-02-07","total":811,"conf":667,"pend":143,"proc":1},{"Fecha":"2026-02-08","total":980,"conf":834,"pend":144,"proc":2},{"Fecha":"2026-02-09","total":792,"conf":668,"pend":124,"proc":0},{"Fecha":"2026-02-10","total":782,"conf":670,"pend":112,"proc":0},{"Fecha":"2026-02-11","total":847,"conf":730,"pend":117,"proc":0},{"Fecha":"2026-02-12","total":809,"conf":699,"pend":110,"proc":0},{"Fecha":"2026-02-13","total":782,"conf":646,"pend":101,"proc":35},{"Fecha":"2026-02-14","total":734,"conf":610,"pend":74,"proc":50},{"Fecha":"2026-02-15","total":858,"conf":684,"pend":45,"proc":129},{"Fecha":"2026-02-16","total":783,"conf":598,"pend":41,"proc":144},{"Fecha":"2026-02-17","total":799,"conf":279,"pend":29,"proc":491}];
+
+const fmt  = n => n.toLocaleString('es-CO');
+const pct  = (a,b) => b ? ((a/b)*100).toFixed(1)+'%' : '0.0%';
+const pctN = (a,b) => b ? (a/b)*100 : 0;
+
+// ─── TOTALS ───
+const totals = DATA.reduce((acc, d) => {
+  acc.total += d.total; acc.conf += d.conf; acc.pend += d.pend; acc.proc += d.proc;
+  return acc;
+}, {total:0, conf:0, pend:0, proc:0});
+
+// ─── KPI CARDS ───
+const kpiDefs = [
+  { label:'Total Órdenes',  key:'total', cls:'c-total', icon:'◈', sub: '48 días', pctKey: null },
+  { label:'Confirmadas',    key:'conf',  cls:'c-conf',  icon:'✓', sub: 'Remisionada + Anulada', pctKey:'total' },
+  { label:'Pendientes',     key:'pend',  cls:'c-pend',  icon:'⏳', sub: 'Pendiente + Anulada',  pctKey:'total' },
+  { label:'En Proceso',     key:'proc',  cls:'c-proc',  icon:'⚡', sub: 'Total − Conf − Pend',  pctKey:'total' },
+];
+const kpiGrid = document.getElementById('kpis');
+kpiDefs.forEach(k => {
+  const p = k.pctKey ? `<span class="kpi-pct">${pct(totals[k.key], totals[k.pctKey])}</span>` : '';
+  kpiGrid.innerHTML += `
+    <div class="kpi-card ${k.cls}">
+      <div class="kpi-glow"></div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${fmt(totals[k.key])}</div>
+      <div class="kpi-sub">${k.sub}${p}</div>
+    </div>`;
+});
+
+// ─── MINI STATS: Prom diario + max día ───
+const avgConf = (totals.conf / DATA.length).toFixed(0);
+const avgPend = (totals.pend / DATA.length).toFixed(0);
+const maxProcDay = DATA.reduce((a,b) => b.proc > a.proc ? b : a, DATA[0]);
+
+document.getElementById('mini-row').innerHTML = `
+  <div class="mini-card">
+    <div class="mini-dot c-conf">✓</div>
+    <div><div class="mini-label">Prom. Confirmadas / día</div>
+    <div class="mini-value c-conf">${fmt(+avgConf)}</div></div>
+  </div>
+  <div class="mini-card">
+    <div class="mini-dot c-pend">⏳</div>
+    <div><div class="mini-label">Prom. Pendientes / día</div>
+    <div class="mini-value c-pend">${fmt(+avgPend)}</div></div>
+  </div>
+  <div class="mini-card">
+    <div class="mini-dot c-proc">⚡</div>
+    <div><div class="mini-label">Mayor día En Proceso</div>
+    <div class="mini-value c-proc">${fmt(maxProcDay.proc)}<span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-left:4px">${maxProcDay.Fecha.slice(5)}</span></div></div>
+  </div>`;
+
+// ─── CHART BAR ───
+const labels = DATA.map(d => d.Fecha.slice(5));
+const ctx1 = document.getElementById('chartBar').getContext('2d');
+new Chart(ctx1, {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label:'Confirmadas', data: DATA.map(d=>d.conf), backgroundColor:'rgba(14,158,120,0.80)', borderRadius:2, borderSkipped:false },
+      { label:'Pendientes',  data: DATA.map(d=>d.pend), backgroundColor:'rgba(217,58,71,0.80)',  borderRadius:2, borderSkipped:false },
+      { label:'En Proceso',  data: DATA.map(d=>d.proc), backgroundColor:'rgba(200,139,0,0.80)',  borderRadius:2, borderSkipped:false },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: { legend: { display:false }, tooltip: {
+      backgroundColor:'#FFFFFF', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+      titleColor:'#1A2333', bodyColor:'#8899BB', padding:10,
+      callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}` }
+    }},
+    scales: {
+      x: { stacked:true, ticks:{ color:'#7A90AA', font:{family:"'DM Mono'",size:9}, maxRotation:45 }, grid:{ display:false }, border:{color:'rgba(0,0,0,0.08)'} },
+      y: { stacked:true, ticks:{ color:'#7A90AA', font:{family:"'DM Mono'",size:9}, callback: v => fmt(v) }, grid:{ color:'rgba(0,0,0,0.05)' }, border:{display:false} }
+    }
+  }
+});
+
+// ─── CHART LINE ───
+const ctx2 = document.getElementById('chartLine').getContext('2d');
+const gradient = ctx2.createLinearGradient(0,0,0,220);
+gradient.addColorStop(0,'rgba(14,158,120,0.15)');
+gradient.addColorStop(1,'rgba(14,158,120,0)');
+new Chart(ctx2, {
+  type:'line',
+  data: {
+    labels,
+    datasets: [{
+      label:'% Confirmadas', data: DATA.map(d => parseFloat(pctN(d.conf,d.total).toFixed(2))),
+      borderColor:'#0E9E78', backgroundColor: gradient, borderWidth:2, pointRadius:0,
+      pointHoverRadius:4, fill:true, tension:0.4
+    },{
+      label:'% Pendientes', data: DATA.map(d => parseFloat(pctN(d.pend,d.total).toFixed(2))),
+      borderColor:'#D93A47', backgroundColor:'transparent', borderWidth:1.5,
+      pointRadius:0, pointHoverRadius:4, tension:0.4, borderDash:[4,3]
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false }, tooltip:{
+      backgroundColor:'#FFFFFF', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+      titleColor:'#1A2333', bodyColor:'#8899BB', padding:10,
+      callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%` }
+    }},
+    scales:{
+      x:{ ticks:{ color:'#7A90AA', font:{family:"'DM Mono'",size:9}, maxRotation:45 }, grid:{display:false}, border:{color:'rgba(0,0,0,0.08)'} },
+      y:{ min:0, max:100, ticks:{ color:'#7A90AA', font:{family:"'DM Mono'",size:9}, callback:v=>v+'%' }, grid:{color:'rgba(0,0,0,0.05)'}, border:{display:false} }
+    }
+  }
+});
+
+// ─── TABLE ───
+const maxTotal = Math.max(...DATA.map(d=>d.total));
+const tbody = document.getElementById('table-body');
+DATA.forEach(d => {
+  const barW = Math.round((d.total/maxTotal)*60);
+  tbody.innerHTML += `<tr>
+    <td>${d.Fecha}<span class="bar-inline" style="width:${barW}px;background:var(--total);"></span></td>
+    <td class="td-total">${fmt(d.total)}</td>
+    <td class="td-conf">${fmt(d.conf)}</td>
+    <td><span class="pct-pill c-conf">${pct(d.conf,d.total)}</span></td>
+    <td class="td-pend">${fmt(d.pend)}</td>
+    <td><span class="pct-pill c-pend">${pct(d.pend,d.total)}</span></td>
+    <td class="td-proc">${fmt(d.proc)}</td>
+    <td><span class="pct-pill c-proc">${pct(d.proc,d.total)}</span></td>
+  </tr>`;
+});
+
+const tfoot = document.getElementById('table-foot');
+tfoot.innerHTML = `<tr>
+  <td>TOTAL GENERAL</td>
+  <td>${fmt(totals.total)}</td>
+  <td style="color:var(--conf)">${fmt(totals.conf)}</td>
+  <td><span class="pct-pill c-conf">${pct(totals.conf,totals.total)}</span></td>
+  <td style="color:var(--pend)">${fmt(totals.pend)}</td>
+  <td><span class="pct-pill c-pend">${pct(totals.pend,totals.total)}</span></td>
+  <td style="color:var(--proc)">${fmt(totals.proc)}</td>
+  <td><span class="pct-pill c-proc">${pct(totals.proc,totals.total)}</span></td>
+</tr>`;
+</script>
+</body>
+</html>
