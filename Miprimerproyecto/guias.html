@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis DATAGUIAS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+  .header { background: linear-gradient(135deg, #0d2137 0%, #1a3a5c 50%, #1e6091 100%); padding: 40px; color: white; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .header p { margin-top: 8px; opacity: 0.75; font-size: 14px; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .kpi-card { background: white; border-radius: 12px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid #1e6091; }
+  .kpi-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 26px; font-weight: 700; color: #1e6091; }
+  .kpi-card .sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+  .kpi-card.green { border-left-color: #00b894; } .kpi-card.green .value { color: #00b894; }
+  .kpi-card.orange { border-left-color: #e17055; } .kpi-card.orange .value { color: #e17055; }
+  .kpi-card.purple { border-left-color: #6c5ce7; } .kpi-card.purple .value { color: #6c5ce7; }
+  .kpi-card.teal { border-left-color: #00cec9; } .kpi-card.teal .value { color: #00cec9; }
+  .kpi-card.red { border-left-color: #d63031; } .kpi-card.red .value { color: #d63031; }
+
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .chart-full { grid-column: 1 / -1; }
+  .chart-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .chart-card h3 { font-size: 13px; font-weight: 700; color: #444; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-container { position: relative; }
+
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .table-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .table-card h3 { font-size: 13px; font-weight: 700; color: #444; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; background: #f8f9fa; color: #666; font-weight: 600; border-bottom: 2px solid #eee; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; color: #333; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+  
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #d4f5e9; color: #00875a; }
+  .badge-blue { background: #dce8ff; color: #0052cc; }
+  .badge-orange { background: #fff0e6; color: #c05621; }
+  .badge-red { background: #ffe8e8; color: #c0392b; }
+  .badge-gray { background: #f0f0f0; color: #666; }
+  .badge-yellow { background: #fff9e6; color: #856404; }
+
+  .alert-box { background: #fff8e6; border: 1px solid #ffc107; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+  .alert-box h4 { font-size: 13px; color: #856404; margin-bottom: 8px; font-weight: 700; }
+  .alert-box ul { font-size: 12px; color: #856404; padding-left: 18px; }
+  .alert-box ul li { margin-bottom: 4px; }
+
+  .section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 28px 0 14px; padding-left: 12px; border-left: 4px solid #1e6091; }
+
+  .bar-inline { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; background: #f0f0f0; border-radius: 4px; height: 6px; min-width: 60px; }
+  .bar-fill { height: 6px; border-radius: 4px; background: #1e6091; }
+  .bar-fill-green { height: 6px; border-radius: 4px; background: #00b894; }
+  .bar-fill-red { height: 6px; border-radius: 4px; background: #e17055; }
+
+  .trans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .trans-card { background: #f8faff; border: 1px solid #e0e8ff; border-radius: 10px; padding: 18px; }
+  .trans-card h4 { font-size: 13px; font-weight: 700; color: #1e6091; margin-bottom: 12px; }
+  .trans-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid #eee; }
+  .trans-stat:last-child { border-bottom: none; }
+  .trans-stat .stat-val { font-weight: 700; color: #1a1a2e; }
+
+  @media (max-width: 768px) {
+    .charts-grid, .bottom-grid, .trans-grid { grid-template-columns: 1fr; }
+    .chart-full { grid-column: 1; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚚 Análisis de Guías de Envío — DATAGUIAS</h1>
+  <p>Período: 9 enero – 14 febrero 2026 &nbsp;|&nbsp; 12.738 guías &nbsp;|&nbsp; 3 transportadoras</p>
+</div>
+
+<div class="container">
+
+  <!-- ALERTAS -->
+  <div class="alert-box">
+    <h4>⚠️ Puntos de Atención</h4>
+    <ul>
+      <li><strong>16,3% de guías sin transportadora asignada</strong> (2.070 registros) — sin estado de entrega rastreable.</li>
+      <li><strong>Tasa de devolución COORDINADORA: 5,7%</strong> vs 3,4% de INTER RAPIDÍSIMO — diferencia significativa en calidad de entrega.</li>
+      <li><strong>508 guías en "Devolución a origen"</strong> (4,5% del total con transportadora) — mercancía no entregada que regresa.</li>
+      <li><strong>Recaudo vs Venta: 62,9%</strong> sobre el total — $914M pendiente de cobro. Hay 4.149 registros sin dato de recaudo.</li>
+      <li><strong>Días negativos en entrega</strong> (algunos registros muestran -6 a -2 días) — error de fechas a revisar.</li>
+    </ul>
+  </div>
+
+  <!-- KPIs -->
+  <div class="section-title">Resumen General</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="label">Total Guías</div>
+      <div class="value">12.738</div>
+      <div class="sub">Ene (7.446) + Feb (5.292)</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="label">Total Venta</div>
+      <div class="value">$2.463M</div>
+      <div class="sub">COP, doc. de venta</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="label">Margen Bruto</div>
+      <div class="value">65,0%</div>
+      <div class="sub">$1.598M sobre costo</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="label">Ticket Promedio</div>
+      <div class="value">$193K</div>
+      <div class="sub">Por documento de venta</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Total Fletes</div>
+      <div class="value">$212M</div>
+      <div class="sub">Prom. $16.679 por guía</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="label">Entregadas</div>
+      <div class="value">7.588</div>
+      <div class="sub">59,6% del total</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="label">En Proceso</div>
+      <div class="value">995</div>
+      <div class="sub">7,8% — en tránsito</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="label">Devoluciones</div>
+      <div class="value">508</div>
+      <div class="sub">4,5% con transportadora</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Días Prom. Entrega</div>
+      <div class="value">3,6 días</div>
+      <div class="sub">Mediana: 3 días</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Recaudo</div>
+      <div class="value">$1.548M</div>
+      <div class="sub">62,9% de la venta total</div>
+    </div>
+  </div>
+
+  <!-- TRANSPORTADORAS -->
+  <div class="section-title">Desempeño por Transportadora</div>
+  <div class="trans-grid">
+    <div class="trans-card">
+      <h4>🚛 COORDINADORA — 6.176 guías (48,5%)</h4>
+      <div class="trans-stat"><span>Entregadas</span><span class="stat-val">4.565 <span class="badge badge-blue">73,9%</span></span></div>
+      <div class="trans-stat"><span>Devolución a origen</span><span class="stat-val">354 <span class="badge badge-red">5,7%</span></span></div>
+      <div class="trans-stat"><span>En proceso</span><span class="stat-val">682 (11,0%)</span></div>
+      <div class="trans-stat"><span>Días promedio entrega</span><span class="stat-val">3,6 días</span></div>
+      <div class="trans-stat"><span>Flete promedio</span><span class="stat-val">$20.215</span></div>
+      <div class="trans-stat"><span>Total venta</span><span class="stat-val">$1.123M COP</span></div>
+    </div>
+    <div class="trans-card">
+      <h4>⚡ INTER RAPIDÍSIMO — 4.491 guías (35,3%)</h4>
+      <div class="trans-stat"><span>Entregadas</span><span class="stat-val">3.023 <span class="badge badge-green">67,3%</span></span></div>
+      <div class="trans-stat"><span>Devolución a origen</span><span class="stat-val">154 <span class="badge badge-orange">3,4%</span></span></div>
+      <div class="trans-stat"><span>En proceso</span><span class="stat-val">313 (7,0%)</span></div>
+      <div class="trans-stat"><span>Días promedio entrega</span><span class="stat-val">3,5 días</span></div>
+      <div class="trans-stat"><span>Flete promedio</span><span class="stat-val">$14.871</span></div>
+      <div class="trans-stat"><span>Total venta</span><span class="stat-val">$991M COP</span></div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-title">Tendencia Diaria de Envíos</div>
+  <div class="charts-grid">
+    <div class="chart-card chart-full">
+      <h3>Guías enviadas por día</h3>
+      <div class="chart-container" style="height:250px">
+        <canvas id="chartDiario"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Estado Global de Guías</h3>
+      <div class="chart-container" style="height:280px">
+        <canvas id="chartEstados"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Distribución Días de Entrega (guías entregadas)</h3>
+      <div class="chart-container" style="height:280px">
+        <canvas id="chartDias"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLES -->
+  <div class="section-title">Geografía y Productos</div>
+  <div class="bottom-grid">
+    <div class="table-card">
+      <h3>Top Departamentos</h3>
+      <table>
+        <tr><th>Departamento</th><th>Guías</th><th>Participación</th></tr>
+        <tr><td>Antioquia</td><td>2.898</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:100%"></div></div><span>22,8%</span></div></td></tr>
+        <tr><td>Cundinamarca</td><td>2.563</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:88%"></div></div><span>20,1%</span></div></td></tr>
+        <tr><td>Valle del Cauca</td><td>1.129</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:39%"></div></div><span>8,9%</span></div></td></tr>
+        <tr><td>Santander</td><td>625</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:22%"></div></div><span>4,9%</span></div></td></tr>
+        <tr><td>Bolívar</td><td>503</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:17%"></div></div><span>3,9%</span></div></td></tr>
+        <tr><td>Atlántico</td><td>450</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:16%"></div></div><span>3,5%</span></div></td></tr>
+        <tr><td>Meta</td><td>403</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:14%"></div></div><span>3,2%</span></div></td></tr>
+        <tr><td>Risaralda</td><td>329</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:11%"></div></div><span>2,6%</span></div></td></tr>
+        <tr><td>Tolima</td><td>314</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:11%"></div></div><span>2,5%</span></div></td></tr>
+        <tr><td>Huila</td><td>312</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:11%"></div></div><span>2,4%</span></div></td></tr>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <h3>Top Productos por Ventas</h3>
+      <table>
+        <tr><th>Producto</th><th>Guías</th><th>Total Venta</th></tr>
+        <tr><td>6 EN 1 LICUADORA</td><td>445</td><td>$143M</td></tr>
+        <tr><td>DH13-7 NUEVO 4 EN 1 PESAS 15KG</td><td>784</td><td>$139M</td></tr>
+        <tr><td>JUEGO DE 100 PCS OLLA</td><td>193</td><td>$136M</td></tr>
+        <tr><td>BABYWULLET</td><td>551</td><td>$122M</td></tr>
+        <tr><td>FREIDORA DE 10L NEGRO + OBSEQUIO</td><td>403</td><td>$114M</td></tr>
+        <tr><td>DH32-15 MARCADORES 106 PCS</td><td>547</td><td>$88M</td></tr>
+        <tr><td>10x RECI NEVERA</td><td>504</td><td>$88M</td></tr>
+        <tr><td>BLANCO CENTRO DE SALA 2 EN 1</td><td>393</td><td>$84M</td></tr>
+        <tr><td>8 EN 1 LICUADORA</td><td>254</td><td>$83M</td></tr>
+        <tr><td>LICUADORA 2 EN 1 DH FG-3</td><td>758</td><td>$79M</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- MES Y CALIDAD -->
+  <div class="bottom-grid">
+    <div class="table-card">
+      <h3>Comparativo por Mes</h3>
+      <table>
+        <tr><th>Mes</th><th>Guías</th><th>Total Venta</th><th>Costo</th><th>Margen</th></tr>
+        <tr>
+          <td><span class="badge badge-blue">Enero</span></td>
+          <td>7.446</td><td>$1.432M</td><td>$482M</td>
+          <td><span class="badge badge-green">66,3%</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Febrero</span></td>
+          <td>5.292</td><td>$1.030M</td><td>$382M</td>
+          <td><span class="badge badge-green">63,0%</span></td>
+        </tr>
+      </table>
+      <br>
+      <h3>Recaudo vs Venta</h3>
+      <table>
+        <tr><th>Concepto</th><th>Valor</th></tr>
+        <tr><td>Total venta</td><td><strong>$2.463M</strong></td></tr>
+        <tr><td>Recaudo efectivo</td><td><strong>$1.548M</strong></td></tr>
+        <tr><td>% recaudado</td><td><span class="badge badge-orange">62,9%</span></td></tr>
+        <tr><td>Pendiente de cobro</td><td><span class="badge badge-red">~$914M</span></td></tr>
+        <tr><td>Registros sin recaudo</td><td>4.149 (32,6%)</td></tr>
+      </table>
+    </div>
+
+    <div class="table-card">
+      <h3>Calidad de Datos</h3>
+      <table>
+        <tr><th>Campo</th><th>Nulos</th><th>Estado</th></tr>
+        <tr><td>Nombre transportadora</td><td>2.070</td><td><span class="badge badge-red">16,3%</span></td></tr>
+        <tr><td>Guía devolución</td><td>12.394</td><td><span class="badge badge-gray">Normal (sin dev.)</span></td></tr>
+        <tr><td>Valor recaudo</td><td>4.149</td><td><span class="badge badge-orange">32,6%</span></td></tr>
+        <tr><td>Fecha estado final</td><td>4.646</td><td><span class="badge badge-orange">36,5% — en curso</span></td></tr>
+        <tr><td>Fecha relación despacho</td><td>3.348</td><td><span class="badge badge-yellow">26,3%</span></td></tr>
+        <tr><td>Guía transportadora nro.</td><td>2.966</td><td><span class="badge badge-orange">23,3%</span></td></tr>
+      </table>
+      <br>
+      <h3>Top Ciudades de Destino</h3>
+      <table>
+        <tr><th>Ciudad</th><th>Guías</th></tr>
+        <tr><td>Bogotá D.C.</td><td>1.914</td></tr>
+        <tr><td>Medellín</td><td>1.219</td></tr>
+        <tr><td>Cali</td><td>608</td></tr>
+        <tr><td>Cartagena</td><td>323</td></tr>
+        <tr><td>Barranquilla</td><td>302</td></tr>
+        <tr><td>Bello</td><td>221</td></tr>
+        <tr><td>Villavicencio</td><td>214</td></tr>
+        <tr><td>Bucaramanga</td><td>208</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Daily data
+const dailyLabels = ['09-ene','14-ene','15-ene','16-ene','17-ene','18-ene','19-ene','20-ene','21-ene','22-ene','23-ene','24-ene','25-ene','26-ene','27-ene','28-ene','29-ene','30-ene','31-ene','01-feb','02-feb','03-feb','04-feb','05-feb','06-feb','07-feb','08-feb','09-feb','10-feb','11-feb','12-feb','13-feb','14-feb'];
+const dailyGuias = [1,282,288,290,130,87,668,297,289,668,663,333,431,732,490,455,467,460,415,191,637,409,319,393,379,325,588,500,341,384,384,315,127];
+
+// Chart Diario
+new Chart(document.getElementById('chartDiario').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: dailyLabels,
+    datasets: [{
+      label: 'Guías',
+      data: dailyGuias,
+      backgroundColor: dailyLabels.map(l => l.includes('ene') ? '#1e6091cc' : '#00b894cc'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.raw} guías` } } },
+    scales: { x: { ticks: { font: { size: 10 }, maxRotation: 45 } }, y: { beginAtZero: true } }
+  }
+});
+
+// Chart Estados
+new Chart(document.getElementById('chartEstados').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Entregada a destino','Sin transportadora (s/d)','Generada','En proceso entrega','Devolución a origen','Novedad','Otras'],
+    datasets: [{
+      data: [7588,2070,1536,995,508,39,2],
+      backgroundColor: ['#00b894','#b2bec3','#1e6091','#6c5ce7','#e17055','#fdcb6e','#d63031'],
+      borderWidth: 2, borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw.toLocaleString('es-CO')} (${(c.raw/12738*100).toFixed(1)}%)` } }
+    }
+  }
+});
+
+// Chart Días entrega
+new Chart(document.getElementById('chartDias').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['1 día','2 días','3 días','4 días','5 días','6 días','7 días','8 días','9 días','10+ días'],
+    datasets: [{
+      label: 'Guías entregadas',
+      data: [957,1755,1815,1230,738,428,223,149,80,213],
+      backgroundColor: ['#1e6091dd','#1e6091cc','#1e6091bb','#1e6091aa','#6c5ce7aa','#6c5ce7cc','#e17055aa','#e17055bb','#d63031aa','#d63031cc'],
+      borderRadius: 5
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.raw.toLocaleString('es-CO')} guías` } } },
+    scales: { x: { ticks: { font: { size: 11 } } }, y: { beginAtZero: true } }
+  }
+});
+</script>
+</body>
+</html>
