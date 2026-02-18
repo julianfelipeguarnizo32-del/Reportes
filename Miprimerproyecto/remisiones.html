@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis DATAREMISIONESVENTA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+  .header { background: linear-gradient(135deg, #1a0a2e 0%, #2d1b69 50%, #4a2c8a 100%); padding: 40px; color: white; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .header p { margin-top: 8px; opacity: 0.75; font-size: 14px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .kpi-card { background: white; border-radius: 12px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid #4a2c8a; }
+  .kpi-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 26px; font-weight: 700; color: #4a2c8a; }
+  .kpi-card .sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+  .kpi-card.green { border-left-color: #00b894; } .kpi-card.green .value { color: #00b894; }
+  .kpi-card.orange { border-left-color: #e17055; } .kpi-card.orange .value { color: #e17055; }
+  .kpi-card.teal { border-left-color: #00cec9; } .kpi-card.teal .value { color: #00cec9; }
+  .kpi-card.red { border-left-color: #d63031; } .kpi-card.red .value { color: #d63031; }
+  .kpi-card.blue { border-left-color: #0984e3; } .kpi-card.blue .value { color: #0984e3; }
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .chart-full { grid-column: 1 / -1; }
+  .chart-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .chart-card h3 { font-size: 13px; font-weight: 700; color: #444; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .table-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .table-card h3 { font-size: 13px; font-weight: 700; color: #444; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; background: #f8f9fa; color: #666; font-weight: 600; border-bottom: 2px solid #eee; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; color: #333; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #d4f5e9; color: #00875a; }
+  .badge-blue { background: #dce8ff; color: #0052cc; }
+  .badge-orange { background: #fff0e6; color: #c05621; }
+  .badge-red { background: #ffe8e8; color: #c0392b; }
+  .alert-box { background: #fff8e6; border: 1px solid #ffc107; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+  .alert-box h4 { font-size: 13px; color: #856404; margin-bottom: 8px; font-weight: 700; }
+  .alert-box ul { font-size: 12px; color: #856404; padding-left: 18px; }
+  .alert-box ul li { margin-bottom: 4px; }
+  .insight-box { background: #f0f7ff; border: 1px solid #bcd4f0; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+  .insight-box h4 { font-size: 13px; color: #0052cc; margin-bottom: 8px; font-weight: 700; }
+  .insight-box ul { font-size: 12px; color: #0052cc; padding-left: 18px; }
+  .insight-box ul li { margin-bottom: 4px; }
+  .section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 28px 0 14px; padding-left: 12px; border-left: 4px solid #4a2c8a; }
+  .bar-inline { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; background: #f0f0f0; border-radius: 4px; height: 6px; min-width: 60px; }
+  .bar-fill { height: 6px; border-radius: 4px; background: #4a2c8a; }
+  .mp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
+  .mp-card { background: #f8f9fa; border-radius: 10px; padding: 16px; border-top: 3px solid #4a2c8a; }
+  .mp-card.ce { border-top-color: #e17055; }
+  .mp-card.addi { border-top-color: #6c5ce7; }
+  .mp-card.mp { border-top-color: #00b894; }
+  .mp-card.sc { border-top-color: #0984e3; }
+  .mp-card h4 { font-size: 12px; font-weight: 700; color: #444; margin-bottom: 10px; }
+  .mp-stat { font-size: 11px; color: #666; display: flex; justify-content: space-between; padding: 3px 0; }
+  .mp-stat .v { font-weight: 700; color: #1a1a2e; }
+  .highlight-row td { background: #fff9e6; font-weight: 600; }
+  @media (max-width: 768px) { .charts-grid, .bottom-grid, .mp-grid { grid-template-columns: 1fr; } .chart-full { grid-column: 1; } .kpi-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📋 Análisis de Remisiones de Venta — DATAREMISIONESVENTA</h1>
+  <p>Período: 2 enero – 14 febrero 2026 &nbsp;|&nbsp; 16.339 registros · 74 columnas &nbsp;|&nbsp; Activas: 15.348 | Anuladas: 991</p>
+</div>
+<div class="container">
+
+  <div class="alert-box">
+    <h4>⚠️ Alertas Críticas</h4>
+    <ul>
+      <li><strong>$708M en contraentregas entregadas pero SIN cobrar</strong> — 3.922 remisiones con mercancía en destino y recaudo pendiente.</li>
+      <li><strong>Tasa de devolución a origen en CONTRAENTREGA: 6,8%</strong> (808 casos) vs 0,2-0,7% en métodos de pago anticipado.</li>
+      <li><strong>INTERRAPIDÍSIMO: $219M pendiente de cobro</strong> — 56,7% de su venta total sin recaudar.</li>
+      <li><strong>Devoluciones vigentes: $105,9M</strong> (3,65% del total neto) — requiere análisis por producto/causal.</li>
+      <li><strong>Anulados: 991 remisiones / $219M</strong> — el 6,1% del total generado fue cancelado.</li>
+    </ul>
+  </div>
+
+  <div class="insight-box">
+    <h4>💡 Hallazgos Positivos</h4>
+    <ul>
+      <li>Margen bruto estable ~48% (costo manual) — consistente entre enero (48,1%) y febrero (47,1%).</li>
+      <li>61,5% de remisiones ya con Pago Total confirmado (9.444 registros).</li>
+      <li>Métodos anticipados (ADDI + MP + Sistecredito) generan devoluciones casi nulas vs contraentrega.</li>
+      <li>Ticket de Sistecredito es el más alto ($221K) — mayor capacidad de compra financiada.</li>
+    </ul>
+  </div>
+
+  <div class="section-title">Resumen General</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">Remisiones Activas</div><div class="value">15.348</div><div class="sub">+991 anuladas (6,1%)</div></div>
+    <div class="kpi-card green"><div class="label">Total Neto</div><div class="value">$2.901M</div><div class="sub">COP activas</div></div>
+    <div class="kpi-card teal"><div class="label">Utilidad (Costo Manual)</div><div class="value">$1.387M</div><div class="sub">Margen ~48%</div></div>
+    <div class="kpi-card blue"><div class="label">Utilidad (Costo Prom.)</div><div class="value">$1.800M</div><div class="sub">Margen ~72%</div></div>
+    <div class="kpi-card orange"><div class="label">Pendiente de Cobro</div><div class="value">$1.063M</div><div class="sub">36,6% del neto</div></div>
+    <div class="kpi-card red"><div class="label">Entregadas sin Cobrar</div><div class="value">$708M</div><div class="sub">3.922 remisiones</div></div>
+    <div class="kpi-card orange"><div class="label">Devoluciones Vigentes</div><div class="value">$105,9M</div><div class="sub">3,65% del neto</div></div>
+    <div class="kpi-card"><div class="label">Ticket Promedio</div><div class="value">$189K</div><div class="sub">Mediana: $164K</div></div>
+    <div class="kpi-card green"><div class="label">Pago Total</div><div class="value">9.444</div><div class="sub">61,5% remisiones</div></div>
+    <div class="kpi-card"><div class="label">Descuentos</div><div class="value">$21,9M</div><div class="sub">0,82% sobre bruto</div></div>
+  </div>
+
+  <div class="section-title">Por Método de Pago</div>
+  <div class="mp-grid">
+    <div class="mp-card ce">
+      <h4>💵 CONTRAENTREGA</h4>
+      <div class="mp-stat"><span>Remisiones</span><span class="v">11.829 (77,1%)</span></div>
+      <div class="mp-stat"><span>Total Neto</span><span class="v">$2.165M</span></div>
+      <div class="mp-stat"><span>Ticket Prom.</span><span class="v">$183K</span></div>
+      <div class="mp-stat"><span>Pdte. cobro</span><span class="v" style="color:#d63031">$1.062M</span></div>
+      <div class="mp-stat"><span>Devol. a origen</span><span class="v" style="color:#d63031">808 (6,8%)</span></div>
+      <div class="mp-stat"><span>Margen CM</span><span class="v">48,4%</span></div>
+    </div>
+    <div class="mp-card addi">
+      <h4>💳 ADDI</h4>
+      <div class="mp-stat"><span>Remisiones</span><span class="v">2.321 (15,1%)</span></div>
+      <div class="mp-stat"><span>Total Neto</span><span class="v">$483M</span></div>
+      <div class="mp-stat"><span>Ticket Prom.</span><span class="v">$208K</span></div>
+      <div class="mp-stat"><span>Pdte. cobro</span><span class="v" style="color:#f39c12">$552K</span></div>
+      <div class="mp-stat"><span>Devol. a origen</span><span class="v" style="color:#00b894">7 (0,3%)</span></div>
+      <div class="mp-stat"><span>Margen CM</span><span class="v">45,9%</span></div>
+    </div>
+    <div class="mp-card sc">
+      <h4>🏦 SISTECREDITO</h4>
+      <div class="mp-stat"><span>Remisiones</span><span class="v">609 (4,0%)</span></div>
+      <div class="mp-stat"><span>Total Neto</span><span class="v">$135M</span></div>
+      <div class="mp-stat"><span>Ticket Prom.</span><span class="v" style="color:#0984e3">$221K ★</span></div>
+      <div class="mp-stat"><span>Pdte. cobro</span><span class="v" style="color:#00b894">$159K</span></div>
+      <div class="mp-stat"><span>Devol. a origen</span><span class="v" style="color:#00b894">4 (0,7%)</span></div>
+      <div class="mp-stat"><span>Margen CM</span><span class="v">45,9%</span></div>
+    </div>
+    <div class="mp-card mp">
+      <h4>🟢 MERCADO PAGO</h4>
+      <div class="mp-stat"><span>Remisiones</span><span class="v">589 (3,8%)</span></div>
+      <div class="mp-stat"><span>Total Neto</span><span class="v">$116M</span></div>
+      <div class="mp-stat"><span>Ticket Prom.</span><span class="v">$198K</span></div>
+      <div class="mp-stat"><span>Pdte. cobro</span><span class="v" style="color:#00b894">$374K</span></div>
+      <div class="mp-stat"><span>Devol. a origen</span><span class="v" style="color:#00b894">1 (0,2%)</span></div>
+      <div class="mp-stat"><span>Margen CM</span><span class="v">47,4%</span></div>
+    </div>
+  </div>
+
+  <div class="section-title">Tendencia Diaria</div>
+  <div class="charts-grid">
+    <div class="chart-card chart-full">
+      <h3>Remisiones diarias y Utilidad (COP millones)</h3>
+      <div style="position:relative; height:260px"><canvas id="chartDiario"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Estado CXC</h3>
+      <div style="position:relative; height:260px"><canvas id="chartCXC"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Estado Global Guía Inicial</h3>
+      <div style="position:relative; height:260px"><canvas id="chartGuia"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-title">Geografía y Canales</div>
+  <div class="bottom-grid">
+    <div class="table-card">
+      <h3>Por Canal de Despacho</h3>
+      <table>
+        <tr><th>Canal</th><th>Rem.</th><th>Total Neto</th><th>Pdte. Cobro</th><th>Margen</th></tr>
+        <tr><td>COORDINADORA</td><td>7.930</td><td>$1.440M</td><td>$740M</td><td><span class="badge badge-green">48,8%</span></td></tr>
+        <tr><td>PAGOS</td><td>2.712</td><td>$609M</td><td>$496K</td><td><span class="badge badge-blue">45,2%</span></td></tr>
+        <tr><td>BOGOTÁ</td><td>1.943</td><td>$319M</td><td>$24M</td><td><span class="badge badge-blue">47,5%</span></td></tr>
+        <tr class="highlight-row"><td>INTERRAPIDÍSIMO</td><td>1.873</td><td>$386M</td><td><strong style="color:#d63031">$219M</strong></td><td><span class="badge badge-green">49,0%</span></td></tr>
+        <tr><td>BARRANQUILLA/SOL.</td><td>557</td><td>$103M</td><td>$75M</td><td><span class="badge badge-green">49,2%</span></td></tr>
+        <tr><td>GARANTIA</td><td>293</td><td>$33M</td><td>$236K</td><td><span class="badge badge-orange">38,4%</span></td></tr>
+      </table>
+    </div>
+    <div class="table-card">
+      <h3>Top Departamentos</h3>
+      <table>
+        <tr><th>Departamento</th><th>Rem.</th><th>%</th><th>Neto</th></tr>
+        <tr><td>Antioquia</td><td>3.320</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:100%"></div></div>21,6%</div></td><td>$633M</td></tr>
+        <tr><td>Cundinamarca</td><td>3.105</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:93%"></div></div>20,2%</div></td><td>$563M</td></tr>
+        <tr><td>Valle del Cauca</td><td>1.452</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:44%"></div></div>9,5%</div></td><td>$269M</td></tr>
+        <tr><td>Santander</td><td>780</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:23%"></div></div>5,1%</div></td><td>$151M</td></tr>
+        <tr><td>Bolívar</td><td>627</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:19%"></div></div>4,1%</div></td><td>$122M</td></tr>
+        <tr><td>Atlántico</td><td>616</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:19%"></div></div>4,0%</div></td><td>$115M</td></tr>
+        <tr><td>Meta</td><td>479</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:14%"></div></div>3,1%</div></td><td>$92M</td></tr>
+        <tr><td>Risaralda</td><td>392</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:12%"></div></div>2,6%</div></td><td>$71M</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="table-card">
+      <h3>Comparativo Mensual</h3>
+      <table>
+        <tr><th>Mes</th><th>Rem.</th><th>Neto</th><th>Utilidad CM</th><th>Margen</th><th>Pdte.</th></tr>
+        <tr><td><span class="badge badge-blue">Enero</span></td><td>10.442</td><td>$1.969M</td><td>$948M</td><td><span class="badge badge-green">48,1%</span></td><td>$731M</td></tr>
+        <tr><td><span class="badge badge-green">Febrero</span></td><td>4.906</td><td>$931M</td><td>$438M</td><td><span class="badge badge-green">47,1%</span></td><td>$332M</td></tr>
+      </table>
+      <br>
+      <h3>Resumen de Cobro</h3>
+      <table>
+        <tr><th>Concepto</th><th>Valor</th></tr>
+        <tr><td>Total pendiente cobro</td><td><strong>$1.063M</strong></td></tr>
+        <tr><td>% sobre neto</td><td><span class="badge badge-orange">36,6%</span></td></tr>
+        <tr><td>Entregadas sin cobrar</td><td><strong style="color:#d63031">$708M — 3.922 rem.</strong></td></tr>
+        <tr><td>99,9% es contraentrega</td><td>$1.062M de $1.063M</td></tr>
+        <tr><td>Devoluciones vigentes</td><td><strong>$105,9M</strong></td></tr>
+      </table>
+    </div>
+    <div class="table-card">
+      <h3>Top Ciudades de Destino</h3>
+      <table>
+        <tr><th>Ciudad</th><th>Rem.</th><th>Total Neto</th></tr>
+        <tr><td>Bogotá D.C.</td><td>2.307</td><td>$410M</td></tr>
+        <tr><td>Medellín</td><td>1.361</td><td>$255M</td></tr>
+        <tr><td>Cali</td><td>792</td><td>$150M</td></tr>
+        <tr><td>Barranquilla</td><td>425</td><td>$80M</td></tr>
+        <tr><td>Cartagena</td><td>410</td><td>$78M</td></tr>
+        <tr><td>Bello</td><td>259</td><td>$52M</td></tr>
+        <tr><td>Bucaramanga</td><td>258</td><td>$47M</td></tr>
+        <tr><td>Villavicencio</td><td>247</td><td>$50M</td></tr>
+        <tr><td>Pereira</td><td>229</td><td>$40M</td></tr>
+        <tr><td>Ibagué</td><td>210</td><td>$40M</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+<script>
+const dias=['02-ene','03-ene','04-ene','05-ene','06-ene','07-ene','08-ene','09-ene','10-ene','11-ene','12-ene','13-ene','14-ene','15-ene','16-ene','17-ene','18-ene','19-ene','20-ene','21-ene','22-ene','23-ene','24-ene','25-ene','26-ene','27-ene','28-ene','29-ene','30-ene','31-ene','01-feb','02-feb','03-feb','04-feb','05-feb','06-feb','07-feb','08-feb','09-feb','10-feb','11-feb','12-feb','13-feb','14-feb'];
+const remDia=[431,194,312,268,317,309,327,308,341,362,348,285,274,286,280,203,295,261,245,295,629,513,419,520,422,397,432,434,358,377,486,361,334,315,381,339,334,460,360,309,369,329,330,199];
+const utilDia=[30.8,14.7,25.4,21.0,28.6,26.8,26.5,27.8,35.0,35.6,34.1,26.7,24.3,26.8,27.1,20.7,29.8,26.0,23.2,26.6,61.3,50.2,42.4,47.6,38.4,36.1,37.2,37.8,29.4,30.8,41.1,31.6,27.8,27.1,32.3,27.4,28.4,41.7,34.7,28.2,35.7,29.7,32.5,20.2];
+new Chart(document.getElementById('chartDiario').getContext('2d'),{data:{labels:dias,datasets:[{type:'bar',label:'Remisiones',data:remDia,backgroundColor:dias.map(d=>d.includes('ene')?'#4a2c8aaa':'#00b894aa'),yAxisID:'y',borderRadius:3},{type:'line',label:'Utilidad ($M)',data:utilDia,borderColor:'#e17055',backgroundColor:'transparent',borderWidth:2,pointRadius:2,yAxisID:'y2',tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{x:{ticks:{font:{size:9},maxRotation:45}},y:{beginAtZero:true,title:{display:true,text:'Remisiones',font:{size:10}}},y2:{position:'right',beginAtZero:true,title:{display:true,text:'$M COP',font:{size:10}},grid:{drawOnChartArea:false}}}}});
+new Chart(document.getElementById('chartCXC').getContext('2d'),{type:'doughnut',data:{labels:['Pago Total','Pendiente al día','Anulado'],datasets:[{data:[9444,5904,991],backgroundColor:['#00b894','#e17055','#b2bec3'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:12},boxWidth:14}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw.toLocaleString('es-CO')} (${(c.raw/16339*100).toFixed(1)}%)`}}}}});
+new Chart(document.getElementById('chartGuia').getContext('2d'),{type:'bar',data:{labels:['Entregada','Sin guía','En proceso','Devol. origen','Generada','Novedad'],datasets:[{label:'Rem.',data:[10557,2687,1020,820,228,34],backgroundColor:['#00b894cc','#b2bec3cc','#6c5ce7cc','#e17055cc','#4a2c8acc','#fdcb6ecc'],borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true},y:{ticks:{font:{size:11}}}}}});
+</script>
+</body>
+</html>
