@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis DATAORDENESVENTA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+  
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px; color: white; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .header p { margin-top: 8px; opacity: 0.75; font-size: 14px; }
+  
+  .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+  
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .kpi-card { background: white; border-radius: 12px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid #0f3460; }
+  .kpi-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 26px; font-weight: 700; color: #0f3460; }
+  .kpi-card .sub { font-size: 12px; color: #aaa; margin-top: 4px; }
+  .kpi-card.green { border-left-color: #00b894; }
+  .kpi-card.green .value { color: #00b894; }
+  .kpi-card.orange { border-left-color: #e17055; }
+  .kpi-card.orange .value { color: #e17055; }
+  .kpi-card.purple { border-left-color: #6c5ce7; }
+  .kpi-card.purple .value { color: #6c5ce7; }
+  .kpi-card.teal { border-left-color: #00cec9; }
+  .kpi-card.teal .value { color: #00cec9; }
+  
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .chart-full { grid-column: 1 / -1; }
+  .chart-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .chart-card h3 { font-size: 14px; font-weight: 600; color: #444; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-container { position: relative; }
+  
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .table-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .table-card h3 { font-size: 14px; font-weight: 600; color: #444; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; background: #f8f9fa; color: #666; font-weight: 600; border-bottom: 2px solid #eee; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f0f0f0; color: #333; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbff; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: #d4f5e9; color: #00875a; }
+  .badge-blue { background: #dce8ff; color: #0052cc; }
+  .badge-orange { background: #fff0e6; color: #c05621; }
+  .badge-red { background: #ffe8e8; color: #c0392b; }
+  .badge-gray { background: #f0f0f0; color: #666; }
+  
+  .alert-box { background: #fff8e6; border: 1px solid #ffc107; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+  .alert-box h4 { font-size: 13px; color: #856404; margin-bottom: 8px; font-weight: 700; }
+  .alert-box ul { font-size: 12px; color: #856404; padding-left: 18px; }
+  .alert-box ul li { margin-bottom: 4px; }
+  
+  .section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 28px 0 14px; padding-left: 12px; border-left: 4px solid #0f3460; }
+  
+  .bar-inline { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; background: #f0f0f0; border-radius: 4px; height: 6px; }
+  .bar-fill { height: 6px; border-radius: 4px; background: #0f3460; }
+  
+  @media (max-width: 768px) {
+    .charts-grid, .bottom-grid { grid-template-columns: 1fr; }
+    .chart-full { grid-column: 1; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Análisis de Órdenes de Venta</h1>
+  <p>Hoja: DATAORDENESVENTA &nbsp;|&nbsp; Período: 1 enero – 14 febrero 2026 &nbsp;|&nbsp; 16.746 registros</p>
+</div>
+
+<div class="container">
+
+  <!-- ALERTAS -->
+  <div class="alert-box">
+    <h4>⚠️ Puntos de Atención</h4>
+    <ul>
+      <li><strong>97,2% de órdenes marcadas como "Anuladas" en Vigencia</strong> — Solo 475 (2,8%) están "Vigentes" (pendientes). Verificar lógica del campo si "Anulada" equivale a procesada/remisionada.</li>
+      <li><strong>55,1% de órdenes aún no confirmadas</strong> (Generada, Inicio conversación, No confirmó, etc.) — oportunidad de mejora en tasa de conversión.</li>
+      <li><strong>99% del canal es Distri Home</strong> (ecommerce) — alta dependencia de un solo canal.</li>
+      <li><strong>Vendedor sin asignar en 99,7% de órdenes</strong> — solo 47 registros tienen vendedor. ¿Es correcto para canal digital?</li>
+    </ul>
+  </div>
+
+  <!-- KPIs -->
+  <div class="section-title">Resumen General</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="label">Total Órdenes</div>
+      <div class="value">16.746</div>
+      <div class="sub">Ene + Feb 2026</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="label">Total Neto</div>
+      <div class="value">$3.249M</div>
+      <div class="sub">COP millones</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="label">Ticket Promedio</div>
+      <div class="value">$194K</div>
+      <div class="sub">Mediana: $164K</div>
+    </div>
+    <div class="kpi-card teal">
+      <div class="label">Total Bruto</div>
+      <div class="value">$2.753M</div>
+      <div class="sub">Antes descuentos</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="label">Descuentos</div>
+      <div class="value">$23,2M</div>
+      <div class="sub">0,84% sobre bruto</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Impuestos</div>
+      <div class="value">$518M</div>
+      <div class="sub">19% aprox.</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="label">Órdenes Confirmadas</div>
+      <div class="value">9.232</div>
+      <div class="sub">55,1% del total</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Ciudades Cubiertas</div>
+      <div class="value">~150+</div>
+      <div class="sub">Colombia</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-title">Evolución Diaria</div>
+  <div class="charts-grid">
+    <div class="chart-card chart-full">
+      <h3>Órdenes por Día</h3>
+      <div class="chart-container" style="height:260px">
+        <canvas id="chartDiario"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Estados de Órdenes</h3>
+      <div class="chart-container" style="height:260px">
+        <canvas id="chartEstados"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Estado de Facturación</h3>
+      <div class="chart-container" style="height:260px">
+        <canvas id="chartFact"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">Detalle por Dimensiones</div>
+  <div class="bottom-grid">
+    <!-- Top Ciudades -->
+    <div class="table-card">
+      <h3>Top Ciudades por Órdenes</h3>
+      <table>
+        <tr><th>Ciudad</th><th>Órdenes</th><th>Participación</th></tr>
+        <tr><td>Bogotá D.C.</td><td>2.228</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:100%"></div></div><span>13,3%</span></div></td></tr>
+        <tr><td>Medellín</td><td>1.373</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:62%"></div></div><span>8,2%</span></div></td></tr>
+        <tr><td>Cali</td><td>837</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:38%"></div></div><span>5,0%</span></div></td></tr>
+        <tr><td>Barranquilla</td><td>440</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:20%"></div></div><span>2,6%</span></div></td></tr>
+        <tr><td>Cartagena</td><td>322</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:14%"></div></div><span>1,9%</span></div></td></tr>
+        <tr><td>Bello</td><td>267</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:12%"></div></div><span>1,6%</span></div></td></tr>
+        <tr><td>Bucaramanga</td><td>259</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:12%"></div></div><span>1,5%</span></div></td></tr>
+        <tr><td>Villavicencio</td><td>255</td><td><div class="bar-inline"><div class="bar-bg"><div class="bar-fill" style="width:11%"></div></div><span>1,5%</span></div></td></tr>
+      </table>
+    </div>
+
+    <!-- Por mes -->
+    <div class="table-card">
+      <h3>Comparativo por Mes</h3>
+      <table>
+        <tr><th>Mes</th><th>Órdenes</th><th>Total Neto</th><th>Ticket Prom.</th></tr>
+        <tr>
+          <td><span class="badge badge-blue">Enero</span></td>
+          <td>11.608</td>
+          <td>$2.255M</td>
+          <td>$194.329</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Febrero</span></td>
+          <td>5.138</td>
+          <td>$993M</td>
+          <td>$193.419</td>
+        </tr>
+      </table>
+      <br>
+      <h3 style="margin-top:8px">Canales de Venta</h3>
+      <table>
+        <tr><th>Canal</th><th>Órdenes</th><th>%</th></tr>
+        <tr><td>Distri Home</td><td>16.562</td><td><span class="badge badge-blue">98,9%</span></td></tr>
+        <tr><td>Tienda Física</td><td>176</td><td><span class="badge badge-gray">1,1%</span></td></tr>
+        <tr><td>IMPORSHOP</td><td>8</td><td><span class="badge badge-gray">0,0%</span></td></tr>
+      </table>
+      <br>
+      <h3>Calidad de Datos</h3>
+      <table>
+        <tr><th>Campo</th><th>Nulos</th><th>Estado</th></tr>
+        <tr><td>Vendedor</td><td>16.699</td><td><span class="badge badge-orange">99,7% vacío</span></td></tr>
+        <tr><td>Ecommerce</td><td>176</td><td><span class="badge badge-green">OK</span></td></tr>
+        <tr><td>Departamento</td><td>24</td><td><span class="badge badge-green">OK</span></td></tr>
+        <tr><td>País</td><td>3</td><td><span class="badge badge-green">OK</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Datos
+const dailyLabels = ['01-ene','02-ene','03-ene','04-ene','05-ene','06-ene','07-ene','08-ene','09-ene','10-ene','11-ene','12-ene','13-ene','14-ene','15-ene','16-ene','17-ene','18-ene','19-ene','20-ene','21-ene','22-ene','23-ene','24-ene','25-ene','26-ene','27-ene','28-ene','29-ene','30-ene','31-ene','01-feb','02-feb','03-feb','04-feb','05-feb','06-feb','07-feb','08-feb','09-feb','10-feb','11-feb','12-feb','13-feb','14-feb'];
+const dailyOrdenes = [168,230,281,298,340,318,362,318,289,433,372,424,319,283,289,313,281,278,294,247,335,767,509,526,583,491,444,484,485,417,430,496,339,334,278,367,340,340,533,404,329,385,375,337,281];
+
+// Chart Diario
+const ctx1 = document.getElementById('chartDiario').getContext('2d');
+new Chart(ctx1, {
+  type: 'bar',
+  data: {
+    labels: dailyLabels,
+    datasets: [{
+      label: 'Órdenes',
+      data: dailyOrdenes,
+      backgroundColor: dailyLabels.map(l => l.includes('ene') ? '#0f3460cc' : '#00b894cc'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { title: t => t[0].label, label: c => `${c.raw} órdenes` } }
+    },
+    scales: {
+      x: { ticks: { font: { size: 10 }, maxRotation: 45 } },
+      y: { beginAtZero: true, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// Chart Estados
+const ctx2 = document.getElementById('chartEstados').getContext('2d');
+new Chart(ctx2, {
+  type: 'doughnut',
+  data: {
+    labels: ['CONFIRMADO','Generada','INICIO CONVERSACION','NO CONFIRMÓ','MODIFICAR PEDIDO','NO CONTESTA','ERRADA'],
+    datasets: [{
+      data: [9232,3265,2226,1394,439,179,11],
+      backgroundColor: ['#00b894','#0f3460','#6c5ce7','#e17055','#fdcb6e','#b2bec3','#d63031'],
+      borderWidth: 2, borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 14 } },
+      tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw.toLocaleString('es-CO')} (${(c.raw/16746*100).toFixed(1)}%)` } }
+    }
+  }
+});
+
+// Chart Facturación
+const ctx3 = document.getElementById('chartFact').getContext('2d');
+new Chart(ctx3, {
+  type: 'doughnut',
+  data: {
+    labels: ['Remisionada','Pendiente','Facturada'],
+    datasets: [{
+      data: [13602,3143,1],
+      backgroundColor: ['#00b894','#fdcb6e','#0f3460'],
+      borderWidth: 2, borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 12 }, boxWidth: 14 } },
+      tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw.toLocaleString('es-CO')} (${(c.raw/16746*100).toFixed(1)}%)` } }
+    }
+  }
+});
+</script>
+</body>
+</html>
