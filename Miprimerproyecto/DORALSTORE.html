@@ -219,6 +219,56 @@
       <div class="chart-wrap"><canvas id="chartTasaDespachoResumen"></canvas></div>
     </div>
   </div>
+
+  <div class="section-title">🗺️ Distribución Geográfica de Pedidos</div>
+  <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Departamentos</div>
+      <div class="stat-value">32</div>
+      <div class="stat-sub">con cobertura activa</div>
+    </div>
+    <div class="stat-card sky">
+      <div class="stat-label">Total Ciudades</div>
+      <div class="stat-value">488</div>
+      <div class="stat-sub">ciudades destino</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Dpto. Líder</div>
+      <div class="stat-value" style="font-size:1.3rem">CUNDINAMARCA</div>
+      <div class="stat-sub">535 pedidos</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Ciudad Líder</div>
+      <div class="stat-value" style="font-size:1.5rem">BOGOTÁ</div>
+      <div class="stat-sub">372 pedidos</div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="month-btn active" id="btnDepPedidos" onclick="switchGeoView('pedidos')">📦 Pedidos</button>
+        <button class="month-btn" id="btnDepFact" onclick="switchGeoView('facturacion')">💰 Facturación</button>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="chart-title" id="geoDepTitle">Top 15 Departamentos — Pedidos</div>
+          <div class="chart-subtitle">Destino de los pedidos por departamento</div>
+          <div class="chart-wrap tall"><canvas id="chartGeoDep"></canvas></div>
+        </div>
+        <div>
+          <div class="chart-title" id="geoCityTitle">Top 15 Ciudades — Pedidos</div>
+          <div class="chart-subtitle">Destino de los pedidos por ciudad</div>
+          <div class="chart-wrap tall"><canvas id="chartGeoCity"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📋 Tabla Resumen por Departamento</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableGeoDep"></div>
+  </div>
 </div>
 
 <!-- ========= PEDIDOS ========= -->
@@ -262,6 +312,48 @@
   <div class="section-title">📋 Tabla Detallada de Estatus</div>
   <div class="chart-card">
     <div class="table-wrap" id="tableEstatus"></div>
+  </div>
+
+  <br>
+  <div class="section-title">🗺️ Pedidos & Despacho por Departamento y Ciudad</div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="month-btn active" id="btnPedDepPed" onclick="switchPedGeo('pedidos')">📦 Por Pedidos</button>
+        <button class="month-btn" id="btnPedDepDesp" onclick="switchPedGeo('despacho')">🚚 Tasa Despacho</button>
+        <button class="month-btn" id="btnPedDepEnt" onclick="switchPedGeo('entrega')">✅ Tasa Entrega</button>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="chart-title" id="pedDepTitle">Top 15 Departamentos — Pedidos</div>
+          <div class="chart-subtitle">Destino por departamento</div>
+          <div class="chart-wrap tall"><canvas id="chartPedDep"></canvas></div>
+        </div>
+        <div>
+          <div class="chart-title" id="pedCityTitle">Top 15 Ciudades — Pedidos</div>
+          <div class="chart-subtitle">Destino por ciudad</div>
+          <div class="chart-wrap tall"><canvas id="chartPedCity"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card full" style="margin-bottom:20px;">
+    <div class="chart-title">Evolución de Pedidos — Top 10 Departamentos por Mes</div>
+    <div class="chart-subtitle">Comparativo Enero vs Febrero 2026</div>
+    <div class="chart-wrap tall"><canvas id="chartDepMes"></canvas></div>
+  </div>
+
+  <div class="section-title">📋 Tabla: Pedidos, Despacho y Entrega por Departamento</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tablePedDep"></div>
+  </div>
+
+  <br>
+  <div class="section-title">📋 Tabla: Pedidos, Despacho y Entrega por Ciudad</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tablePedCity"></div>
   </div>
 </div>
 
@@ -309,6 +401,49 @@
       <div class="chart-wrap"><canvas id="chartFactVsFlete"></canvas></div>
     </div>
   </div>
+
+  <br>
+  <div class="section-title">🗺️ Facturación & Flete por Departamento y Ciudad</div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="month-btn active" id="btnFactGeoFact" onclick="switchFactGeo('facturacion')">💰 Facturación</button>
+        <button class="month-btn" id="btnFactGeoFlete" onclick="switchFactGeo('flete')">🚚 Costo Flete</button>
+        <button class="month-btn" id="btnFactGeoTicket" onclick="switchFactGeo('ticket')">🎫 Ticket Promedio</button>
+        <button class="month-btn" id="btnFactGeoPct" onclick="switchFactGeo('pct')">📊 % Flete / Fact.</button>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="chart-title" id="factDepTitle">Top 15 Departamentos — Facturación</div>
+          <div class="chart-subtitle">Por departamento destino</div>
+          <div class="chart-wrap tall"><canvas id="chartFactDep"></canvas></div>
+        </div>
+        <div>
+          <div class="chart-title" id="factCityTitle">Top 15 Ciudades — Facturación</div>
+          <div class="chart-subtitle">Por ciudad destino</div>
+          <div class="chart-wrap tall"><canvas id="chartFactCity"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card full" style="margin-bottom:20px;">
+    <div class="chart-title">Evolución de Facturación — Top 10 Departamentos por Mes</div>
+    <div class="chart-subtitle">Comparativo Enero vs Febrero 2026 (COP)</div>
+    <div class="chart-wrap tall"><canvas id="chartFactDepMes"></canvas></div>
+  </div>
+
+  <div class="section-title">📋 Tabla: Facturación & Flete por Departamento</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableFactDep"></div>
+  </div>
+
+  <br>
+  <div class="section-title">📋 Tabla: Facturación & Flete por Ciudad</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableFactCity"></div>
+  </div>
 </div>
 
 <!-- ========= PRODUCTOS ========= -->
@@ -353,6 +488,49 @@
       <div class="chart-subtitle">Total de la Orden por TIPO DE TIENDA</div>
       <div class="chart-wrap"><canvas id="chartTiendaFacturacion"></canvas></div>
     </div>
+  </div>
+
+  <br>
+  <div class="section-title">🗺️ Ventas por Departamento y Ciudad Destino</div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="month-btn active" id="btnProdGeoUnid"   onclick="switchProdGeo('unidades')">📦 Unidades</button>
+        <button class="month-btn" id="btnProdGeoFact"          onclick="switchProdGeo('facturacion')">💰 Facturación</button>
+        <button class="month-btn" id="btnProdGeoUxP"           onclick="switchProdGeo('uxp')">🔢 Unid. por Pedido</button>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="chart-title" id="prodDepTitle">Top 15 Departamentos — Unidades Vendidas</div>
+          <div class="chart-subtitle">Campo CANTIDAD por departamento destino</div>
+          <div class="chart-wrap tall"><canvas id="chartProdDep"></canvas></div>
+        </div>
+        <div>
+          <div class="chart-title" id="prodCityTitle">Top 15 Ciudades — Unidades Vendidas</div>
+          <div class="chart-subtitle">Campo CANTIDAD por ciudad destino</div>
+          <div class="chart-wrap tall"><canvas id="chartProdCity"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🏪 Unidades por Tipo de Tienda — Top 10 Departamentos</div>
+  <div class="chart-card full" style="margin-bottom:20px;">
+    <div class="chart-title">Distribución de Canales de Venta por Departamento</div>
+    <div class="chart-subtitle">Unidades vendidas por TIPO DE TIENDA en cada departamento</div>
+    <div class="chart-wrap tall"><canvas id="chartTiendaDep"></canvas></div>
+  </div>
+
+  <div class="section-title">📋 Tabla: Ventas por Departamento</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableProdDep"></div>
+  </div>
+
+  <br>
+  <div class="section-title">📋 Tabla: Ventas por Ciudad</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableProdCity"></div>
   </div>
 </div>
 
@@ -472,6 +650,48 @@
     <div class="chart-subtitle">De las novedades solucionadas, cuántas lograron entrega exitosa</div>
     <div class="table-wrap" id="tableNovEficiencia"></div>
   </div>
+
+  <br>
+  <div class="section-title">🗺️ Novedades por Departamento y Ciudad Destino</div>
+
+  <div class="chart-grid">
+    <div class="chart-card full">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="month-btn active" id="btnNovGeoCnt"  onclick="switchNovGeo('novedades')">⚠️ Total Novedades</button>
+        <button class="month-btn" id="btnNovGeoTasa"        onclick="switchNovGeo('tasa')">📊 Tasa de Novedad %</button>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="chart-title" id="novDepTitle">Top 15 Departamentos — Total Novedades</div>
+          <div class="chart-subtitle">Novedades activas filtradas por departamento</div>
+          <div class="chart-wrap tall"><canvas id="chartNovDep"></canvas></div>
+        </div>
+        <div>
+          <div class="chart-title" id="novCityTitle">Top 15 Ciudades — Total Novedades</div>
+          <div class="chart-subtitle">Novedades activas filtradas por ciudad</div>
+          <div class="chart-wrap tall"><canvas id="chartNovCity"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🔍 Top Novedad por Departamento</div>
+  <div class="chart-card" style="margin-bottom:20px;">
+    <div class="chart-title">Tipo de Novedad más frecuente — Top 8 Departamentos</div>
+    <div class="chart-subtitle">Novedad predominante en cada zona geográfica</div>
+    <div id="depTopNovContainer"></div>
+  </div>
+
+  <div class="section-title">📋 Tabla: Novedades por Departamento</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableNovDep"></div>
+  </div>
+
+  <br>
+  <div class="section-title">📋 Tabla: Novedades por Ciudad</div>
+  <div class="chart-card">
+    <div class="table-wrap" id="tableNovCity"></div>
+  </div>
 </div>
 
 </div><!-- /main -->
@@ -513,7 +733,23 @@ const DATA = {
   novTrans: {"COORDINADORA": 6, "ENVIA": 147, "JAMV-DRIVE": 4, "TCC": 1, "VELOCES": 81},
   novSolTrans: {"COORDINADORA": 9, "ENVIA": 190, "JAMV-DRIVE": 7, "TCC": 1, "VELOCES": 159},
   novSolEntTrans: {"COORDINADORA": 3, "ENVIA": 43, "JAMV-DRIVE": 3, "VELOCES": 78},
-  novTypes: {"DESTINATARIO SE REHUSA A RECIBIR": 69, "COORDINAR LA ENTREGA": 50, "No hay quien reciba": 30, "Reprogramar entrega": 13, "DIRECCION DESTINATARIO NO EXISTE": 11, "Direccion incorrecta": 8, "DIRECCION DESTINATARIO INCOMPLETA": 7, "Pedido cancelado": 7, "No contesta Cliente": 6, "El cliente se niega a recibir": 5, "Pedido cancelado por el cliente": 5, "DESTINATARIO FIJA FECHA Y HORA": 3, "Zona de alto riesgo": 3, "NO CONOCEN DESTINATARIO": 3, "Mercancia no solicitada": 2}
+  novTypes: {"DESTINATARIO SE REHUSA A RECIBIR": 69, "COORDINAR LA ENTREGA": 50, "No hay quien reciba": 30, "Reprogramar entrega": 13, "DIRECCION DESTINATARIO NO EXISTE": 11, "Direccion incorrecta": 8, "DIRECCION DESTINATARIO INCOMPLETA": 7, "Pedido cancelado": 7, "No contesta Cliente": 6, "El cliente se niega a recibir": 5, "Pedido cancelado por el cliente": 5, "DESTINATARIO FIJA FECHA Y HORA": 3, "Zona de alto riesgo": 3, "NO CONOCEN DESTINATARIO": 3, "Mercancia no solicitada": 2},
+  topDep: {"CUNDINAMARCA": 535, "ANTIOQUIA": 448, "VALLE": 340, "BOLIVAR": 186, "ATLANTICO": 169, "SANTANDER": 121, "NARIÑO": 101, "CORDOBA": 91, "CAUCA": 84, "MAGDALENA": 79, "META": 77, "TOLIMA": 76, "HUILA": 71, "CESAR": 68, "RISARALDA": 58},
+  topCity: {"BOGOTA": 372, "CALI": 170, "MEDELLIN": 161, "CARTAGENA": 128, "BARRANQUILLA": 112, "SANTA MARTA": 42, "BUENAVENTURA": 38, "PEREIRA": 35, "POPAYAN": 35, "MONTERIA": 34, "IBAGUE": 34, "TUMACO": 33, "VILLAVICENCIO": 32, "VALLEDUPAR": 31, "BUCARAMANGA": 29},
+  factDep: {"CUNDINAMARCA": 59563315, "ANTIOQUIA": 50005418, "VALLE": 37648311, "BOLIVAR": 20573224, "ATLANTICO": 17218718, "SANTANDER": 13366095, "NARIÑO": 10085139, "CAUCA": 9010182, "CORDOBA": 8971033, "MAGDALENA": 8702958},
+  factCity: {"BOGOTA": 41704359, "CALI": 19904645, "MEDELLIN": 18805504, "CARTAGENA": 14139026, "BARRANQUILLA": 11848276, "SANTA MARTA": 4983074, "PEREIRA": 4101500, "POPAYAN": 3871499, "IBAGUE": 3849855, "BUENAVENTURA": 3800531},
+  depStats: {"CUNDINAMARCA":{"pedidos":535,"despachados":438,"entregados":335,"tasa_despacho":81.9,"tasa_entrega":62.6},"ANTIOQUIA":{"pedidos":448,"despachados":387,"entregados":303,"tasa_despacho":86.4,"tasa_entrega":67.6},"VALLE":{"pedidos":340,"despachados":281,"entregados":242,"tasa_despacho":82.6,"tasa_entrega":71.2},"BOLIVAR":{"pedidos":186,"despachados":151,"entregados":117,"tasa_despacho":81.2,"tasa_entrega":62.9},"ATLANTICO":{"pedidos":169,"despachados":134,"entregados":105,"tasa_despacho":79.3,"tasa_entrega":62.1},"SANTANDER":{"pedidos":121,"despachados":96,"entregados":79,"tasa_despacho":79.3,"tasa_entrega":65.3},"NARIÑO":{"pedidos":101,"despachados":75,"entregados":50,"tasa_despacho":74.3,"tasa_entrega":49.5},"CORDOBA":{"pedidos":91,"despachados":71,"entregados":52,"tasa_despacho":78.0,"tasa_entrega":57.1},"CAUCA":{"pedidos":84,"despachados":66,"entregados":56,"tasa_despacho":78.6,"tasa_entrega":66.7},"MAGDALENA":{"pedidos":79,"despachados":65,"entregados":50,"tasa_despacho":82.3,"tasa_entrega":63.3},"META":{"pedidos":77,"despachados":61,"entregados":46,"tasa_despacho":79.2,"tasa_entrega":59.7},"TOLIMA":{"pedidos":76,"despachados":65,"entregados":50,"tasa_despacho":85.5,"tasa_entrega":65.8},"HUILA":{"pedidos":71,"despachados":60,"entregados":52,"tasa_despacho":84.5,"tasa_entrega":73.2},"CESAR":{"pedidos":68,"despachados":51,"entregados":45,"tasa_despacho":75.0,"tasa_entrega":66.2},"RISARALDA":{"pedidos":58,"despachados":51,"entregados":45,"tasa_despacho":87.9,"tasa_entrega":77.6}},
+  cityStats: {"BOGOTA":{"pedidos":372,"despachados":306,"entregados":233,"tasa_despacho":82.3,"tasa_entrega":62.6},"CALI":{"pedidos":170,"despachados":136,"entregados":116,"tasa_despacho":80.0,"tasa_entrega":68.2},"MEDELLIN":{"pedidos":161,"despachados":144,"entregados":119,"tasa_despacho":89.4,"tasa_entrega":73.9},"CARTAGENA":{"pedidos":128,"despachados":104,"entregados":86,"tasa_despacho":81.2,"tasa_entrega":67.2},"BARRANQUILLA":{"pedidos":112,"despachados":86,"entregados":69,"tasa_despacho":76.8,"tasa_entrega":61.6},"SANTA MARTA":{"pedidos":42,"despachados":34,"entregados":29,"tasa_despacho":81.0,"tasa_entrega":69.0},"BUENAVENTURA":{"pedidos":38,"despachados":35,"entregados":29,"tasa_despacho":92.1,"tasa_entrega":76.3},"PEREIRA":{"pedidos":35,"despachados":30,"entregados":27,"tasa_despacho":85.7,"tasa_entrega":77.1},"POPAYAN":{"pedidos":35,"despachados":29,"entregados":26,"tasa_despacho":82.9,"tasa_entrega":74.3},"MONTERIA":{"pedidos":34,"despachados":28,"entregados":23,"tasa_despacho":82.4,"tasa_entrega":67.6},"IBAGUE":{"pedidos":34,"despachados":29,"entregados":24,"tasa_despacho":85.3,"tasa_entrega":70.6},"TUMACO":{"pedidos":33,"despachados":22,"entregados":13,"tasa_despacho":66.7,"tasa_entrega":39.4},"VILLAVICENCIO":{"pedidos":32,"despachados":25,"entregados":19,"tasa_despacho":78.1,"tasa_entrega":59.4},"VALLEDUPAR":{"pedidos":31,"despachados":24,"entregados":22,"tasa_despacho":77.4,"tasa_entrega":71.0},"BUCARAMANGA":{"pedidos":29,"despachados":27,"entregados":24,"tasa_despacho":93.1,"tasa_entrega":82.8}},
+  depMes: {"ANTIOQUIA":{"2026-01":174,"2026-02":274},"ATLANTICO":{"2026-01":62,"2026-02":107},"BOLIVAR":{"2026-01":79,"2026-02":107},"CAUCA":{"2026-01":28,"2026-02":56},"CORDOBA":{"2026-01":30,"2026-02":61},"CUNDINAMARCA":{"2026-01":172,"2026-02":363},"MAGDALENA":{"2026-01":32,"2026-02":47},"NARIÑO":{"2026-01":21,"2026-02":80},"SANTANDER":{"2026-01":50,"2026-02":71},"VALLE":{"2026-01":127,"2026-02":213}},
+  depFact: {"CUNDINAMARCA":{"facturacion":59563315,"flete":8609914,"pedidos":535,"ticket_prom":111333,"flete_pct":14.5},"ANTIOQUIA":{"facturacion":50005418,"flete":7643570,"pedidos":448,"ticket_prom":111619,"flete_pct":15.3},"VALLE":{"facturacion":37648312,"flete":4852038,"pedidos":340,"ticket_prom":110730,"flete_pct":12.9},"BOLIVAR":{"facturacion":20573225,"flete":3423230,"pedidos":186,"ticket_prom":110609,"flete_pct":16.6},"ATLANTICO":{"facturacion":17218719,"flete":2823446,"pedidos":169,"ticket_prom":101886,"flete_pct":16.4},"SANTANDER":{"facturacion":13366095,"flete":2187003,"pedidos":121,"ticket_prom":110464,"flete_pct":16.4},"NARIÑO":{"facturacion":10085140,"flete":1918448,"pedidos":101,"ticket_prom":99853,"flete_pct":19.0},"CAUCA":{"facturacion":9010182,"flete":1407439,"pedidos":84,"ticket_prom":107264,"flete_pct":15.6},"CORDOBA":{"facturacion":8971033,"flete":1585276,"pedidos":91,"ticket_prom":98583,"flete_pct":17.7},"MAGDALENA":{"facturacion":8702958,"flete":1482555,"pedidos":79,"ticket_prom":110164,"flete_pct":17.0},"TOLIMA":{"facturacion":8465760,"flete":1368402,"pedidos":76,"ticket_prom":111392,"flete_pct":16.2},"META":{"facturacion":8211568,"flete":1516029,"pedidos":77,"ticket_prom":106644,"flete_pct":18.5},"HUILA":{"facturacion":7271565,"flete":1286632,"pedidos":71,"ticket_prom":102416,"flete_pct":17.7},"CESAR":{"facturacion":6654290,"flete":1177532,"pedidos":68,"ticket_prom":97857,"flete_pct":17.7},"RISARALDA":{"facturacion":6466474,"flete":924932,"pedidos":58,"ticket_prom":111491,"flete_pct":14.3}},
+  cityFact: {"BOGOTA":{"facturacion":41704359,"flete":5667375,"pedidos":372,"ticket_prom":112108,"flete_pct":13.6},"CALI":{"facturacion":19904646,"flete":2217674,"pedidos":170,"ticket_prom":117086,"flete_pct":11.1},"MEDELLIN":{"facturacion":18805505,"flete":2386649,"pedidos":161,"ticket_prom":116804,"flete_pct":12.7},"CARTAGENA":{"facturacion":14139027,"flete":2220857,"pedidos":128,"ticket_prom":110461,"flete_pct":15.7},"BARRANQUILLA":{"facturacion":11848276,"flete":1886126,"pedidos":112,"ticket_prom":105788,"flete_pct":15.9},"SANTA MARTA":{"facturacion":4983074,"flete":737749,"pedidos":42,"ticket_prom":118645,"flete_pct":14.8},"PEREIRA":{"facturacion":4101500,"flete":548810,"pedidos":35,"ticket_prom":117186,"flete_pct":13.4},"POPAYAN":{"facturacion":3871500,"flete":539044,"pedidos":35,"ticket_prom":110614,"flete_pct":13.9},"IBAGUE":{"facturacion":3849855,"flete":586482,"pedidos":34,"ticket_prom":113231,"flete_pct":15.2},"BUENAVENTURA":{"facturacion":3800532,"flete":683778,"pedidos":38,"ticket_prom":100014,"flete_pct":18.0},"VILLAVICENCIO":{"facturacion":3546523,"flete":552440,"pedidos":32,"ticket_prom":110829,"flete_pct":15.6},"ENVIGADO":{"facturacion":3344874,"flete":357720,"pedidos":24,"ticket_prom":139370,"flete_pct":10.7},"BUCARAMANGA":{"facturacion":3312090,"flete":479502,"pedidos":29,"ticket_prom":114210,"flete_pct":14.5},"MONTERIA":{"facturacion":3253884,"flete":568695,"pedidos":34,"ticket_prom":95702,"flete_pct":17.5},"VALLEDUPAR":{"facturacion":3232000,"flete":524590,"pedidos":31,"ticket_prom":104258,"flete_pct":16.2}},
+  depFactMes: {"ANTIOQUIA":{"2026-01":23310640,"2026-02":26694777},"ATLANTICO":{"2026-01":7540599,"2026-02":9678118},"BOLIVAR":{"2026-01":9748065,"2026-02":10825159},"CAUCA":{"2026-01":3492199,"2026-02":5517982},"CORDOBA":{"2026-01":3509092,"2026-02":5461940},"CUNDINAMARCA":{"2026-01":22821719,"2026-02":36741595},"MAGDALENA":{"2026-01":4091800,"2026-02":4611158},"NARIÑO":{"2026-01":2660799,"2026-02":7424339},"SANTANDER":{"2026-01":6475415,"2026-02":6890679},"VALLE":{"2026-01":16332043,"2026-02":21316268}},
+  depProd: {"CUNDINAMARCA":{"unidades":1595,"facturacion":60552108,"pedidos":535,"unid_por_pedido":2.98},"ANTIOQUIA":{"unidades":1103,"facturacion":51394679,"pedidos":448,"unid_por_pedido":2.46},"VALLE":{"unidades":821,"facturacion":38532679,"pedidos":340,"unid_por_pedido":2.41},"BOLIVAR":{"unidades":503,"facturacion":20693125,"pedidos":186,"unid_por_pedido":2.70},"ATLANTICO":{"unidades":452,"facturacion":18060373,"pedidos":169,"unid_por_pedido":2.67},"NARIÑO":{"unidades":347,"facturacion":10708017,"pedidos":101,"unid_por_pedido":3.44},"SANTANDER":{"unidades":336,"facturacion":13463821,"pedidos":121,"unid_por_pedido":2.78},"CORDOBA":{"unidades":306,"facturacion":9455266,"pedidos":91,"unid_por_pedido":3.36},"META":{"unidades":247,"facturacion":8411371,"pedidos":77,"unid_por_pedido":3.21},"CAUCA":{"unidades":239,"facturacion":9303360,"pedidos":84,"unid_por_pedido":2.85},"MAGDALENA":{"unidades":229,"facturacion":9012661,"pedidos":79,"unid_por_pedido":2.90},"TOLIMA":{"unidades":223,"facturacion":8645560,"pedidos":76,"unid_por_pedido":2.93},"CESAR":{"unidades":193,"facturacion":6860988,"pedidos":68,"unid_por_pedido":2.84},"HUILA":{"unidades":188,"facturacion":7467014,"pedidos":71,"unid_por_pedido":2.65},"LA GUAJIRA":{"unidades":176,"facturacion":5746453,"pedidos":52,"unid_por_pedido":3.38}},
+  cityProd: {"BOGOTA":{"unidades":1082,"facturacion":42091885,"pedidos":372,"unid_por_pedido":2.91},"CALI":{"unidades":383,"facturacion":20479310,"pedidos":170,"unid_por_pedido":2.25},"CARTAGENA":{"unidades":350,"facturacion":14258927,"pedidos":128,"unid_por_pedido":2.73},"MEDELLIN":{"unidades":336,"facturacion":19296536,"pedidos":161,"unid_por_pedido":2.09},"BARRANQUILLA":{"unidades":280,"facturacion":12161139,"pedidos":112,"unid_por_pedido":2.50},"TUMACO":{"unidades":139,"facturacion":3243002,"pedidos":33,"unid_por_pedido":4.21},"BUENAVENTURA":{"unidades":133,"facturacion":3902609,"pedidos":38,"unid_por_pedido":3.50},"MONTERIA":{"unidades":129,"facturacion":3351610,"pedidos":34,"unid_por_pedido":3.79},"POPAYAN":{"unidades":112,"facturacion":3871500,"pedidos":35,"unid_por_pedido":3.20},"SANTA MARTA":{"unidades":100,"facturacion":5080800,"pedidos":42,"unid_por_pedido":2.38},"VILLAVICENCIO":{"unidades":98,"facturacion":3648600,"pedidos":32,"unid_por_pedido":3.06},"CUCUTA":{"unidades":87,"facturacion":3322104,"pedidos":28,"unid_por_pedido":3.11},"BARRANCABERMEJA":{"unidades":84,"facturacion":2532700,"pedidos":23,"unid_por_pedido":3.65},"PEREIRA":{"unidades":84,"facturacion":4101500,"pedidos":35,"unid_por_pedido":2.40},"VALLEDUPAR":{"unidades":84,"facturacion":3356833,"pedidos":31,"unid_por_pedido":2.71}},
+  tiendaDep: {"ANTIOQUIA":{"SHOPIFY":781,"LUCIDBOT":284,"CHATEA PRO":17},"ATLANTICO":{"SHOPIFY":328,"LUCIDBOT":111,"CHATEA PRO":3},"BOLIVAR":{"SHOPIFY":377,"LUCIDBOT":114,"CHATEA PRO":6},"CAUCA":{"SHOPIFY":191,"LUCIDBOT":41,"CHATEA PRO":1},"CORDOBA":{"SHOPIFY":230,"LUCIDBOT":68,"CHATEA PRO":1},"CUNDINAMARCA":{"SHOPIFY":1144,"LUCIDBOT":429,"CHATEA PRO":10},"META":{"SHOPIFY":187,"LUCIDBOT":59,"CHATEA PRO":1},"NARIÑO":{"SHOPIFY":239,"LUCIDBOT":95,"CHATEA PRO":1},"SANTANDER":{"SHOPIFY":259,"LUCIDBOT":71,"CHATEA PRO":2},"VALLE":{"SHOPIFY":633,"LUCIDBOT":178,"CHATEA PRO":9}},
+  depNov: {"CUNDINAMARCA":{"novedades":74,"solucionadas":74,"total_pedidos":535,"tasa_novedad":13.8,"tasa_sol":100.0},"ANTIOQUIA":{"novedades":37,"solucionadas":37,"total_pedidos":448,"tasa_novedad":8.3,"tasa_sol":100.0},"VALLE":{"novedades":24,"solucionadas":24,"total_pedidos":340,"tasa_novedad":7.1,"tasa_sol":100.0},"ATLANTICO":{"novedades":19,"solucionadas":19,"total_pedidos":169,"tasa_novedad":11.2,"tasa_sol":100.0},"BOLIVAR":{"novedades":12,"solucionadas":12,"total_pedidos":186,"tasa_novedad":6.5,"tasa_sol":100.0},"CORDOBA":{"novedades":12,"solucionadas":12,"total_pedidos":91,"tasa_novedad":13.2,"tasa_sol":100.0},"SANTANDER":{"novedades":8,"solucionadas":8,"total_pedidos":121,"tasa_novedad":6.6,"tasa_sol":100.0},"MAGDALENA":{"novedades":7,"solucionadas":7,"total_pedidos":79,"tasa_novedad":8.9,"tasa_sol":100.0},"CALDAS":{"novedades":5,"solucionadas":5,"total_pedidos":46,"tasa_novedad":10.9,"tasa_sol":100.0},"RISARALDA":{"novedades":5,"solucionadas":5,"total_pedidos":58,"tasa_novedad":8.6,"tasa_sol":100.0},"TOLIMA":{"novedades":5,"solucionadas":5,"total_pedidos":76,"tasa_novedad":6.6,"tasa_sol":100.0},"CESAR":{"novedades":4,"solucionadas":4,"total_pedidos":68,"tasa_novedad":5.9,"tasa_sol":100.0},"NARIÑO":{"novedades":4,"solucionadas":4,"total_pedidos":101,"tasa_novedad":4.0,"tasa_sol":100.0},"LA GUAJIRA":{"novedades":4,"solucionadas":4,"total_pedidos":52,"tasa_novedad":7.7,"tasa_sol":100.0},"HUILA":{"novedades":3,"solucionadas":3,"total_pedidos":71,"tasa_novedad":4.2,"tasa_sol":100.0}},
+  cityNov: {"BOGOTA":{"novedades":62,"solucionadas":62,"total_pedidos":372,"tasa_novedad":16.7,"tasa_sol":100.0},"MEDELLIN":{"novedades":17,"solucionadas":17,"total_pedidos":161,"tasa_novedad":10.6,"tasa_sol":100.0},"CALI":{"novedades":14,"solucionadas":14,"total_pedidos":170,"tasa_novedad":8.2,"tasa_sol":100.0},"CARTAGENA":{"novedades":12,"solucionadas":12,"total_pedidos":128,"tasa_novedad":9.4,"tasa_sol":100.0},"BARRANQUILLA":{"novedades":10,"solucionadas":10,"total_pedidos":112,"tasa_novedad":8.9,"tasa_sol":100.0},"BELLO":{"novedades":8,"solucionadas":8,"total_pedidos":27,"tasa_novedad":29.6,"tasa_sol":100.0},"MONTERIA":{"novedades":5,"solucionadas":5,"total_pedidos":34,"tasa_novedad":14.7,"tasa_sol":100.0},"SOLEDAD":{"novedades":4,"solucionadas":4,"total_pedidos":19,"tasa_novedad":21.1,"tasa_sol":100.0},"SANTA MARTA":{"novedades":4,"solucionadas":4,"total_pedidos":42,"tasa_novedad":9.5,"tasa_sol":100.0},"BUENAVENTURA":{"novedades":4,"solucionadas":4,"total_pedidos":38,"tasa_novedad":10.5,"tasa_sol":100.0},"BUCARAMANGA":{"novedades":3,"solucionadas":3,"total_pedidos":29,"tasa_novedad":10.3,"tasa_sol":100.0},"MANIZALES":{"novedades":3,"solucionadas":3,"total_pedidos":23,"tasa_novedad":13.0,"tasa_sol":100.0},"IBAGUE":{"novedades":3,"solucionadas":3,"total_pedidos":34,"tasa_novedad":8.8,"tasa_sol":100.0},"FLORENCIA":{"novedades":3,"solucionadas":3,"total_pedidos":19,"tasa_novedad":15.8,"tasa_sol":100.0},"ITAGUI":{"novedades":3,"solucionadas":3,"total_pedidos":12,"tasa_novedad":25.0,"tasa_sol":100.0}},
+  depTopNov: {"ANTIOQUIA":"No hay quien reciba","ATLANTICO":"DESTINATARIO SE REHUSA A RECIBIR","BOLIVAR":"COORDINAR LA ENTREGA","CORDOBA":"COORDINAR LA ENTREGA","CUNDINAMARCA":"DESTINATARIO SE REHUSA A RECIBIR","MAGDALENA":"COORDINAR LA ENTREGA","SANTANDER":"DESTINATARIO SE REHUSA A RECIBIR","VALLE":"No hay quien reciba"}
 };
 
 // ===================== COLORS =====================
@@ -822,6 +1058,680 @@ function buildAll() {
   });
   neHtml+='</tbody></table>';
   neEl.innerHTML=neHtml;
+}
+
+// ===================== GEOGRAFÍA =====================
+let chartGeoDep = null, chartGeoCity = null;
+
+function buildGeoCharts(mode) {
+  const depLbls  = mode === 'pedidos' ? Object.keys(DATA.topDep)  : Object.keys(DATA.factDep);
+  const depData  = mode === 'pedidos' ? Object.values(DATA.topDep) : Object.values(DATA.factDep);
+  const cityLbls = mode === 'pedidos' ? Object.keys(DATA.topCity)  : Object.keys(DATA.factCity);
+  const cityData = mode === 'pedidos' ? Object.values(DATA.topCity) : Object.values(DATA.factCity);
+  const fmtVal   = mode === 'pedidos' ? v => v.toLocaleString()+' ped.' : v => '$'+(v/1000000).toFixed(1)+'M';
+  const tickCb   = mode === 'pedidos' ? v => v.toLocaleString() : v => '$'+(v/1000000).toFixed(0)+'M';
+
+  document.getElementById('geoDepTitle').textContent  = mode === 'pedidos' ? 'Top 15 Departamentos — Pedidos' : 'Top 10 Departamentos — Facturación';
+  document.getElementById('geoCityTitle').textContent = mode === 'pedidos' ? 'Top 15 Ciudades — Pedidos'       : 'Top 10 Ciudades — Facturación';
+
+  if (chartGeoDep) chartGeoDep.destroy();
+  chartGeoDep = new Chart('chartGeoDep', {
+    type:'bar',
+    data:{ labels: depLbls, datasets:[{ data: depData, backgroundColor: depLbls.map((_,i)=>PALETTE[i%PALETTE.length]), borderRadius:6, borderSkipped:false }]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false}, datalabels:{ display:true, anchor:'end', align:'right', color:'#1e293b', font:{weight:'700',size:10}, formatter:fmtVal }},
+      scales:{ x:{ beginAtZero:true, ticks:{callback:tickCb} } } }
+  });
+
+  if (chartGeoCity) chartGeoCity.destroy();
+  chartGeoCity = new Chart('chartGeoCity', {
+    type:'bar',
+    data:{ labels: cityLbls, datasets:[{ data: cityData, backgroundColor: cityLbls.map((_,i)=>PALETTE[(i+2)%PALETTE.length]), borderRadius:6, borderSkipped:false }]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false}, datalabels:{ display:true, anchor:'end', align:'right', color:'#1e293b', font:{weight:'700',size:10}, formatter:fmtVal }},
+      scales:{ x:{ beginAtZero:true, ticks:{callback:tickCb} } } }
+  });
+}
+
+function switchGeoView(mode) {
+  document.getElementById('btnDepPedidos').classList.toggle('active', mode === 'pedidos');
+  document.getElementById('btnDepFact').classList.toggle('active', mode === 'facturacion');
+  buildGeoCharts(mode);
+}
+
+function buildGeoTable() {
+  const el = document.getElementById('tableGeoDep');
+  const allDeps = Object.keys(DATA.topDep);
+  const maxPed  = Math.max(...Object.values(DATA.topDep));
+  const totalPed = Object.values(DATA.topDep).reduce((a,b)=>a+b,0);
+  let h = '<table><thead><tr><th>#</th><th>Departamento</th><th>Pedidos</th><th>% del Total</th><th>Facturación</th></tr></thead><tbody>';
+  allDeps.forEach((dep,i) => {
+    const ped  = DATA.topDep[dep];
+    const pct  = (ped/totalPed*100).toFixed(1);
+    const fact = DATA.factDep[dep] ? fmtCOP(DATA.factDep[dep]) : '—';
+    const barW = Math.round(ped/maxPed*100);
+    const col  = i<3?'#4f46e5':i<6?'#0ea5e9':'#10b981';
+    h+=`<tr><td><strong>${i+1}</strong></td><td><strong>${dep}</strong></td><td>${ped.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div class="progress-bar" style="flex:1;min-width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:38px">${pct}%</span>
+      </div></td><td>${fact}</td></tr>`;
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+}
+
+document.addEventListener('DOMContentLoaded', () => { buildGeoCharts('pedidos'); buildGeoTable(); });
+
+// ===================== PEDIDOS GEO =====================
+let chartPedDep = null, chartPedCity = null, chartDepMes = null;
+
+function buildPedGeoCharts(mode) {
+  const deps   = Object.keys(DATA.depStats);
+  const cities = Object.keys(DATA.cityStats);
+
+  let depData, cityData, fmtDep, fmtCity, tickCb, maxVal;
+  const titles = {
+    pedidos:  ['Top 15 Departamentos — Pedidos',       'Top 15 Ciudades — Pedidos'],
+    despacho: ['Top 15 Departamentos — Tasa Despacho %','Top 15 Ciudades — Tasa Despacho %'],
+    entrega:  ['Top 15 Departamentos — Tasa Entrega %', 'Top 15 Ciudades — Tasa Entrega %']
+  };
+
+  if (mode === 'pedidos') {
+    depData  = deps.map(d => DATA.depStats[d].pedidos);
+    cityData = cities.map(c => DATA.cityStats[c].pedidos);
+    fmtDep   = v => v.toLocaleString() + ' ped.';
+    fmtCity  = v => v.toLocaleString() + ' ped.';
+    tickCb   = v => v.toLocaleString();
+  } else if (mode === 'despacho') {
+    depData  = deps.map(d => DATA.depStats[d].tasa_despacho);
+    cityData = cities.map(c => DATA.cityStats[c].tasa_despacho);
+    fmtDep   = v => v + '%';
+    fmtCity  = v => v + '%';
+    tickCb   = v => v + '%';
+  } else {
+    depData  = deps.map(d => DATA.depStats[d].tasa_entrega);
+    cityData = cities.map(c => DATA.cityStats[c].tasa_entrega);
+    fmtDep   = v => v + '%';
+    fmtCity  = v => v + '%';
+    tickCb   = v => v + '%';
+  }
+
+  const depColors  = depData.map(v => {
+    if (mode === 'pedidos') return PALETTE[deps.indexOf(deps.find((_,i)=>depData[i]===v)) % PALETTE.length];
+    return v >= 80 ? 'rgba(16,185,129,0.8)' : v >= 65 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.8)';
+  });
+  const cityColors = cityData.map(v => {
+    if (mode === 'pedidos') return PALETTE[cityData.indexOf(v) % PALETTE.length];
+    return v >= 80 ? 'rgba(16,185,129,0.8)' : v >= 65 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.8)';
+  });
+
+  document.getElementById('pedDepTitle').textContent  = titles[mode][0];
+  document.getElementById('pedCityTitle').textContent = titles[mode][1];
+  const maxX = mode === 'pedidos' ? undefined : 105;
+
+  if (chartPedDep) chartPedDep.destroy();
+  chartPedDep = new Chart('chartPedDep', {
+    type: 'bar',
+    data: { labels: deps, datasets: [{ data: depData, backgroundColor: mode==='pedidos' ? deps.map((_,i)=>PALETTE[i%PALETTE.length]) : depColors, borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtDep } },
+      scales: { x: { beginAtZero: true, max: maxX, ticks: { callback: tickCb } } } }
+  });
+
+  if (chartPedCity) chartPedCity.destroy();
+  chartPedCity = new Chart('chartPedCity', {
+    type: 'bar',
+    data: { labels: cities, datasets: [{ data: cityData, backgroundColor: mode==='pedidos' ? cities.map((_,i)=>PALETTE[(i+2)%PALETTE.length]) : cityColors, borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtCity } },
+      scales: { x: { beginAtZero: true, max: maxX, ticks: { callback: tickCb } } } }
+  });
+}
+
+function switchPedGeo(mode) {
+  ['pedidos','despacho','entrega'].forEach(m => {
+    const map = {pedidos:'btnPedDepPed', despacho:'btnPedDepDesp', entrega:'btnPedDepEnt'};
+    document.getElementById(map[m]).classList.toggle('active', m === mode);
+  });
+  buildPedGeoCharts(mode);
+}
+
+function buildDepMesChart() {
+  const deps = Object.keys(DATA.depMes);
+  if (chartDepMes) chartDepMes.destroy();
+  chartDepMes = new Chart('chartDepMes', {
+    type: 'bar',
+    data: {
+      labels: deps,
+      datasets: [
+        { label: 'Enero 2026', data: deps.map(d => DATA.depMes[d]['2026-01'] || 0), backgroundColor: COLORS.primary, borderRadius: 6, borderSkipped: false },
+        { label: 'Febrero 2026', data: deps.map(d => DATA.depMes[d]['2026-02'] || 0), backgroundColor: COLORS.secondary, borderRadius: 6, borderSkipped: false }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' }, datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: v => v > 0 ? v : '' } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } } } }
+  });
+}
+
+function buildPedDepTable() {
+  const el   = document.getElementById('tablePedDep');
+  const deps = Object.keys(DATA.depStats);
+  let h = '<table><thead><tr><th>#</th><th>Departamento</th><th>Pedidos</th><th>Despachados</th><th>Tasa Despacho</th><th>Entregados</th><th>Tasa Entrega</th></tr></thead><tbody>';
+  deps.forEach((dep, i) => {
+    const d  = DATA.depStats[dep];
+    const cd = d.tasa_despacho >= 80 ? '#10b981' : d.tasa_despacho >= 65 ? '#f59e0b' : '#ef4444';
+    const ce = d.tasa_entrega  >= 70 ? '#10b981' : d.tasa_entrega  >= 55 ? '#f59e0b' : '#ef4444';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${dep}</strong></td>
+      <td>${d.pedidos.toLocaleString()}</td>
+      <td>${d.despachados.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:${d.tasa_despacho}%;background:${cd}"></div></div>
+        <span style="font-weight:700;color:${cd}">${d.tasa_despacho}%</span></div></td>
+      <td>${d.entregados.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:${d.tasa_entrega}%;background:${ce}"></div></div>
+        <span style="font-weight:700;color:${ce}">${d.tasa_entrega}%</span></div></td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function buildPedCityTable() {
+  const el     = document.getElementById('tablePedCity');
+  const cities = Object.keys(DATA.cityStats);
+  let h = '<table><thead><tr><th>#</th><th>Ciudad</th><th>Pedidos</th><th>Despachados</th><th>Tasa Despacho</th><th>Entregados</th><th>Tasa Entrega</th></tr></thead><tbody>';
+  cities.forEach((city, i) => {
+    const d  = DATA.cityStats[city];
+    const cd = d.tasa_despacho >= 80 ? '#10b981' : d.tasa_despacho >= 65 ? '#f59e0b' : '#ef4444';
+    const ce = d.tasa_entrega  >= 70 ? '#10b981' : d.tasa_entrega  >= 55 ? '#f59e0b' : '#ef4444';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${city}</strong></td>
+      <td>${d.pedidos.toLocaleString()}</td>
+      <td>${d.despachados.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:${d.tasa_despacho}%;background:${cd}"></div></div>
+        <span style="font-weight:700;color:${cd}">${d.tasa_despacho}%</span></div></td>
+      <td>${d.entregados.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:70px;"><div class="progress-fill" style="width:${d.tasa_entrega}%;background:${ce}"></div></div>
+        <span style="font-weight:700;color:${ce}">${d.tasa_entrega}%</span></div></td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildPedGeoCharts('pedidos');
+  buildDepMesChart();
+  buildPedDepTable();
+  buildPedCityTable();
+  buildFactGeoCharts('facturacion');
+  buildFactDepMesChart();
+  buildFactDepTable();
+  buildFactCityTable();
+  buildProdGeoCharts('unidades');
+  buildTiendaDepChart();
+  buildProdDepTable();
+  buildProdCityTable();
+  buildNovGeoCharts('novedades');
+  buildDepTopNovCards();
+  buildNovDepTable();
+  buildNovCityTable();
+});
+
+// ===================== FACTURACIÓN GEO =====================
+let chartFactDep = null, chartFactCity = null, chartFactDepMes = null;
+
+function buildFactGeoCharts(mode) {
+  const deps   = Object.keys(DATA.depFact);
+  const cities = Object.keys(DATA.cityFact);
+
+  const titles = {
+    facturacion: ['Top 15 Departamentos — Facturación',    'Top 15 Ciudades — Facturación'],
+    flete:       ['Top 15 Departamentos — Costo de Flete', 'Top 15 Ciudades — Costo de Flete'],
+    ticket:      ['Top 15 Departamentos — Ticket Promedio','Top 15 Ciudades — Ticket Promedio'],
+    pct:         ['Top 15 Departamentos — % Flete/Fact.',  'Top 15 Ciudades — % Flete/Fact.']
+  };
+
+  let depData, cityData, fmtFn, tickCb, maxX;
+
+  if (mode === 'facturacion') {
+    depData  = deps.map(d => DATA.depFact[d].facturacion);
+    cityData = cities.map(c => DATA.cityFact[c].facturacion);
+    fmtFn    = v => '$' + (v/1000000).toFixed(1) + 'M';
+    tickCb   = v => '$' + (v/1000000).toFixed(0) + 'M';
+    maxX     = undefined;
+  } else if (mode === 'flete') {
+    depData  = deps.map(d => DATA.depFact[d].flete);
+    cityData = cities.map(c => DATA.cityFact[c].flete);
+    fmtFn    = v => '$' + (v/1000000).toFixed(1) + 'M';
+    tickCb   = v => '$' + (v/1000000).toFixed(0) + 'M';
+    maxX     = undefined;
+  } else if (mode === 'ticket') {
+    depData  = deps.map(d => DATA.depFact[d].ticket_prom);
+    cityData = cities.map(c => DATA.cityFact[c].ticket_prom);
+    fmtFn    = v => '$' + Math.round(v).toLocaleString();
+    tickCb   = v => '$' + (v/1000).toFixed(0) + 'K';
+    maxX     = undefined;
+  } else {
+    depData  = deps.map(d => DATA.depFact[d].flete_pct);
+    cityData = cities.map(c => DATA.cityFact[c].flete_pct);
+    fmtFn    = v => v + '%';
+    tickCb   = v => v + '%';
+    maxX     = 25;
+  }
+
+  const colorFn = (vals, i) => {
+    if (mode === 'pct') {
+      const v = vals[i];
+      return v <= 14 ? 'rgba(16,185,129,0.85)' : v <= 17 ? 'rgba(245,158,11,0.85)' : 'rgba(239,68,68,0.85)';
+    }
+    return PALETTE[i % PALETTE.length];
+  };
+
+  document.getElementById('factDepTitle').textContent  = titles[mode][0];
+  document.getElementById('factCityTitle').textContent = titles[mode][1];
+
+  if (chartFactDep) chartFactDep.destroy();
+  chartFactDep = new Chart('chartFactDep', {
+    type: 'bar',
+    data: { labels: deps, datasets: [{ data: depData, backgroundColor: depData.map((_,i) => colorFn(depData, i)), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtFn } },
+      scales: { x: { beginAtZero: true, max: maxX, ticks: { callback: tickCb } } } }
+  });
+
+  if (chartFactCity) chartFactCity.destroy();
+  chartFactCity = new Chart('chartFactCity', {
+    type: 'bar',
+    data: { labels: cities, datasets: [{ data: cityData, backgroundColor: cityData.map((_,i) => colorFn(cityData, i)), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtFn } },
+      scales: { x: { beginAtZero: true, max: maxX, ticks: { callback: tickCb } } } }
+  });
+}
+
+function switchFactGeo(mode) {
+  ['facturacion','flete','ticket','pct'].forEach(m => {
+    const map = { facturacion: 'btnFactGeoFact', flete: 'btnFactGeoFlete', ticket: 'btnFactGeoTicket', pct: 'btnFactGeoPct' };
+    document.getElementById(map[m]).classList.toggle('active', m === mode);
+  });
+  buildFactGeoCharts(mode);
+}
+
+function buildFactDepMesChart() {
+  const deps = Object.keys(DATA.depFactMes);
+  if (chartFactDepMes) chartFactDepMes.destroy();
+  chartFactDepMes = new Chart('chartFactDepMes', {
+    type: 'bar',
+    data: {
+      labels: deps,
+      datasets: [
+        { label: 'Enero 2026',   data: deps.map(d => DATA.depFactMes[d]['2026-01'] || 0), backgroundColor: COLORS.success,  borderRadius: 6, borderSkipped: false },
+        { label: 'Febrero 2026', data: deps.map(d => DATA.depFactMes[d]['2026-02'] || 0), backgroundColor: COLORS.primary, borderRadius: 6, borderSkipped: false }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' },
+        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b', font: { weight: '700', size: 10 },
+          formatter: v => v > 0 ? '$' + (v/1000000).toFixed(1) + 'M' : '' } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + (v/1000000).toFixed(0) + 'M' } } } }
+  });
+}
+
+function buildFactDepTable() {
+  const el   = document.getElementById('tableFactDep');
+  const deps = Object.keys(DATA.depFact);
+  const maxF = DATA.depFact[deps[0]].facturacion;
+  let h = '<table><thead><tr><th>#</th><th>Departamento</th><th>Facturación</th><th>Participación</th><th>Costo Flete</th><th>% Flete</th><th>Ticket Prom.</th></tr></thead><tbody>';
+  const totalFact = deps.reduce((a,d) => a + DATA.depFact[d].facturacion, 0);
+  deps.forEach((dep, i) => {
+    const d   = DATA.depFact[dep];
+    const pct = (d.facturacion / totalFact * 100).toFixed(1);
+    const barW = Math.round(d.facturacion / maxF * 100);
+    const col  = i < 3 ? '#4f46e5' : i < 6 ? '#0ea5e9' : '#10b981';
+    const fleCol = d.flete_pct <= 14 ? '#10b981' : d.flete_pct <= 17 ? '#f59e0b' : '#ef4444';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${dep}</strong></td>
+      <td><strong>${fmtCOP(d.facturacion)}</strong></td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:36px">${pct}%</span></div></td>
+      <td>${fmtCOP(d.flete)}</td>
+      <td><span style="font-weight:700;color:${fleCol}">${d.flete_pct}%</span></td>
+      <td>$${Math.round(d.ticket_prom).toLocaleString()}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function buildFactCityTable() {
+  const el     = document.getElementById('tableFactCity');
+  const cities = Object.keys(DATA.cityFact);
+  const maxF   = DATA.cityFact[cities[0]].facturacion;
+  const totalFact = cities.reduce((a,c) => a + DATA.cityFact[c].facturacion, 0);
+  let h = '<table><thead><tr><th>#</th><th>Ciudad</th><th>Facturación</th><th>Participación</th><th>Costo Flete</th><th>% Flete</th><th>Ticket Prom.</th></tr></thead><tbody>';
+  cities.forEach((city, i) => {
+    const d   = DATA.cityFact[city];
+    const pct = (d.facturacion / totalFact * 100).toFixed(1);
+    const barW = Math.round(d.facturacion / maxF * 100);
+    const col  = i < 3 ? '#4f46e5' : i < 6 ? '#0ea5e9' : '#10b981';
+    const fleCol = d.flete_pct <= 14 ? '#10b981' : d.flete_pct <= 17 ? '#f59e0b' : '#ef4444';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${city}</strong></td>
+      <td><strong>${fmtCOP(d.facturacion)}</strong></td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:36px">${pct}%</span></div></td>
+      <td>${fmtCOP(d.flete)}</td>
+      <td><span style="font-weight:700;color:${fleCol}">${d.flete_pct}%</span></td>
+      <td>$${Math.round(d.ticket_prom).toLocaleString()}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+// ===================== PRODUCTOS GEO =====================
+let chartProdDep = null, chartProdCity = null, chartTiendaDep = null;
+
+function buildProdGeoCharts(mode) {
+  const deps   = Object.keys(DATA.depProd);
+  const cities = Object.keys(DATA.cityProd);
+
+  const titles = {
+    unidades:    ['Top 15 Departamentos — Unidades Vendidas', 'Top 15 Ciudades — Unidades Vendidas'],
+    facturacion: ['Top 15 Departamentos — Facturación',       'Top 15 Ciudades — Facturación'],
+    uxp:         ['Top 15 Departamentos — Unidades por Pedido','Top 15 Ciudades — Unidades por Pedido']
+  };
+
+  let depData, cityData, fmtFn, tickCb;
+  if (mode === 'unidades') {
+    depData  = deps.map(d => DATA.depProd[d].unidades);
+    cityData = cities.map(c => DATA.cityProd[c].unidades);
+    fmtFn    = v => v.toLocaleString() + ' u';
+    tickCb   = v => v.toLocaleString();
+  } else if (mode === 'facturacion') {
+    depData  = deps.map(d => DATA.depProd[d].facturacion);
+    cityData = cities.map(c => DATA.cityProd[c].facturacion);
+    fmtFn    = v => '$' + (v/1000000).toFixed(1) + 'M';
+    tickCb   = v => '$' + (v/1000000).toFixed(0) + 'M';
+  } else {
+    depData  = deps.map(d => DATA.depProd[d].unid_por_pedido);
+    cityData = cities.map(c => DATA.cityProd[c].unid_por_pedido);
+    fmtFn    = v => v + ' u/p';
+    tickCb   = v => v;
+  }
+
+  document.getElementById('prodDepTitle').textContent  = titles[mode][0];
+  document.getElementById('prodCityTitle').textContent = titles[mode][1];
+
+  if (chartProdDep) chartProdDep.destroy();
+  chartProdDep = new Chart('chartProdDep', {
+    type: 'bar',
+    data: { labels: deps, datasets: [{ data: depData, backgroundColor: deps.map((_,i) => PALETTE[i % PALETTE.length]), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtFn } },
+      scales: { x: { beginAtZero: true, ticks: { callback: tickCb } } } }
+  });
+
+  if (chartProdCity) chartProdCity.destroy();
+  chartProdCity = new Chart('chartProdCity', {
+    type: 'bar',
+    data: { labels: cities, datasets: [{ data: cityData, backgroundColor: cities.map((_,i) => PALETTE[(i+2) % PALETTE.length]), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtFn } },
+      scales: { x: { beginAtZero: true, ticks: { callback: tickCb } } } }
+  });
+}
+
+function switchProdGeo(mode) {
+  ['unidades','facturacion','uxp'].forEach(m => {
+    const map = { unidades: 'btnProdGeoUnid', facturacion: 'btnProdGeoFact', uxp: 'btnProdGeoUxP' };
+    document.getElementById(map[m]).classList.toggle('active', m === mode);
+  });
+  buildProdGeoCharts(mode);
+}
+
+function buildTiendaDepChart() {
+  const deps   = Object.keys(DATA.tiendaDep);
+  const tiendas = ['SHOPIFY', 'LUCIDBOT', 'CHATEA PRO'];
+  const tColors = [COLORS.primary, COLORS.purple, COLORS.secondary];
+  if (chartTiendaDep) chartTiendaDep.destroy();
+  chartTiendaDep = new Chart('chartTiendaDep', {
+    type: 'bar',
+    data: {
+      labels: deps,
+      datasets: tiendas.map((t, i) => ({
+        label: t,
+        data: deps.map(d => DATA.tiendaDep[d][t] || 0),
+        backgroundColor: tColors[i],
+        borderRadius: 4,
+        borderSkipped: false,
+        stack: 'a'
+      }))
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' },
+        datalabels: { display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 20,
+          color: '#fff', font: { weight: '700', size: 10 },
+          formatter: (v, ctx) => {
+            const dep = deps[ctx.dataIndex];
+            const total = tiendas.reduce((a,t2) => a + (DATA.tiendaDep[dep][t2] || 0), 0);
+            return Math.round(v / total * 100) + '%';
+          }
+        }
+      },
+      scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => v.toLocaleString() } } } }
+  });
+}
+
+function buildProdDepTable() {
+  const el   = document.getElementById('tableProdDep');
+  const deps = Object.keys(DATA.depProd);
+  const maxU = DATA.depProd[deps[0]].unidades;
+  const totalU = deps.reduce((a, d) => a + DATA.depProd[d].unidades, 0);
+  let h = '<table><thead><tr><th>#</th><th>Departamento</th><th>Unidades</th><th>Participación</th><th>Facturación</th><th>Pedidos</th><th>Unid/Pedido</th></tr></thead><tbody>';
+  deps.forEach((dep, i) => {
+    const d   = DATA.depProd[dep];
+    const pct = (d.unidades / totalU * 100).toFixed(1);
+    const barW = Math.round(d.unidades / maxU * 100);
+    const col  = i < 3 ? '#4f46e5' : i < 6 ? '#0ea5e9' : '#10b981';
+    const uxpCol = d.unid_por_pedido >= 3 ? '#10b981' : d.unid_por_pedido >= 2.5 ? '#f59e0b' : '#64748b';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${dep}</strong></td>
+      <td>${d.unidades.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:36px">${pct}%</span></div></td>
+      <td>${fmtCOP(d.facturacion)}</td>
+      <td>${d.pedidos.toLocaleString()}</td>
+      <td><span style="font-weight:700;color:${uxpCol}">${d.unid_por_pedido}</span></td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function buildProdCityTable() {
+  const el     = document.getElementById('tableProdCity');
+  const cities = Object.keys(DATA.cityProd);
+  const maxU   = DATA.cityProd[cities[0]].unidades;
+  const totalU = cities.reduce((a, c) => a + DATA.cityProd[c].unidades, 0);
+  let h = '<table><thead><tr><th>#</th><th>Ciudad</th><th>Unidades</th><th>Participación</th><th>Facturación</th><th>Pedidos</th><th>Unid/Pedido</th></tr></thead><tbody>';
+  cities.forEach((city, i) => {
+    const d   = DATA.cityProd[city];
+    const pct = (d.unidades / totalU * 100).toFixed(1);
+    const barW = Math.round(d.unidades / maxU * 100);
+    const col  = i < 3 ? '#4f46e5' : i < 6 ? '#0ea5e9' : '#10b981';
+    const uxpCol = d.unid_por_pedido >= 3 ? '#10b981' : d.unid_por_pedido >= 2.5 ? '#f59e0b' : '#64748b';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${city}</strong></td>
+      <td>${d.unidades.toLocaleString()}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:36px">${pct}%</span></div></td>
+      <td>${fmtCOP(d.facturacion)}</td>
+      <td>${d.pedidos.toLocaleString()}</td>
+      <td><span style="font-weight:700;color:${uxpCol}">${d.unid_por_pedido}</span></td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+// ===================== NOVEDADES GEO =====================
+let chartNovDep = null, chartNovCity = null;
+
+function buildNovGeoCharts(mode) {
+  const deps   = Object.keys(DATA.depNov);
+  const cities = Object.keys(DATA.cityNov);
+
+  const titles = {
+    novedades: ['Top 15 Departamentos — Total Novedades',    'Top 15 Ciudades — Total Novedades'],
+    tasa:      ['Top 15 Departamentos — Tasa de Novedad %',  'Top 15 Ciudades — Tasa de Novedad %']
+  };
+
+  let depData, cityData, fmtFn, tickCb, maxX;
+
+  if (mode === 'novedades') {
+    depData  = deps.map(d => DATA.depNov[d].novedades);
+    cityData = cities.map(c => DATA.cityNov[c].novedades);
+    fmtFn    = v => v + ' nov.';
+    tickCb   = v => v.toLocaleString();
+    maxX     = undefined;
+  } else {
+    depData  = deps.map(d => DATA.depNov[d].tasa_novedad);
+    cityData = cities.map(c => DATA.cityNov[c].tasa_novedad);
+    fmtFn    = v => v + '%';
+    tickCb   = v => v + '%';
+    maxX     = 35;
+  }
+
+  const colorFn = (v, mode) => {
+    if (mode === 'tasa') return v >= 15 ? 'rgba(239,68,68,0.85)' : v >= 10 ? 'rgba(245,158,11,0.85)' : 'rgba(16,185,129,0.85)';
+    return null;
+  };
+
+  document.getElementById('novDepTitle').textContent  = titles[mode][0];
+  document.getElementById('novCityTitle').textContent = titles[mode][1];
+
+  if (chartNovDep) chartNovDep.destroy();
+  chartNovDep = new Chart('chartNovDep', {
+    type: 'bar',
+    data: { labels: deps, datasets: [{ data: depData, backgroundColor: mode === 'novedades' ? deps.map((_,i) => PALETTE[i % PALETTE.length]) : depData.map(v => colorFn(v, mode)), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtFn } },
+      scales: { x: { beginAtZero: true, max: maxX, ticks: { callback: tickCb } } } }
+  });
+
+  if (chartNovCity) chartNovCity.destroy();
+  chartNovCity = new Chart('chartNovCity', {
+    type: 'bar',
+    data: { labels: cities, datasets: [{ data: cityData, backgroundColor: mode === 'novedades' ? cities.map((_,i) => PALETTE[(i+3) % PALETTE.length]) : cityData.map(v => colorFn(v, mode)), borderRadius: 6, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b', font: { weight: '700', size: 10 }, formatter: fmtFn } },
+      scales: { x: { beginAtZero: true, max: maxX, ticks: { callback: tickCb } } } }
+  });
+}
+
+function switchNovGeo(mode) {
+  ['novedades','tasa'].forEach(m => {
+    const map = { novedades: 'btnNovGeoCnt', tasa: 'btnNovGeoTasa' };
+    document.getElementById(map[m]).classList.toggle('active', m === mode);
+  });
+  buildNovGeoCharts(mode);
+}
+
+function buildDepTopNovCards() {
+  const el   = document.getElementById('depTopNovContainer');
+  const deps = Object.keys(DATA.depTopNov);
+  const novColors = {
+    'DESTINATARIO SE REHUSA A RECIBIR': '#ef4444',
+    'No hay quien reciba':              '#f59e0b',
+    'COORDINAR LA ENTREGA':             '#0ea5e9'
+  };
+  let h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:4px 0;">';
+  deps.forEach(dep => {
+    const nov  = DATA.depTopNov[dep];
+    const col  = novColors[nov] || '#8b5cf6';
+    const cnt  = DATA.depNov[dep] ? DATA.depNov[dep].novedades : '—';
+    h += `<div style="background:#f8faff;border:1px solid #e2e8f0;border-left:4px solid ${col};border-radius:10px;padding:14px 16px;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px;">${dep}</div>
+      <div style="font-size:0.82rem;font-weight:700;color:${col};line-height:1.3;margin-bottom:6px;">${nov}</div>
+      <div style="font-size:0.75rem;color:#94a3b8;">${cnt} novedades totales · tasa ${DATA.depNov[dep]?DATA.depNov[dep].tasa_novedad:'—'}%</div>
+    </div>`;
+  });
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function buildNovDepTable() {
+  const el   = document.getElementById('tableNovDep');
+  const deps = Object.keys(DATA.depNov);
+  const maxN = DATA.depNov[deps[0]].novedades;
+  let h = '<table><thead><tr><th>#</th><th>Departamento</th><th>Novedades</th><th>Participación</th><th>Total Pedidos</th><th>Tasa Novedad</th><th>Solucionadas</th></tr></thead><tbody>';
+  const totalNov = deps.reduce((a,d) => a + DATA.depNov[d].novedades, 0);
+  deps.forEach((dep, i) => {
+    const d   = DATA.depNov[dep];
+    const pct = (d.novedades / totalNov * 100).toFixed(1);
+    const barW = Math.round(d.novedades / maxN * 100);
+    const col  = i < 3 ? '#ef4444' : i < 6 ? '#f59e0b' : '#10b981';
+    const tasaCol = d.tasa_novedad >= 15 ? '#ef4444' : d.tasa_novedad >= 10 ? '#f59e0b' : '#10b981';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${dep}</strong></td>
+      <td>${d.novedades}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:36px">${pct}%</span></div></td>
+      <td>${d.total_pedidos.toLocaleString()}</td>
+      <td><span style="font-weight:700;color:${tasaCol}">${d.tasa_novedad}%</span></td>
+      <td><span class="pill pill-green">${d.solucionadas} (${d.tasa_sol}%)</span></td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function buildNovCityTable() {
+  const el     = document.getElementById('tableNovCity');
+  const cities = Object.keys(DATA.cityNov);
+  const maxN   = DATA.cityNov[cities[0]].novedades;
+  const totalNov = cities.reduce((a,c) => a + DATA.cityNov[c].novedades, 0);
+  let h = '<table><thead><tr><th>#</th><th>Ciudad</th><th>Novedades</th><th>Participación</th><th>Total Pedidos</th><th>Tasa Novedad</th><th>Solucionadas</th></tr></thead><tbody>';
+  cities.forEach((city, i) => {
+    const d   = DATA.cityNov[city];
+    const pct = (d.novedades / totalNov * 100).toFixed(1);
+    const barW = Math.round(d.novedades / maxN * 100);
+    const col  = i < 3 ? '#ef4444' : i < 6 ? '#f59e0b' : '#10b981';
+    const tasaCol = d.tasa_novedad >= 20 ? '#ef4444' : d.tasa_novedad >= 12 ? '#f59e0b' : '#10b981';
+    h += `<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${city}</strong></td>
+      <td>${d.novedades}</td>
+      <td><div style="display:flex;align-items:center;gap:6px;">
+        <div class="progress-bar" style="width:80px;"><div class="progress-fill" style="width:${barW}%;background:${col}"></div></div>
+        <span style="font-weight:700;min-width:36px">${pct}%</span></div></td>
+      <td>${d.total_pedidos.toLocaleString()}</td>
+      <td><span style="font-weight:700;color:${tasaCol}">${d.tasa_novedad}%</span></td>
+      <td><span class="pill pill-green">${d.solucionadas} (${d.tasa_sol}%)</span></td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
 }
 
 // ===================== TAB LOGIC =====================
