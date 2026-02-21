@@ -144,7 +144,7 @@
   <p>Análisis integral de operaciones logísticas y ventas</p>
   <div class="header-badges">
     <span class="badge">📅 Enero — Febrero 2026</span>
-    <span class="badge">🔄 Corte de data: 19 Feb 2026</span>
+    <span class="badge">🔄 Corte de data: 20 Feb 2026</span>
     <span class="badge">📦 2,923 Pedidos Únicos</span>
     <span class="badge">🚚 7 Transportadoras</span>
     <span class="badge">🏪 3 Tipos de Tienda</span>
@@ -155,6 +155,8 @@
 <nav class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="showTab('resumen')"><span class="tab-icon">📊</span>Resumen</button>
+    <button class="tab-btn" onclick="showTab('inventario')"><span class="tab-icon">🏭</span>Inventario Corte</button>
+    <button class="tab-btn" onclick="showTab('confirmaciones')"><span class="tab-icon">✅</span>Confirmaciones</button>
     <button class="tab-btn" onclick="showTab('pedidos')"><span class="tab-icon">📦</span>Pedidos & Despacho</button>
     <button class="tab-btn" onclick="showTab('facturacion')"><span class="tab-icon">💰</span>Facturación & Flete</button>
     <button class="tab-btn" onclick="showTab('productos')"><span class="tab-icon">🛒</span>Productos & Tiendas</button>
@@ -172,33 +174,33 @@
   <div class="stat-grid">
     <div class="stat-card blue">
       <div class="stat-label">Total Pedidos Únicos</div>
-      <div class="stat-value">2,923</div>
-      <div class="stat-sub">Ene: 1,081 · Feb: 1,842</div>
+      <div class="stat-value">3,064</div>
+      <div class="stat-sub">Ene: 1,081 · Feb: 1,983</div>
     </div>
     <div class="stat-card green">
       <div class="stat-label">Facturación Total</div>
-      <div class="stat-value">$319.7M</div>
-      <div class="stat-sub">Ene: $138.8M · Feb: $180.8M</div>
+      <div class="stat-value">$342.3M</div>
+      <div class="stat-sub">Ene: $139.6M · Feb: $202.7M</div>
     </div>
     <div class="stat-card orange">
       <div class="stat-label">Total Costo de Fletes</div>
-      <div class="stat-value">$50.9M</div>
-      <div class="stat-sub">Ene: $19.5M · Feb: $31.4M</div>
+      <div class="stat-value">$54.8M</div>
+      <div class="stat-sub">Ene: $19.6M · Feb: $35.2M</div>
     </div>
     <div class="stat-card sky">
       <div class="stat-label">Tasa Entrega Global</div>
-      <div class="stat-value">65.2%</div>
-      <div class="stat-sub">1,906 pedidos entregados</div>
+      <div class="stat-value">64.1%</div>
+      <div class="stat-sub">1,963 pedidos entregados</div>
     </div>
     <div class="stat-card purple">
       <div class="stat-label">Tiempo Prom. Guía</div>
-      <div class="stat-value">0.68 días</div>
-      <div class="stat-sub">Ene: 0.89d · Feb: 0.46d</div>
+      <div class="stat-value">0.57 días</div>
+      <div class="stat-sub">Ene: 0.89d · Feb: 0.43d</div>
     </div>
     <div class="stat-card red">
       <div class="stat-label">Novedades Activas</div>
-      <div class="stat-value">238</div>
-      <div class="stat-sub">365 solucionadas · 59 sin resolver</div>
+      <div class="stat-value">243</div>
+      <div class="stat-sub">374 solucionadas · 65 sin resolver</div>
     </div>
   </div>
 
@@ -229,7 +231,7 @@
     </div>
     <div class="stat-card sky">
       <div class="stat-label">Total Ciudades</div>
-      <div class="stat-value">488</div>
+      <div class="stat-value">501</div>
       <div class="stat-sub">ciudades destino</div>
     </div>
     <div class="stat-card purple">
@@ -272,6 +274,199 @@
 </div>
 
 <!-- ========= PEDIDOS ========= -->
+
+<div id="tab-inventario" class="tab-pane">
+  <div class="section-title">🏭 Inventario Corte — Estado de Stock</div>
+
+  <!-- KPI Cards -->
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:24px;">
+    <div class="stat-card">
+      <div class="stat-label">Total Productos</div>
+      <div class="stat-value" id="invTotalProd">—</div>
+      <div class="stat-sub">SKUs registrados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Unidades</div>
+      <div class="stat-value" id="invTotalStock">—</div>
+      <div class="stat-sub">Unidades en inventario</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Valor Total Inventario</div>
+      <div class="stat-value" id="invTotalValor">—</div>
+      <div class="stat-sub">Stock × Precio</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Productos Sin Stock</div>
+      <div class="stat-value" id="invSinStock">—</div>
+      <div class="stat-sub" style="color:var(--danger)">Stock = 0</div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+    <input id="invSearch" type="text" placeholder="🔍 Buscar por código o nombre..." 
+      oninput="filterInventario()"
+      style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;outline:none;">
+    <select id="invFiltroStock" onchange="filterInventario()"
+      style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;background:#fff;cursor:pointer;">
+      <option value="todos">Todos los estados</option>
+      <option value="ok">🟢 Stock OK (>10)</option>
+      <option value="bajo">🟡 Stock Bajo (1-10)</option>
+      <option value="agotado">🔴 Agotado (0)</option>
+    </select>
+    <div style="font-size:0.82rem;color:var(--text-muted);padding:8px 0;" id="invContador"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="invTable">
+      <thead>
+        <tr>
+          <th style="width:110px;cursor:pointer;" onclick="sortInventario('codigo')">CÓDIGO <span id="sortCodigo">↕</span></th>
+          <th style="cursor:pointer;" onclick="sortInventario('nombre')">NOMBRE <span id="sortNombre">↕</span></th>
+          <th style="width:80px;text-align:center;cursor:pointer;" onclick="sortInventario('stock')">STOCK <span id="sortStock">↕</span></th>
+          <th style="width:110px;text-align:right;cursor:pointer;" onclick="sortInventario('precio')">PRECIO <span id="sortPrecio">↕</span></th>
+          <th style="width:140px;text-align:right;cursor:pointer;" onclick="sortInventario('total')">PRECIO TOTAL <span id="sortTotal">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="invBody"></tbody>
+      <tfoot>
+        <tr style="background:var(--primary-light);font-weight:700;border-top:2px solid var(--primary);">
+          <td colspan="2" style="padding:12px 16px;font-size:0.9rem;">TOTALES</td>
+          <td style="text-align:center;padding:12px 8px;" id="footStock">—</td>
+          <td style="text-align:right;padding:12px 16px;"></td>
+          <td style="text-align:right;padding:12px 16px;" id="footTotal">—</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div style="margin-top:12px;font-size:0.78rem;color:var(--text-muted);">
+    💡 Indicador de stock: 🟢 &gt;10 unidades &nbsp;|&nbsp; 🟡 1–10 unidades &nbsp;|&nbsp; 🔴 Sin stock (0)
+  </div>
+</div>
+
+
+<div id="tab-confirmaciones" class="tab-pane">
+  <div class="section-title">✅ Confirmaciones — Pendiente Confirmación por Transportadora y Día</div>
+  <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:20px;">
+    <strong>% Pendiente Confirmación</strong> = registros con estatus <em>PENDIENTE CONFIRMACION</em> ÷ total de registros del día/transportadora × 100.
+    Un valor alto indica órdenes que aún no han sido confirmadas/procesadas por la transportadora.
+  </p>
+
+  <!-- KPI Cards -->
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:24px;">
+    <div class="stat-card">
+      <div class="stat-label">Total Pendientes Global</div>
+      <div class="stat-value">140</div>
+      <div class="stat-sub">De 3,140 registros totales</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">% Confirmación Enero</div>
+      <div class="stat-value" style="color:var(--success)">0.0%</div>
+      <div class="stat-sub">0 pendientes de 1,085</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">% Confirmación Febrero</div>
+      <div class="stat-value" style="color:var(--warning)">6.8%</div>
+      <div class="stat-sub">140 pendientes de 2,055</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Día Pico</div>
+      <div class="stat-value" style="color:var(--danger)">48.3%</div>
+      <div class="stat-sub">Feb 17 · 14 de 29 registros</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Transportadora Mayor Pend.</div>
+      <div class="stat-value" style="font-size:1rem;padding-top:8px">TCC</div>
+      <div class="stat-sub">11.1% (2 de 18)</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Transportadora Menor Pend.</div>
+      <div class="stat-value" style="font-size:1rem;padding-top:8px">JAMV-DRIVE</div>
+      <div class="stat-sub">1.1% (1 de 91)</div>
+    </div>
+  </div>
+
+  <!-- Filtro mes -->
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:0.83rem;font-weight:600;color:var(--text-muted);">Ver mes:</span>
+    <button class="month-btn active" id="btnConfEne" onclick="switchConfMes('2026-01')">Enero 2026</button>
+    <button class="month-btn" id="btnConfFeb" onclick="switchConfMes('2026-02')">Febrero 2026</button>
+    <button class="month-btn" id="btnConfAll" onclick="switchConfMes('todos')">Ambos</button>
+  </div>
+
+  <!-- Gráficos top row -->
+  <div class="chart-grid" style="margin-bottom:24px;">
+    <div class="chart-card full">
+      <div class="chart-title">% Pendiente Confirmación por Día — Total</div>
+      <div class="chart-subtitle">Porcentaje diario sobre el total de registros de ese día</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="chartConfDiaTotal"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-grid" style="margin-bottom:24px;">
+    <div class="chart-card">
+      <div class="chart-title">% Pendiente Confirmación por Transportadora</div>
+      <div class="chart-subtitle">Acumulado global del período</div>
+      <div class="chart-wrap"><canvas id="chartConfTrans"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">% por Día y Transportadora</div>
+      <div class="chart-subtitle">Líneas por transportadora — mes seleccionado</div>
+      <div class="chart-wrap"><canvas id="chartConfDiaTrans"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Tabla detalle por día -->
+  <div class="section-title" style="margin-top:8px;">📋 Detalle Diario por Transportadora</div>
+  <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <input id="confSearch" type="text" placeholder="🔍 Filtrar por fecha..." oninput="filterConfTable()"
+      style="flex:1;min-width:180px;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;outline:none;">
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:6px;cursor:pointer;">
+      <input type="checkbox" id="confSoloPend" onchange="filterConfTable()" style="width:16px;height:16px;cursor:pointer;">
+      Solo días con pendientes
+    </label>
+    <div id="confTableInfo" style="font-size:0.81rem;color:var(--text-muted);"></div>
+  </div>
+  <div class="table-wrap">
+    <table id="confTable" style="font-size:0.82rem;">
+      <thead>
+        <tr>
+          <th style="width:110px">FECHA</th>
+          <th style="text-align:center;width:80px">TOTAL</th>
+          <th style="text-align:center;width:80px">PEND.</th>
+          <th style="text-align:center;width:80px">% GLOBAL</th>
+          <th style="text-align:center">ENVIA</th>
+          <th style="text-align:center">VELOCES</th>
+          <th style="text-align:center">INTERRAPIDISIMO</th>
+          <th style="text-align:center">COORDINADORA</th>
+          <th style="text-align:center">JAMV-DRIVE</th>
+          <th style="text-align:center">TCC</th>
+        </tr>
+      </thead>
+      <tbody id="confBody"></tbody>
+      <tfoot>
+        <tr style="background:var(--primary-light);font-weight:700;border-top:2px solid var(--primary);">
+          <td style="padding:10px 16px">TOTAL PERÍODO</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootTotal">—</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootPend">—</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootPct">—</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootEnvia">4.0%</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootVeloces">3.2%</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootInter">6.2%</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootCoord">7.3%</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootJamv">1.1%</td>
+          <td style="text-align:center;padding:10px 8px" id="confFootTcc">11.1%</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <div style="margin-top:10px;font-size:0.78rem;color:var(--text-muted);">
+    💡 <strong>Verde</strong>: 0% pendiente &nbsp;|&nbsp; <strong>Amarillo</strong>: 1–15% &nbsp;|&nbsp; <strong>Rojo</strong>: &gt;15% &nbsp;|&nbsp; <strong>—</strong>: sin registros ese día
+  </div>
+</div>
+
 <div id="tab-pedidos" class="tab-pane">
   <div class="section-title">📦 Pedidos Generados & Tasa de Despacho</div>
 
@@ -364,22 +559,22 @@
   <div class="stat-grid">
     <div class="stat-card green">
       <div class="stat-label">Facturación Enero</div>
-      <div class="stat-value" style="font-size:1.4rem">$138,824,590</div>
-      <div class="stat-sub">Promedio por pedido: $128,422</div>
+      <div class="stat-value" style="font-size:1.4rem">$139,613,042</div>
+      <div class="stat-sub">Promedio por pedido: $129,151</div>
     </div>
     <div class="stat-card green">
       <div class="stat-label">Facturación Febrero</div>
-      <div class="stat-value" style="font-size:1.4rem">$180,839,007</div>
-      <div class="stat-sub">Promedio por pedido: $98,175</div>
+      <div class="stat-value" style="font-size:1.4rem">$202,670,964</div>
+      <div class="stat-sub">Promedio por pedido: $102,202</div>
     </div>
     <div class="stat-card orange">
       <div class="stat-label">Flete Enero</div>
-      <div class="stat-value" style="font-size:1.4rem">$19,473,454</div>
+      <div class="stat-value" style="font-size:1.4rem">$19,555,449</div>
       <div class="stat-sub">% sobre facturación: 14.0%</div>
     </div>
     <div class="stat-card orange">
       <div class="stat-label">Flete Febrero</div>
-      <div class="stat-value" style="font-size:1.4rem">$31,436,463</div>
+      <div class="stat-value" style="font-size:1.4rem">$35,210,777</div>
       <div class="stat-sub">% sobre facturación: 17.4%</div>
     </div>
   </div>
@@ -598,7 +793,7 @@
     <div class="alert-icon">ℹ️</div>
     <div class="alert-text">
       <strong>Filtro aplicado</strong>
-      Se excluyen: (1) novedades marcadas como NO solucionadas, (2) pedidos con estatus ENTREGADO. El análisis de novedades activas comprende 238 registros.
+      Se excluyen: (1) novedades marcadas como NO solucionadas, (2) pedidos con estatus ENTREGADO. El análisis de novedades activas comprende 243 registros.
     </div>
   </div>
 
@@ -610,18 +805,18 @@
     </div>
     <div class="stat-card red">
       <div class="stat-label">No Solucionadas</div>
-      <div class="stat-value">59</div>
+      <div class="stat-value">65</div>
       <div class="stat-sub">Pendientes de resolución</div>
     </div>
     <div class="stat-card green">
       <div class="stat-label">Solucionadas</div>
-      <div class="stat-value">365</div>
+      <div class="stat-value">374</div>
       <div class="stat-sub">FUE SOLUCIONADA = SI</div>
     </div>
     <div class="stat-card blue">
       <div class="stat-label">Sol. → Entregado</div>
-      <div class="stat-value">127</div>
-      <div class="stat-sub">34.7% de las solucionadas llegaron</div>
+      <div class="stat-value">131</div>
+      <div class="stat-sub">35.0% de las solucionadas llegaron</div>
     </div>
   </div>
 
@@ -697,7 +892,7 @@
 </div><!-- /main -->
 
 <div class="footer">
-  Dashboard generado automáticamente · Datos: ordenes_productos_20260220_044840.xlsx · Período: Enero–Febrero 2026
+  Dashboard generado automáticamente · Datos: ordenes_productos_20260221_050908.xlsx · Período: Enero–Febrero 2026
 </div>
 
 <script>
@@ -705,50 +900,50 @@
 const DATA = {
   meses: ["2026-01", "2026-02"],
   mesesLabel: ["Enero 2026", "Febrero 2026"],
-  pedidosMes: {"2026-01": 1081, "2026-02": 1842},
-  facturacionMes: {"2026-01": 138824590, "2026-02": 180839007},
-  fleteMes: {"2026-01": 19473454, "2026-02": 31436463},
-  tiempoGuiaMes: {"2026-01": 0.89, "2026-02": 0.46},
-  tiempoGuiaTrans: {"COORDINADORA": 0.57, "ENVIA": 0.56, "INTERRAPIDISIMO": 0.70, "JAMV-DRIVE": 1.02, "TCC": 0.55, "VELOCES": 0.62},
+  pedidosMes: {"2026-01": 1081, "2026-02": 1983},
+  facturacionMes: {"2026-01": 139613042, "2026-02": 202670964},
+  fleteMes: {"2026-01": 19555449, "2026-02": 35210777},
+  tiempoGuiaMes: {"2026-01": 0.89, "2026-02": 0.43},
+  tiempoGuiaTrans: {"COORDINADORA": 0.55, "ENVIA": 0.53, "INTERRAPIDISIMO": 0.66, "JAMV-DRIVE": 1.01, "TCC": 0.55, "VELOCES": 0.61},
   tasaDespacho: {
-    "ENVIA": {"2026-01": 87.9, "2026-02": 87.0},
-    "VELOCES": {"2026-01": 94.6, "2026-02": 79.5},
-    "INTERRAPIDISIMO": {"2026-01": 90.7, "2026-02": 73.1},
+    "ENVIA": {"2026-01": 87.9, "2026-02": 81.7},
+    "VELOCES": {"2026-01": 94.6, "2026-02": 80.2},
+    "INTERRAPIDISIMO": {"2026-01": 90.7, "2026-02": 71.7},
     "JAMV-DRIVE": {"2026-01": 91.8, "2026-02": 40.0},
-    "COORDINADORA": {"2026-01": 63.6, "2026-02": 78.9},
-    "TCC": {"2026-01": 50.0, "2026-02": 77.8},
+    "COORDINADORA": {"2026-01": 63.6, "2026-02": 88.1},
+    "TCC": {"2026-01": 50.0, "2026-02": 70.0},
     "99MINUTOS": {"2026-01": 0.0, "2026-02": 0}
   },
   estatusTrans: {
-    "ENVIA": {"CANCELADO": 107, "DESPACHADA": 90, "DEVOLUCION": 93, "EN BODEGA DESTINO": 22, "EN BODEGA ORIGEN": 15, "EN ESPERA DE RUTA DOMESTICA": 7, "EN REEXPEDICION": 7, "EN REPARTO": 24, "ENTREGADO": 954, "GUIA_GENERADA": 3, "NOVEDAD": 39, "PENDIENTE CONFIRMACION": 48, "RECHAZADO": 7},
-    "VELOCES": {"BODEGA DESTINO": 8, "CANCELADO": 50, "DEVOLUCION": 20, "DEVOLUCION EN BODEGA": 25, "DEVOLUCION EN RUTA": 2, "EN BODEGA ORIGEN": 9, "EN CAMINO": 1, "EN PROCESO DE DEVOLUCION": 9, "EN RUTA": 2, "ENTREGADO": 401, "GUIA_GENERADA": 3, "NOVEDAD": 4, "NOVEDAD SOLUCIONADA": 9, "PENDIENTE CONFIRMACION": 18, "RECHAZADO": 4, "TRANSITO A DEVOLUCION PROVEEDOR": 11},
-    "INTERRAPIDISIMO": {"CANCELADO": 61, "DEVOLUCION": 86, "EN BODEGA TRANSPORTADORA": 16, "EN PROCESAMIENTO": 19, "EN REPARTO": 1, "ENTREGADO": 445, "INTENTO DE ENTREGA": 6, "PENDIENTE": 2, "PENDIENTE CONFIRMACION": 42, "PREPARADO PARA TRANSPORTADORA": 32, "RECHAZADO": 2, "RECLAME EN OFICINA": 60, "REENVÍO": 1, "TELEMERCADEO": 1},
-    "JAMV-DRIVE": {"CANCELADO": 9, "DEVOLUCION": 6, "EN PROCESO DE DEVOLUCION": 3, "ENTREGADO": 71, "PENDIENTE CONFIRMACION": 1},
-    "COORDINADORA": {"CANCELADO": 5, "DEVOLUCION": 3, "EN PUNTO DROOP": 1, "EN REPARTO": 3, "EN TERMINAL DESTINO": 1, "EN TRANSPORTE": 3, "ENTREGADO": 27, "NOVEDAD SOLUCIONADA": 2, "PENDIENTE CONFIRMACION": 4},
-    "TCC": {"CANCELADO": 5, "DEVOLUCION": 1, "EN DESPACHO": 2, "ENTREGADO": 8, "PENDIENTE CONFIRMACION": 1},
+    "ENVIA": {"CANCELADO": 122, "DESPACHADA": 64, "DEVOLUCION": 103, "EN BODEGA DESTINO": 22, "EN BODEGA ORIGEN": 67, "EN ESPERA DE RUTA DOMESTICA": 4, "EN REEXPEDICION": 8, "EN REPARTO": 28, "ENTREGADO": 1008, "GUIA_GENERADA": 2, "NOVEDAD": 40, "PENDIENTE CONFIRMACION": 62, "RECHAZADO": 9},
+    "VELOCES": {"BODEGA DESTINO": 6, "CANCELADO": 54, "DEVOLUCION": 48, "DEVOLUCION EN BODEGA": 10, "DEVOLUCION EN RUTA": 2, "EN BODEGA ORIGEN": 8, "EN PROCESO DE DEVOLUCION": 9, "EN TRANSITO": 1, "ENTREGADO": 414, "GUIA_GENERADA": 3, "NOVEDAD": 1, "NOVEDAD SOLUCIONADA": 10, "PENDIENTE CONFIRMACION": 19, "RECHAZADO": 4, "TRANSITO A DEVOLUCION PROVEEDOR": 6},
+    "INTERRAPIDISIMO": {"ADMITIDA": 11, "CANCELADO": 70, "DEVOLUCION": 91, "EN BODEGA TRANSPORTADORA": 13, "EN PROCESAMIENTO": 64, "EN REPARTO": 2, "ENTREGADO": 466, "INTENTO DE ENTREGA": 7, "PENDIENTE CONFIRMACION": 52, "RECHAZADO": 2, "RECLAME EN OFICINA": 61, "REENVÍO": 1, "TELEMERCADEO": 1},
+    "JAMV-DRIVE": {"CANCELADO": 9, "DEVOLUCION": 7, "EN PROCESO DE DEVOLUCION": 3, "ENTREGADO": 71, "PENDIENTE CONFIRMACION": 1},
+    "COORDINADORA": {"CANCELADO": 5, "DEVOLUCION": 4, "EN PUNTO DROOP": 1, "EN REPARTO": 2, "EN TERMINAL DESTINO": 4, "EN TERMINAL ORIGEN": 1, "EN TRANSPORTE": 3, "ENTREGADO": 28, "NOVEDAD SOLUCIONADA": 3, "PENDIENTE CONFIRMACION": 4},
+    "TCC": {"CANCELADO": 5, "DEVOLUCION": 1, "EN DESPACHO": 2, "ENTREGADO": 8, "PENDIENTE CONFIRMACION": 2},
     "99MINUTOS": {"CANCELADO": 1}
   },
-  ventasProd: {"JS18 PACK TRAMPA DE RATA": 4029, "JS10 Extensor De Toma": 934, "Roach Expert Gel Cucaracha": 906, "JS11 GiroLed Pro": 552, "JS07 Trampa Ratón": 481, "JS13 BLOQUEO PEDAL CARRO": 446, "JS12 PELOTA DE MASCOTA": 307, "Máscara LED Facial": 149, "JS14 HERRAMIENTA 18 EN 1": 104, "PLATO BEBÉ": 50, "JS03 Bloqueo Antirobo Carro": 44, "JS05 Bloqueo Antirobo Carro": 42, "Cepillo Giratorio 360": 42, "Pelota PET": 24, "PULL UP": 20},
-  tiendaStats: {"SHOPIFY": {"CANTIDAD": 5976, "TOTAL DE LA ORDEN": 235642269}, "LUCIDBOT": {"CANTIDAD": 2017, "TOTAL DE LA ORDEN": 81893390}, "CHATEA PRO": {"CANTIDAD": 84, "TOTAL DE LA ORDEN": 5654900}},
-  novTrans: {"COORDINADORA": 6, "ENVIA": 146, "JAMV-DRIVE": 4, "TCC": 1, "VELOCES": 81},
-  novSolTrans: {"COORDINADORA": 9, "ENVIA": 189, "JAMV-DRIVE": 7, "TCC": 1, "VELOCES": 159},
-  novSolEntTrans: {"COORDINADORA": 3, "ENVIA": 43, "JAMV-DRIVE": 3, "VELOCES": 78},
-  novTypes: {"DESTINATARIO SE REHUSA A RECIBIR": 69, "COORDINAR LA ENTREGA": 49, "No hay quien reciba": 30, "Reprogramar entrega": 13, "DIRECCION DESTINATARIO NO EXISTE": 11, "Direccion incorrecta": 8, "DIRECCION DESTINATARIO INCOMPLETA": 7, "Pedido cancelado": 7, "No contesta Cliente": 6, "El cliente se niega a recibir": 5, "Pedido cancelado por el cliente": 5, "DESTINATARIO FIJA FECHA Y HORA": 3, "Zona de alto riesgo": 3, "NO CONOCEN DESTINATARIO": 3, "Mercancia no solicitada": 2},
-  topDep: {"CUNDINAMARCA": 535, "ANTIOQUIA": 448, "VALLE": 340, "BOLIVAR": 186, "ATLANTICO": 169, "SANTANDER": 121, "NARIÑO": 101, "CORDOBA": 91, "CAUCA": 84, "MAGDALENA": 79, "META": 77, "TOLIMA": 76, "HUILA": 71, "CESAR": 68, "RISARALDA": 58},
-  topCity: {"BOGOTA": 372, "CALI": 170, "MEDELLIN": 161, "CARTAGENA": 128, "BARRANQUILLA": 112, "SANTA MARTA": 42, "BUENAVENTURA": 38, "PEREIRA": 35, "POPAYAN": 35, "MONTERIA": 34, "IBAGUE": 34, "TUMACO": 33, "VILLAVICENCIO": 32, "VALLEDUPAR": 31, "BUCARAMANGA": 29},
-  factDep: {"CUNDINAMARCA": 59563315, "ANTIOQUIA": 50005418, "VALLE": 37648311, "BOLIVAR": 20573224, "ATLANTICO": 17218718, "SANTANDER": 13366095, "NARIÑO": 10085139, "CAUCA": 9010182, "CORDOBA": 8971033, "MAGDALENA": 8702958},
-  factCity: {"BOGOTA": 41704359, "CALI": 19904645, "MEDELLIN": 18805504, "CARTAGENA": 14139026, "BARRANQUILLA": 11848276, "SANTA MARTA": 4983074, "PEREIRA": 4101500, "POPAYAN": 3871499, "IBAGUE": 3849855, "BUENAVENTURA": 3800531},
-  depStats: {"CUNDINAMARCA":{"pedidos":535,"despachados":462,"entregados":335,"tasa_despacho":86.4,"tasa_entrega":62.6},"ANTIOQUIA":{"pedidos":448,"despachados":389,"entregados":303,"tasa_despacho":86.8,"tasa_entrega":67.6},"VALLE":{"pedidos":340,"despachados":282,"entregados":242,"tasa_despacho":82.9,"tasa_entrega":71.2},"BOLIVAR":{"pedidos":186,"despachados":159,"entregados":117,"tasa_despacho":85.5,"tasa_entrega":62.9},"ATLANTICO":{"pedidos":169,"despachados":142,"entregados":106,"tasa_despacho":84.0,"tasa_entrega":62.7},"SANTANDER":{"pedidos":121,"despachados":101,"entregados":79,"tasa_despacho":83.5,"tasa_entrega":65.3},"NARIÑO":{"pedidos":101,"despachados":76,"entregados":50,"tasa_despacho":75.2,"tasa_entrega":49.5},"CORDOBA":{"pedidos":91,"despachados":74,"entregados":52,"tasa_despacho":81.3,"tasa_entrega":57.1},"CAUCA":{"pedidos":84,"despachados":69,"entregados":56,"tasa_despacho":82.1,"tasa_entrega":66.7},"MAGDALENA":{"pedidos":79,"despachados":67,"entregados":50,"tasa_despacho":84.8,"tasa_entrega":63.3},"META":{"pedidos":77,"despachados":66,"entregados":46,"tasa_despacho":85.7,"tasa_entrega":59.7},"TOLIMA":{"pedidos":76,"despachados":67,"entregados":50,"tasa_despacho":88.2,"tasa_entrega":65.8},"HUILA":{"pedidos":71,"despachados":62,"entregados":52,"tasa_despacho":87.3,"tasa_entrega":73.2},"CESAR":{"pedidos":68,"despachados":55,"entregados":45,"tasa_despacho":80.9,"tasa_entrega":66.2},"RISARALDA":{"pedidos":58,"despachados":51,"entregados":45,"tasa_despacho":87.9,"tasa_entrega":77.6}},
-  cityStats: {"BOGOTA":{"pedidos":372,"despachados":321,"entregados":233,"tasa_despacho":86.3,"tasa_entrega":62.6},"CALI":{"pedidos":170,"despachados":136,"entregados":116,"tasa_despacho":80.0,"tasa_entrega":68.2},"MEDELLIN":{"pedidos":161,"despachados":144,"entregados":119,"tasa_despacho":89.4,"tasa_entrega":73.9},"CARTAGENA":{"pedidos":128,"despachados":113,"entregados":86,"tasa_despacho":88.3,"tasa_entrega":67.2},"BARRANQUILLA":{"pedidos":112,"despachados":94,"entregados":70,"tasa_despacho":83.9,"tasa_entrega":62.5},"SANTA MARTA":{"pedidos":42,"despachados":36,"entregados":29,"tasa_despacho":85.7,"tasa_entrega":69.0},"BUENAVENTURA":{"pedidos":38,"despachados":35,"entregados":29,"tasa_despacho":92.1,"tasa_entrega":76.3},"PEREIRA":{"pedidos":35,"despachados":30,"entregados":27,"tasa_despacho":85.7,"tasa_entrega":77.1},"POPAYAN":{"pedidos":35,"despachados":32,"entregados":26,"tasa_despacho":91.4,"tasa_entrega":74.3},"MONTERIA":{"pedidos":34,"despachados":31,"entregados":23,"tasa_despacho":91.2,"tasa_entrega":67.6},"IBAGUE":{"pedidos":34,"despachados":30,"entregados":24,"tasa_despacho":88.2,"tasa_entrega":70.6},"TUMACO":{"pedidos":33,"despachados":22,"entregados":13,"tasa_despacho":66.7,"tasa_entrega":39.4},"VILLAVICENCIO":{"pedidos":32,"despachados":29,"entregados":19,"tasa_despacho":90.6,"tasa_entrega":59.4},"VALLEDUPAR":{"pedidos":31,"despachados":25,"entregados":22,"tasa_despacho":80.6,"tasa_entrega":71.0},"BUCARAMANGA":{"pedidos":29,"despachados":28,"entregados":24,"tasa_despacho":96.6,"tasa_entrega":82.8}},
-  depMes: {"ANTIOQUIA":{"2026-01":174,"2026-02":274},"ATLANTICO":{"2026-01":62,"2026-02":107},"BOLIVAR":{"2026-01":79,"2026-02":107},"CAUCA":{"2026-01":28,"2026-02":56},"CORDOBA":{"2026-01":30,"2026-02":61},"CUNDINAMARCA":{"2026-01":172,"2026-02":363},"MAGDALENA":{"2026-01":32,"2026-02":47},"NARIÑO":{"2026-01":21,"2026-02":80},"SANTANDER":{"2026-01":50,"2026-02":71},"VALLE":{"2026-01":127,"2026-02":213}},
-  depFact: {"CUNDINAMARCA":{"facturacion":59563315,"flete":8609914,"pedidos":535,"ticket_prom":111333,"flete_pct":14.5},"ANTIOQUIA":{"facturacion":50005418,"flete":7643570,"pedidos":448,"ticket_prom":111619,"flete_pct":15.3},"VALLE":{"facturacion":37648312,"flete":4852038,"pedidos":340,"ticket_prom":110730,"flete_pct":12.9},"BOLIVAR":{"facturacion":20573225,"flete":3423230,"pedidos":186,"ticket_prom":110609,"flete_pct":16.6},"ATLANTICO":{"facturacion":17218719,"flete":2823446,"pedidos":169,"ticket_prom":101886,"flete_pct":16.4},"SANTANDER":{"facturacion":13366095,"flete":2187003,"pedidos":121,"ticket_prom":110464,"flete_pct":16.4},"NARIÑO":{"facturacion":10085140,"flete":1918448,"pedidos":101,"ticket_prom":99853,"flete_pct":19.0},"CAUCA":{"facturacion":9010182,"flete":1407439,"pedidos":84,"ticket_prom":107264,"flete_pct":15.6},"CORDOBA":{"facturacion":8971033,"flete":1585276,"pedidos":91,"ticket_prom":98583,"flete_pct":17.7},"MAGDALENA":{"facturacion":8702958,"flete":1482555,"pedidos":79,"ticket_prom":110164,"flete_pct":17.0},"TOLIMA":{"facturacion":8465760,"flete":1368402,"pedidos":76,"ticket_prom":111392,"flete_pct":16.2},"META":{"facturacion":8211568,"flete":1516029,"pedidos":77,"ticket_prom":106644,"flete_pct":18.5},"HUILA":{"facturacion":7271565,"flete":1286632,"pedidos":71,"ticket_prom":102416,"flete_pct":17.7},"CESAR":{"facturacion":6654290,"flete":1177532,"pedidos":68,"ticket_prom":97857,"flete_pct":17.7},"RISARALDA":{"facturacion":6466474,"flete":924932,"pedidos":58,"ticket_prom":111491,"flete_pct":14.3}},
-  cityFact: {"BOGOTA":{"facturacion":41704359,"flete":5667375,"pedidos":372,"ticket_prom":112108,"flete_pct":13.6},"CALI":{"facturacion":19904646,"flete":2217674,"pedidos":170,"ticket_prom":117086,"flete_pct":11.1},"MEDELLIN":{"facturacion":18805505,"flete":2386649,"pedidos":161,"ticket_prom":116804,"flete_pct":12.7},"CARTAGENA":{"facturacion":14139027,"flete":2220857,"pedidos":128,"ticket_prom":110461,"flete_pct":15.7},"BARRANQUILLA":{"facturacion":11848276,"flete":1886126,"pedidos":112,"ticket_prom":105788,"flete_pct":15.9},"SANTA MARTA":{"facturacion":4983074,"flete":737749,"pedidos":42,"ticket_prom":118645,"flete_pct":14.8},"PEREIRA":{"facturacion":4101500,"flete":548810,"pedidos":35,"ticket_prom":117186,"flete_pct":13.4},"POPAYAN":{"facturacion":3871500,"flete":539044,"pedidos":35,"ticket_prom":110614,"flete_pct":13.9},"IBAGUE":{"facturacion":3849855,"flete":586482,"pedidos":34,"ticket_prom":113231,"flete_pct":15.2},"BUENAVENTURA":{"facturacion":3800532,"flete":683778,"pedidos":38,"ticket_prom":100014,"flete_pct":18.0},"VILLAVICENCIO":{"facturacion":3546523,"flete":552440,"pedidos":32,"ticket_prom":110829,"flete_pct":15.6},"ENVIGADO":{"facturacion":3344874,"flete":357720,"pedidos":24,"ticket_prom":139370,"flete_pct":10.7},"BUCARAMANGA":{"facturacion":3312090,"flete":479502,"pedidos":29,"ticket_prom":114210,"flete_pct":14.5},"MONTERIA":{"facturacion":3253884,"flete":568695,"pedidos":34,"ticket_prom":95702,"flete_pct":17.5},"VALLEDUPAR":{"facturacion":3232000,"flete":524590,"pedidos":31,"ticket_prom":104258,"flete_pct":16.2}},
-  depFactMes: {"ANTIOQUIA":{"2026-01":23310640,"2026-02":26694777},"ATLANTICO":{"2026-01":7540599,"2026-02":9678118},"BOLIVAR":{"2026-01":9748065,"2026-02":10825159},"CAUCA":{"2026-01":3492199,"2026-02":5517982},"CORDOBA":{"2026-01":3509092,"2026-02":5461940},"CUNDINAMARCA":{"2026-01":22821719,"2026-02":36741595},"MAGDALENA":{"2026-01":4091800,"2026-02":4611158},"NARIÑO":{"2026-01":2660799,"2026-02":7424339},"SANTANDER":{"2026-01":6475415,"2026-02":6890679},"VALLE":{"2026-01":16332043,"2026-02":21316268}},
-  depProd: {"CUNDINAMARCA":{"unidades":1595,"facturacion":60552108,"pedidos":535,"unid_por_pedido":2.98},"ANTIOQUIA":{"unidades":1103,"facturacion":51394679,"pedidos":448,"unid_por_pedido":2.46},"VALLE":{"unidades":821,"facturacion":38532679,"pedidos":340,"unid_por_pedido":2.41},"BOLIVAR":{"unidades":503,"facturacion":20693125,"pedidos":186,"unid_por_pedido":2.70},"ATLANTICO":{"unidades":452,"facturacion":18060373,"pedidos":169,"unid_por_pedido":2.67},"NARIÑO":{"unidades":347,"facturacion":10708017,"pedidos":101,"unid_por_pedido":3.44},"SANTANDER":{"unidades":336,"facturacion":13463821,"pedidos":121,"unid_por_pedido":2.78},"CORDOBA":{"unidades":306,"facturacion":9455266,"pedidos":91,"unid_por_pedido":3.36},"META":{"unidades":247,"facturacion":8411371,"pedidos":77,"unid_por_pedido":3.21},"CAUCA":{"unidades":239,"facturacion":9303360,"pedidos":84,"unid_por_pedido":2.85},"MAGDALENA":{"unidades":229,"facturacion":9012661,"pedidos":79,"unid_por_pedido":2.90},"TOLIMA":{"unidades":223,"facturacion":8645560,"pedidos":76,"unid_por_pedido":2.93},"CESAR":{"unidades":193,"facturacion":6860988,"pedidos":68,"unid_por_pedido":2.84},"HUILA":{"unidades":188,"facturacion":7467014,"pedidos":71,"unid_por_pedido":2.65},"LA GUAJIRA":{"unidades":176,"facturacion":5746453,"pedidos":52,"unid_por_pedido":3.38}},
-  cityProd: {"BOGOTA":{"unidades":1082,"facturacion":42091885,"pedidos":372,"unid_por_pedido":2.91},"CALI":{"unidades":383,"facturacion":20479310,"pedidos":170,"unid_por_pedido":2.25},"CARTAGENA":{"unidades":350,"facturacion":14258927,"pedidos":128,"unid_por_pedido":2.73},"MEDELLIN":{"unidades":336,"facturacion":19296536,"pedidos":161,"unid_por_pedido":2.09},"BARRANQUILLA":{"unidades":280,"facturacion":12161139,"pedidos":112,"unid_por_pedido":2.50},"TUMACO":{"unidades":139,"facturacion":3243002,"pedidos":33,"unid_por_pedido":4.21},"BUENAVENTURA":{"unidades":133,"facturacion":3902609,"pedidos":38,"unid_por_pedido":3.50},"MONTERIA":{"unidades":129,"facturacion":3351610,"pedidos":34,"unid_por_pedido":3.79},"POPAYAN":{"unidades":112,"facturacion":3871500,"pedidos":35,"unid_por_pedido":3.20},"SANTA MARTA":{"unidades":100,"facturacion":5080800,"pedidos":42,"unid_por_pedido":2.38},"VILLAVICENCIO":{"unidades":98,"facturacion":3648600,"pedidos":32,"unid_por_pedido":3.06},"CUCUTA":{"unidades":87,"facturacion":3322104,"pedidos":28,"unid_por_pedido":3.11},"BARRANCABERMEJA":{"unidades":84,"facturacion":2532700,"pedidos":23,"unid_por_pedido":3.65},"PEREIRA":{"unidades":84,"facturacion":4101500,"pedidos":35,"unid_por_pedido":2.40},"VALLEDUPAR":{"unidades":84,"facturacion":3356833,"pedidos":31,"unid_por_pedido":2.71}},
-  tiendaDep: {"ANTIOQUIA":{"SHOPIFY":781,"LUCIDBOT":284,"CHATEA PRO":17},"ATLANTICO":{"SHOPIFY":328,"LUCIDBOT":111,"CHATEA PRO":3},"BOLIVAR":{"SHOPIFY":377,"LUCIDBOT":114,"CHATEA PRO":6},"CAUCA":{"SHOPIFY":191,"LUCIDBOT":41,"CHATEA PRO":1},"CORDOBA":{"SHOPIFY":230,"LUCIDBOT":68,"CHATEA PRO":1},"CUNDINAMARCA":{"SHOPIFY":1144,"LUCIDBOT":429,"CHATEA PRO":10},"META":{"SHOPIFY":187,"LUCIDBOT":59,"CHATEA PRO":1},"NARIÑO":{"SHOPIFY":239,"LUCIDBOT":95,"CHATEA PRO":1},"SANTANDER":{"SHOPIFY":259,"LUCIDBOT":71,"CHATEA PRO":2},"VALLE":{"SHOPIFY":633,"LUCIDBOT":178,"CHATEA PRO":9}},
-  depNov: {"CUNDINAMARCA":{"novedades":74,"solucionadas":74,"total_pedidos":535,"tasa_novedad":13.8,"tasa_sol":100.0},"ANTIOQUIA":{"novedades":37,"solucionadas":37,"total_pedidos":448,"tasa_novedad":8.3,"tasa_sol":100.0},"VALLE":{"novedades":24,"solucionadas":24,"total_pedidos":340,"tasa_novedad":7.1,"tasa_sol":100.0},"ATLANTICO":{"novedades":19,"solucionadas":19,"total_pedidos":169,"tasa_novedad":11.2,"tasa_sol":100.0},"BOLIVAR":{"novedades":12,"solucionadas":12,"total_pedidos":186,"tasa_novedad":6.5,"tasa_sol":100.0},"CORDOBA":{"novedades":11,"solucionadas":11,"total_pedidos":91,"tasa_novedad":12.1,"tasa_sol":100.0},"SANTANDER":{"novedades":8,"solucionadas":8,"total_pedidos":121,"tasa_novedad":6.6,"tasa_sol":100.0},"MAGDALENA":{"novedades":7,"solucionadas":7,"total_pedidos":79,"tasa_novedad":8.9,"tasa_sol":100.0},"CALDAS":{"novedades":5,"solucionadas":5,"total_pedidos":46,"tasa_novedad":10.9,"tasa_sol":100.0},"RISARALDA":{"novedades":5,"solucionadas":5,"total_pedidos":58,"tasa_novedad":8.6,"tasa_sol":100.0},"TOLIMA":{"novedades":5,"solucionadas":5,"total_pedidos":76,"tasa_novedad":6.6,"tasa_sol":100.0},"CESAR":{"novedades":4,"solucionadas":4,"total_pedidos":68,"tasa_novedad":5.9,"tasa_sol":100.0},"NARIÑO":{"novedades":4,"solucionadas":4,"total_pedidos":101,"tasa_novedad":4.0,"tasa_sol":100.0},"LA GUAJIRA":{"novedades":4,"solucionadas":4,"total_pedidos":52,"tasa_novedad":7.7,"tasa_sol":100.0},"HUILA":{"novedades":3,"solucionadas":3,"total_pedidos":71,"tasa_novedad":4.2,"tasa_sol":100.0}},
-  cityNov: {"BOGOTA":{"novedades":62,"solucionadas":62,"total_pedidos":372,"tasa_novedad":16.7,"tasa_sol":100.0},"MEDELLIN":{"novedades":17,"solucionadas":17,"total_pedidos":161,"tasa_novedad":10.6,"tasa_sol":100.0},"CALI":{"novedades":14,"solucionadas":14,"total_pedidos":170,"tasa_novedad":8.2,"tasa_sol":100.0},"CARTAGENA":{"novedades":12,"solucionadas":12,"total_pedidos":128,"tasa_novedad":9.4,"tasa_sol":100.0},"BARRANQUILLA":{"novedades":10,"solucionadas":10,"total_pedidos":112,"tasa_novedad":8.9,"tasa_sol":100.0},"BELLO":{"novedades":8,"solucionadas":8,"total_pedidos":27,"tasa_novedad":29.6,"tasa_sol":100.0},"MONTERIA":{"novedades":5,"solucionadas":5,"total_pedidos":34,"tasa_novedad":14.7,"tasa_sol":100.0},"SOLEDAD":{"novedades":4,"solucionadas":4,"total_pedidos":19,"tasa_novedad":21.1,"tasa_sol":100.0},"SANTA MARTA":{"novedades":4,"solucionadas":4,"total_pedidos":42,"tasa_novedad":9.5,"tasa_sol":100.0},"BUENAVENTURA":{"novedades":4,"solucionadas":4,"total_pedidos":38,"tasa_novedad":10.5,"tasa_sol":100.0},"BUCARAMANGA":{"novedades":3,"solucionadas":3,"total_pedidos":29,"tasa_novedad":10.3,"tasa_sol":100.0},"MANIZALES":{"novedades":3,"solucionadas":3,"total_pedidos":23,"tasa_novedad":13.0,"tasa_sol":100.0},"IBAGUE":{"novedades":3,"solucionadas":3,"total_pedidos":34,"tasa_novedad":8.8,"tasa_sol":100.0},"FLORENCIA":{"novedades":3,"solucionadas":3,"total_pedidos":19,"tasa_novedad":15.8,"tasa_sol":100.0},"ITAGUI":{"novedades":3,"solucionadas":3,"total_pedidos":12,"tasa_novedad":25.0,"tasa_sol":100.0}},
+  ventasProd: {"JS18 PACK TRAMPA DE RATA": 4384, "JS10 Extensor De Toma": 939, "Roach Expert Gel Cucaracha": 906, "JS11 GiroLed Pro": 578, "JS13 BLOQUEO PEDAL CARRO": 493, "JS07 Trampa Ratón": 481, "JS12 PELOTA DE MASCOTA": 321, "Máscara LED Facial": 153, "JS14 HERRAMIENTA 18 EN 1": 113, "PLATO BEBÉ": 50, "JS03 Bloqueo Antirobo Carro": 44, "Cepillo Giratorio 360": 44, "JS05 Bloqueo Antirobo Carro": 42, "Pelota PET": 24, "PULL UP": 20},
+  tiendaStats: {"SHOPIFY": {"CANTIDAD": 5976, "TOTAL DE LA ORDEN": 235642269}, "LUCIDBOT": {"CANTIDAD": 2475, "TOTAL DE LA ORDEN": 96610563}, "CHATEA PRO": {"CANTIDAD": 84, "TOTAL DE LA ORDEN": 5654900}},
+  novTrans: {"COORDINADORA": 7, "ENVIA": 148, "JAMV-DRIVE": 4, "TCC": 1, "VELOCES": 83},
+  novSolTrans: {"COORDINADORA": 10, "ENVIA": 193, "JAMV-DRIVE": 7, "TCC": 1, "VELOCES": 163},
+  novSolEntTrans: {"COORDINADORA": 3, "ENVIA": 45, "JAMV-DRIVE": 3, "VELOCES": 80},
+  novTypes: {"DESTINATARIO SE REHUSA A RECIBIR": 72, "COORDINAR LA ENTREGA": 48, "No hay quien reciba": 32, "Reprogramar entrega": 14, "DIRECCION DESTINATARIO NO EXISTE": 10, "Direccion incorrecta": 9, "Pedido cancelado": 7, "DIRECCION DESTINATARIO INCOMPLETA": 6, "No contesta Cliente": 6, "Pedido cancelado por el cliente": 5, "DESTINATARIO FIJA FECHA Y HORA": 4, "El cliente se niega a recibir": 4, "No se localiza dirección": 3, "Zona de alto riesgo": 3, "NO CONOCEN DESTINATARIO": 3},
+  topDep: {"CUNDINAMARCA": 560, "ANTIOQUIA": 465, "VALLE": 357, "BOLIVAR": 192, "ATLANTICO": 181, "SANTANDER": 126, "NARIÑO": 106, "CORDOBA": 94, "CAUCA": 91, "MAGDALENA": 81, "META": 80, "TOLIMA": 78, "HUILA": 72, "CESAR": 70, "BOYACA": 65},
+  topCity: {"BOGOTA": 387, "CALI": 179, "MEDELLIN": 171, "CARTAGENA": 133, "BARRANQUILLA": 121, "SANTA MARTA": 44, "POPAYAN": 39, "PEREIRA": 39, "BUENAVENTURA": 38, "MONTERIA": 36, "TUMACO": 35, "IBAGUE": 34, "VILLAVICENCIO": 33, "VALLEDUPAR": 32, "BUCARAMANGA": 30},
+  factDep: {"CUNDINAMARCA": 63014608, "ANTIOQUIA": 53187985, "VALLE": 40335978, "BOLIVAR": 21307524, "ATLANTICO": 19314179, "SANTANDER": 13908320, "NARIÑO": 11302450, "CAUCA": 10082653, "CORDOBA": 9779965, "MAGDALENA": 9202461},
+  factCity: {"BOGOTA": 43525386, "CALI": 21363409, "MEDELLIN": 20320542, "CARTAGENA": 14798426, "BARRANQUILLA": 13135246, "SANTA MARTA": 5270600, "PEREIRA": 4487325, "POPAYAN": 4321093, "IBAGUE": 3939755, "BUENAVENTURA": 3902609},
+  depStats: {"CUNDINAMARCA":{"pedidos":560,"despachados":471,"entregados":354,"tasa_despacho":84.1,"tasa_entrega":63.2},"ANTIOQUIA":{"pedidos":465,"despachados":393,"entregados":310,"tasa_despacho":84.5,"tasa_entrega":66.7},"VALLE":{"pedidos":357,"despachados":296,"entregados":254,"tasa_despacho":82.9,"tasa_entrega":71.1},"BOLIVAR":{"pedidos":192,"despachados":162,"entregados":117,"tasa_despacho":84.4,"tasa_entrega":60.9},"ATLANTICO":{"pedidos":181,"despachados":142,"entregados":109,"tasa_despacho":78.5,"tasa_entrega":60.2},"SANTANDER":{"pedidos":126,"despachados":104,"entregados":80,"tasa_despacho":82.5,"tasa_entrega":63.5},"NARIÑO":{"pedidos":106,"despachados":77,"entregados":53,"tasa_despacho":72.6,"tasa_entrega":50.0},"CORDOBA":{"pedidos":94,"despachados":74,"entregados":53,"tasa_despacho":78.7,"tasa_entrega":56.4},"CAUCA":{"pedidos":91,"despachados":72,"entregados":56,"tasa_despacho":79.1,"tasa_entrega":61.5},"MAGDALENA":{"pedidos":81,"despachados":68,"entregados":51,"tasa_despacho":84.0,"tasa_entrega":63.0},"META":{"pedidos":80,"despachados":67,"entregados":48,"tasa_despacho":83.8,"tasa_entrega":60.0},"TOLIMA":{"pedidos":78,"despachados":72,"entregados":52,"tasa_despacho":92.3,"tasa_entrega":66.7},"HUILA":{"pedidos":72,"despachados":63,"entregados":54,"tasa_despacho":87.5,"tasa_entrega":75.0},"CESAR":{"pedidos":70,"despachados":57,"entregados":45,"tasa_despacho":81.4,"tasa_entrega":64.3},"BOYACA":{"pedidos":65,"despachados":52,"entregados":41,"tasa_despacho":80.0,"tasa_entrega":63.1}},
+  cityStats: {"BOGOTA":{"pedidos":387,"despachados":327,"entregados":244,"tasa_despacho":84.5,"tasa_entrega":63.0},"CALI":{"pedidos":179,"despachados":147,"entregados":125,"tasa_despacho":82.1,"tasa_entrega":69.8},"MEDELLIN":{"pedidos":171,"despachados":145,"entregados":120,"tasa_despacho":84.8,"tasa_entrega":70.2},"CARTAGENA":{"pedidos":133,"despachados":113,"entregados":86,"tasa_despacho":85.0,"tasa_entrega":64.7},"BARRANQUILLA":{"pedidos":121,"despachados":94,"entregados":73,"tasa_despacho":77.7,"tasa_entrega":60.3},"SANTA MARTA":{"pedidos":44,"despachados":36,"entregados":29,"tasa_despacho":81.8,"tasa_entrega":65.9},"POPAYAN":{"pedidos":39,"despachados":32,"entregados":26,"tasa_despacho":82.1,"tasa_entrega":66.7},"PEREIRA":{"pedidos":39,"despachados":30,"entregados":27,"tasa_despacho":76.9,"tasa_entrega":69.2},"BUENAVENTURA":{"pedidos":38,"despachados":35,"entregados":29,"tasa_despacho":92.1,"tasa_entrega":76.3},"MONTERIA":{"pedidos":36,"despachados":31,"entregados":24,"tasa_despacho":86.1,"tasa_entrega":66.7},"TUMACO":{"pedidos":35,"despachados":22,"entregados":13,"tasa_despacho":62.9,"tasa_entrega":37.1},"IBAGUE":{"pedidos":34,"despachados":31,"entregados":25,"tasa_despacho":91.2,"tasa_entrega":73.5},"VILLAVICENCIO":{"pedidos":33,"despachados":29,"entregados":20,"tasa_despacho":87.9,"tasa_entrega":60.6},"VALLEDUPAR":{"pedidos":32,"despachados":26,"entregados":22,"tasa_despacho":81.2,"tasa_entrega":68.8},"BUCARAMANGA":{"pedidos":30,"despachados":28,"entregados":25,"tasa_despacho":93.3,"tasa_entrega":83.3}},
+  depMes: {"ANTIOQUIA":{"2026-01":174,"2026-02":291},"ATLANTICO":{"2026-01":62,"2026-02":119},"BOLIVAR":{"2026-01":79,"2026-02":113},"CAUCA":{"2026-01":28,"2026-02":63},"CORDOBA":{"2026-01":30,"2026-02":64},"CUNDINAMARCA":{"2026-01":172,"2026-02":388},"MAGDALENA":{"2026-01":32,"2026-02":49},"NARIÑO":{"2026-01":21,"2026-02":85},"SANTANDER":{"2026-01":50,"2026-02":76},"VALLE":{"2026-01":127,"2026-02":230}},
+  depFact: {"CUNDINAMARCA":{"facturacion":63014608,"flete":9207445,"pedidos":560,"ticket_prom":112526,"flete_pct":14.6},"ANTIOQUIA":{"facturacion":53187985,"flete":8183372,"pedidos":465,"ticket_prom":114383,"flete_pct":15.4},"VALLE":{"facturacion":40335978,"flete":5183006,"pedidos":357,"ticket_prom":112986,"flete_pct":12.8},"BOLIVAR":{"facturacion":21307524,"flete":3546959,"pedidos":192,"ticket_prom":110977,"flete_pct":16.6},"ATLANTICO":{"facturacion":19314179,"flete":3168974,"pedidos":181,"ticket_prom":106708,"flete_pct":16.4},"SANTANDER":{"facturacion":13908320,"flete":2309186,"pedidos":126,"ticket_prom":110383,"flete_pct":16.6},"NARIÑO":{"facturacion":11302450,"flete":2154843,"pedidos":106,"ticket_prom":106627,"flete_pct":19.1},"CAUCA":{"facturacion":10082654,"flete":1574965,"pedidos":91,"ticket_prom":110798,"flete_pct":15.6},"CORDOBA":{"facturacion":9779965,"flete":1724911,"pedidos":94,"ticket_prom":104042,"flete_pct":17.6},"MAGDALENA":{"facturacion":9202461,"flete":1584514,"pedidos":81,"ticket_prom":113611,"flete_pct":17.2},"TOLIMA":{"facturacion":8820359,"flete":1430299,"pedidos":78,"ticket_prom":113082,"flete_pct":16.2},"META":{"facturacion":8676071,"flete":1607816,"pedidos":80,"ticket_prom":108451,"flete_pct":18.5},"HUILA":{"facturacion":7741916,"flete":1344140,"pedidos":72,"ticket_prom":107527,"flete_pct":17.4},"BOYACA":{"facturacion":6937467,"flete":1253414,"pedidos":65,"ticket_prom":106730,"flete_pct":18.1},"CESAR":{"facturacion":7090788,"flete":1245870,"pedidos":70,"ticket_prom":101297,"flete_pct":17.6}},
+  cityFact: {"BOGOTA":{"facturacion":43525386,"flete":5976339,"pedidos":387,"ticket_prom":112469,"flete_pct":13.7},"CALI":{"facturacion":21363409,"flete":2383754,"pedidos":179,"ticket_prom":119349,"flete_pct":11.2},"MEDELLIN":{"facturacion":20320542,"flete":2624062,"pedidos":171,"ticket_prom":118834,"flete_pct":12.9},"CARTAGENA":{"facturacion":14798426,"flete":2324246,"pedidos":133,"ticket_prom":111266,"flete_pct":15.7},"BARRANQUILLA":{"facturacion":13135246,"flete":2097338,"pedidos":121,"ticket_prom":108556,"flete_pct":16.0},"SANTA MARTA":{"facturacion":5270600,"flete":787969,"pedidos":44,"ticket_prom":119786,"flete_pct":15.0},"PEREIRA":{"facturacion":4487325,"flete":607603,"pedidos":39,"ticket_prom":115060,"flete_pct":13.5},"POPAYAN":{"facturacion":4321093,"flete":602419,"pedidos":39,"ticket_prom":110797,"flete_pct":13.9},"IBAGUE":{"facturacion":3939755,"flete":596160,"pedidos":34,"ticket_prom":115875,"flete_pct":15.1},"BUENAVENTURA":{"facturacion":3902609,"flete":704599,"pedidos":38,"ticket_prom":102700,"flete_pct":18.1},"VILLAVICENCIO":{"facturacion":3738500,"flete":585778,"pedidos":33,"ticket_prom":113288,"flete_pct":15.7},"MONTERIA":{"facturacion":3526410,"flete":618240,"pedidos":36,"ticket_prom":97956,"flete_pct":17.5},"TUMACO":{"facturacion":3512735,"flete":744439,"pedidos":35,"ticket_prom":100364,"flete_pct":21.2},"BUCARAMANGA":{"facturacion":3484715,"flete":512034,"pedidos":30,"ticket_prom":116157,"flete_pct":14.7},"CUCUTA":{"facturacion":3462004,"flete":569917,"pedidos":29,"ticket_prom":119379,"flete_pct":16.5}},
+  depFactMes: {"ANTIOQUIA":{"2026-01":23310640,"2026-02":29877345},"ATLANTICO":{"2026-01":7540599,"2026-02":11773579},"BOLIVAR":{"2026-01":9867965,"2026-02":11439559},"CAUCA":{"2026-01":3492199,"2026-02":6590454},"CORDOBA":{"2026-01":3509092,"2026-02":6270873},"CUNDINAMARCA":{"2026-01":23045459,"2026-02":39969148},"MAGDALENA":{"2026-01":4091800,"2026-02":5110661},"NARIÑO":{"2026-01":2660799,"2026-02":8641650},"SANTANDER":{"2026-01":6475415,"2026-02":7432905},"VALLE":{"2026-01":16553114,"2026-02":23782864}},
+  depProd: {"CUNDINAMARCA":{"unidades":1684,"facturacion":63014609,"pedidos":560,"unid_por_pedido":3.01},"ANTIOQUIA":{"unidades":1146,"facturacion":53187986,"pedidos":465,"unid_por_pedido":2.46},"VALLE":{"unidades":860,"facturacion":40335979,"pedidos":357,"unid_por_pedido":2.41},"BOLIVAR":{"unidades":519,"facturacion":21307525,"pedidos":192,"unid_por_pedido":2.70},"ATLANTICO":{"unidades":506,"facturacion":19314180,"pedidos":181,"unid_por_pedido":2.80},"NARIÑO":{"unidades":362,"facturacion":11302451,"pedidos":106,"unid_por_pedido":3.42},"SANTANDER":{"unidades":354,"facturacion":13908321,"pedidos":126,"unid_por_pedido":2.81},"CORDOBA":{"unidades":324,"facturacion":9779966,"pedidos":94,"unid_por_pedido":3.45},"CAUCA":{"unidades":267,"facturacion":10082654,"pedidos":91,"unid_por_pedido":2.93},"META":{"unidades":258,"facturacion":8676071,"pedidos":80,"unid_por_pedido":3.22},"MAGDALENA":{"unidades":240,"facturacion":9202461,"pedidos":81,"unid_por_pedido":2.96},"TOLIMA":{"unidades":225,"facturacion":8820360,"pedidos":78,"unid_por_pedido":2.88},"BOYACA":{"unidades":204,"facturacion":6937467,"pedidos":65,"unid_por_pedido":3.14},"CESAR":{"unidades":200,"facturacion":7090788,"pedidos":70,"unid_por_pedido":2.86},"HUILA":{"unidades":191,"facturacion":7741916,"pedidos":72,"unid_por_pedido":2.65}},
+  cityProd: {"BOGOTA":{"unidades":1136,"facturacion":43525386,"pedidos":387,"unid_por_pedido":2.94},"CALI":{"unidades":402,"facturacion":21363410,"pedidos":179,"unid_por_pedido":2.25},"CARTAGENA":{"unidades":364,"facturacion":14798427,"pedidos":133,"unid_por_pedido":2.74},"MEDELLIN":{"unidades":362,"facturacion":20320543,"pedidos":171,"unid_por_pedido":2.12},"BARRANQUILLA":{"unidades":322,"facturacion":13135246,"pedidos":121,"unid_por_pedido":2.66},"TUMACO":{"unidades":146,"facturacion":3512736,"pedidos":35,"unid_por_pedido":4.17},"MONTERIA":{"unidades":137,"facturacion":3526410,"pedidos":36,"unid_por_pedido":3.81},"BUENAVENTURA":{"unidades":133,"facturacion":3902609,"pedidos":38,"unid_por_pedido":3.50},"POPAYAN":{"unidades":131,"facturacion":4321094,"pedidos":39,"unid_por_pedido":3.36},"SANTA MARTA":{"unidades":111,"facturacion":5270600,"pedidos":44,"unid_por_pedido":2.52},"VILLAVICENCIO":{"unidades":103,"facturacion":3738500,"pedidos":33,"unid_por_pedido":3.12},"BARRANCABERMEJA":{"unidades":94,"facturacion":2712500,"pedidos":25,"unid_por_pedido":3.76},"PEREIRA":{"unidades":93,"facturacion":4487325,"pedidos":39,"unid_por_pedido":2.38},"CUCUTA":{"unidades":89,"facturacion":3462004,"pedidos":29,"unid_por_pedido":3.07},"VALLEDUPAR":{"unidades":89,"facturacion":3446733,"pedidos":32,"unid_por_pedido":2.78}},
+  tiendaDep: {"ANTIOQUIA":{"SHOPIFY":781,"LUCIDBOT":327,"CHATEA PRO":17},"ATLANTICO":{"SHOPIFY":328,"LUCIDBOT":159,"CHATEA PRO":3},"BOLIVAR":{"SHOPIFY":377,"LUCIDBOT":130,"CHATEA PRO":6},"CAUCA":{"SHOPIFY":191,"LUCIDBOT":69,"CHATEA PRO":1},"CORDOBA":{"SHOPIFY":230,"LUCIDBOT":86,"CHATEA PRO":1},"CUNDINAMARCA":{"SHOPIFY":1144,"LUCIDBOT":518,"CHATEA PRO":10},"META":{"SHOPIFY":187,"LUCIDBOT":70,"CHATEA PRO":1},"NARIÑO":{"SHOPIFY":239,"LUCIDBOT":110,"CHATEA PRO":1},"SANTANDER":{"SHOPIFY":259,"LUCIDBOT":89,"CHATEA PRO":2},"VALLE":{"SHOPIFY":633,"LUCIDBOT":217,"CHATEA PRO":9}},
+  depNov: {"CUNDINAMARCA":{"novedades":75,"solucionadas":75,"total_pedidos":560,"tasa_novedad":13.4,"tasa_sol":100.0},"ANTIOQUIA":{"novedades":39,"solucionadas":39,"total_pedidos":465,"tasa_novedad":8.4,"tasa_sol":100.0},"VALLE":{"novedades":25,"solucionadas":25,"total_pedidos":357,"tasa_novedad":7.0,"tasa_sol":100.0},"ATLANTICO":{"novedades":19,"solucionadas":19,"total_pedidos":181,"tasa_novedad":10.5,"tasa_sol":100.0},"BOLIVAR":{"novedades":12,"solucionadas":12,"total_pedidos":192,"tasa_novedad":6.2,"tasa_sol":100.0},"CORDOBA":{"novedades":11,"solucionadas":11,"total_pedidos":94,"tasa_novedad":11.7,"tasa_sol":100.0},"SANTANDER":{"novedades":8,"solucionadas":8,"total_pedidos":126,"tasa_novedad":6.3,"tasa_sol":100.0},"MAGDALENA":{"novedades":7,"solucionadas":7,"total_pedidos":81,"tasa_novedad":8.6,"tasa_sol":100.0},"TOLIMA":{"novedades":6,"solucionadas":6,"total_pedidos":78,"tasa_novedad":7.7,"tasa_sol":100.0},"CALDAS":{"novedades":5,"solucionadas":5,"total_pedidos":49,"tasa_novedad":10.2,"tasa_sol":100.0},"RISARALDA":{"novedades":4,"solucionadas":4,"total_pedidos":62,"tasa_novedad":6.5,"tasa_sol":100.0},"NARIÑO":{"novedades":4,"solucionadas":4,"total_pedidos":106,"tasa_novedad":3.8,"tasa_sol":100.0},"CESAR":{"novedades":4,"solucionadas":4,"total_pedidos":70,"tasa_novedad":5.7,"tasa_sol":100.0},"CAQUETA":{"novedades":3,"solucionadas":3,"total_pedidos":32,"tasa_novedad":9.4,"tasa_sol":100.0},"NORTE DE SANTANDER":{"novedades":3,"solucionadas":3,"total_pedidos":54,"tasa_novedad":5.6,"tasa_sol":100.0}},
+  cityNov: {"BOGOTA":{"novedades":62,"solucionadas":62,"total_pedidos":387,"tasa_novedad":16.0,"tasa_sol":100.0},"MEDELLIN":{"novedades":18,"solucionadas":18,"total_pedidos":171,"tasa_novedad":10.5,"tasa_sol":100.0},"CALI":{"novedades":15,"solucionadas":15,"total_pedidos":179,"tasa_novedad":8.4,"tasa_sol":100.0},"CARTAGENA":{"novedades":12,"solucionadas":12,"total_pedidos":133,"tasa_novedad":9.0,"tasa_sol":100.0},"BARRANQUILLA":{"novedades":10,"solucionadas":10,"total_pedidos":121,"tasa_novedad":8.3,"tasa_sol":100.0},"BELLO":{"novedades":7,"solucionadas":7,"total_pedidos":27,"tasa_novedad":25.9,"tasa_sol":100.0},"MONTERIA":{"novedades":5,"solucionadas":5,"total_pedidos":36,"tasa_novedad":13.9,"tasa_sol":100.0},"BUENAVENTURA":{"novedades":4,"solucionadas":4,"total_pedidos":38,"tasa_novedad":10.5,"tasa_sol":100.0},"IBAGUE":{"novedades":4,"solucionadas":4,"total_pedidos":34,"tasa_novedad":11.8,"tasa_sol":100.0},"SANTA MARTA":{"novedades":4,"solucionadas":4,"total_pedidos":44,"tasa_novedad":9.1,"tasa_sol":100.0},"SOLEDAD":{"novedades":4,"solucionadas":4,"total_pedidos":21,"tasa_novedad":19.0,"tasa_sol":100.0},"BARRANCABERMEJA":{"novedades":3,"solucionadas":3,"total_pedidos":25,"tasa_novedad":12.0,"tasa_sol":100.0},"MANIZALES":{"novedades":3,"solucionadas":3,"total_pedidos":24,"tasa_novedad":12.5,"tasa_sol":100.0},"FLORENCIA":{"novedades":3,"solucionadas":3,"total_pedidos":20,"tasa_novedad":15.0,"tasa_sol":100.0},"ITAGUI":{"novedades":3,"solucionadas":3,"total_pedidos":13,"tasa_novedad":23.1,"tasa_sol":100.0}},
   depTopNov: {"ANTIOQUIA":"No hay quien reciba","ATLANTICO":"DESTINATARIO SE REHUSA A RECIBIR","BOLIVAR":"COORDINAR LA ENTREGA","CORDOBA":"COORDINAR LA ENTREGA","CUNDINAMARCA":"DESTINATARIO SE REHUSA A RECIBIR","MAGDALENA":"COORDINAR LA ENTREGA","SANTANDER":"DESTINATARIO SE REHUSA A RECIBIR","VALLE":"No hay quien reciba"}
 };
 
@@ -902,7 +1097,7 @@ function buildAll() {
   // --- FACTURACIÓN ---
   new Chart('chartFacturacionMes', {
     type:'bar',
-    data:{ labels: DATA.mesesLabel, datasets:[{label:'Facturación (COP)', data:[138824590,180839007], backgroundColor:[COLORS.success,COLORS.primaryBorder], borderRadius:8, borderSkipped:false}]},
+    data:{ labels: DATA.mesesLabel, datasets:[{label:'Facturación (COP)', data:[138824590,195576832], backgroundColor:[COLORS.success,COLORS.primaryBorder], borderRadius:8, borderSkipped:false}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
       datalabels:{display:true,anchor:'end',align:'top',color:'#1e293b',font:{weight:'700',size:12},formatter:v=>'$'+(v/1000000).toFixed(1)+'M'}},
       scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+(v/1000000).toFixed(0)+'M'}}}}
@@ -917,7 +1112,7 @@ function buildAll() {
   new Chart('chartFactVsFlete', {
     type:'bar',
     data:{ labels: DATA.mesesLabel, datasets:[
-      {label:'Facturación', data:[138824590,180839007], backgroundColor:COLORS.success, borderRadius:6, borderSkipped:false},
+      {label:'Facturación', data:[138824590,195576832], backgroundColor:COLORS.success, borderRadius:6, borderSkipped:false},
       {label:'Costo Flete', data:[19473454,31436463], backgroundColor:COLORS.warning, borderRadius:6, borderSkipped:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
@@ -1740,9 +1935,408 @@ function showTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   event.currentTarget.classList.add('active');
+  if (name === 'inventario') initInventario();
+  if (name === 'confirmaciones') initConfirmaciones();
 }
 
-document.addEventListener('DOMContentLoaded', buildAll);
+document.addEventListener('DOMContentLoaded', () => { buildAll(); initInventario(); });
+
+// ============================================================
+// INVENTARIO CORTE — DATA & LOGIC
+// ============================================================
+const INVENTARIO = [
+  {codigo:"JS186000",   nombre:"TRAMPAS DE RATÓN",              stock:2480, precio:1778},
+  {codigo:"JS151800",   nombre:"PELOTA DE MASCOTA",             stock:1800, precio:3877},
+  {codigo:"6995568965820", nombre:"GEL EXTER CUCARACHA",        stock:1631, precio:2884},
+  {codigo:"JS121800",   nombre:"PELOTA PET",                    stock:1508, precio:3880},
+  {codigo:"14272025",   nombre:"FORTALECEDOR DE ANTEBRAZO",     stock:1416, precio:11486},
+  {codigo:"JS172000",   nombre:"GUANTES PARA TRAMPAS",          stock:1242, precio:161},
+  {codigo:"JS201200",   nombre:"BOLSO PARA DAMA",               stock:1200, precio:8671},
+  {codigo:"JS191000",   nombre:"PEGAMENTO PARA RATAS",          stock:1000, precio:1229},
+  {codigo:"JS131200",   nombre:"BLOQUEO DE CARRO",              stock:796,  precio:15474},
+  {codigo:"JS045002025",nombre:"MASCARA LED",                   stock:499,  precio:37957},
+  {codigo:"JS160480",   nombre:"EXTENSOR DE TOMA",              stock:475,  precio:38233},
+  {codigo:"6939247629146",nombre:"CEPILLO DE LIMPIEZA 360",     stock:461,  precio:42193},
+  {codigo:"JS15-01",    nombre:"CEPILLO DE MASCOTA",            stock:460,  precio:3950},
+  {codigo:"04832025",   nombre:"PULL UP",                       stock:423,  precio:38041},
+  {codigo:"7709864581115",nombre:"MASCARILLA SOUL COLLINE",     stock:331,  precio:13200},
+  {codigo:"4182025",    nombre:"PLATO DE BEBÉ",                 stock:318,  precio:12932},
+  {codigo:"JS144001",   nombre:"HERRAMIENTA TODO EN 1",         stock:305,  precio:36953},
+  {codigo:"JS101008",   nombre:"EXTENSOR DE ENERGIA",           stock:214,  precio:30400},
+  {codigo:"0003",       nombre:"MASCARA FACIAL LUZ LED",        stock:113,  precio:37957},
+  {codigo:"JS091008",   nombre:"PEGANTE DE RATAS",              stock:98,   precio:492},
+  {codigo:"01312025",   nombre:"POWER BANK",                    stock:87,   precio:36843},
+  {codigo:"JSINSU065",  nombre:"STICKERS DE GUIAS",             stock:65,   precio:17484},
+  {codigo:"JS073400",   nombre:"PACK TRAMPA DE RATAS",          stock:39,   precio:612},
+  {codigo:"JS110726",   nombre:"DIRECCIONAL LED PARA MOTO",     stock:37,   precio:19016},
+  {codigo:"JS05292025", nombre:"PEDAL ANTIRROBO CARRO",         stock:2,    precio:12400},
+  {codigo:"12002025",   nombre:"PEDAL ANTIRROBO CARRO (JS03)",  stock:2,    precio:12408},
+  {codigo:"20002025",   nombre:"PELOTA PET (V2)",               stock:2,    precio:3856},
+  {codigo:"202502488",  nombre:"CREATINA MAX WELLNESS (TARRO)", stock:1,    precio:35000},
+  {codigo:"0004",       nombre:"DIRECCIONAL MOTO LED",          stock:1,    precio:22616},
+  {codigo:"00552025",   nombre:"EXTENSOR DE TOMA (V2)",         stock:1,    precio:34929},
+  {codigo:"0006",       nombre:"CREATINA MAX WELLNESS",         stock:0,    precio:22000},
+  {codigo:"191202510",  nombre:"CUBRE PEZÓN",                   stock:0,    precio:3012},
+  {codigo:"05732025",   nombre:"HERRAMIENTA 18 EN 1",           stock:0,    precio:36955},
+];
+
+let invSortCol = 'stock';
+let invSortDir = -1; // -1 desc, 1 asc
+
+function stockIndicador(s) {
+  if (s === 0) return '<span style="color:#ef4444;font-size:1rem;">🔴</span>';
+  if (s <= 10) return '<span style="color:#f59e0b;font-size:1rem;">🟡</span>';
+  return '<span style="color:#22c55e;font-size:1rem;">🟢</span>';
+}
+
+function fmtNum(n) {
+  return n.toLocaleString('es-CO');
+}
+
+function fmtCOP(n) {
+  return '$ ' + n.toLocaleString('es-CO');
+}
+
+function getFilteredInventario() {
+  const q = (document.getElementById('invSearch')?.value || '').toLowerCase();
+  const filtro = document.getElementById('invFiltroStock')?.value || 'todos';
+  return INVENTARIO.filter(r => {
+    const matchQ = !q || r.codigo.toLowerCase().includes(q) || r.nombre.toLowerCase().includes(q);
+    const matchF = filtro === 'todos' ||
+      (filtro === 'ok' && r.stock > 10) ||
+      (filtro === 'bajo' && r.stock >= 1 && r.stock <= 10) ||
+      (filtro === 'agotado' && r.stock === 0);
+    return matchQ && matchF;
+  });
+}
+
+function sortInventario(col) {
+  if (invSortCol === col) invSortDir *= -1;
+  else { invSortCol = col; invSortDir = col === 'nombre' || col === 'codigo' ? 1 : -1; }
+  renderInventario();
+}
+
+function filterInventario() { renderInventario(); }
+
+function renderInventario() {
+  const data = getFilteredInventario();
+  const sorted = [...data].sort((a, b) => {
+    let va, vb;
+    if (invSortCol === 'codigo') { va = a.codigo; vb = b.codigo; return invSortDir * va.localeCompare(vb); }
+    if (invSortCol === 'nombre') { va = a.nombre; vb = b.nombre; return invSortDir * va.localeCompare(vb); }
+    if (invSortCol === 'stock') { return invSortDir * (a.stock - b.stock); }
+    if (invSortCol === 'precio') { return invSortDir * (a.precio - b.precio); }
+    if (invSortCol === 'total') { return invSortDir * ((a.stock*a.precio) - (b.stock*b.precio)); }
+    return 0;
+  });
+
+  // Update sort indicators
+  ['codigo','nombre','stock','precio','total'].forEach(c => {
+    const el = document.getElementById('sort' + c.charAt(0).toUpperCase() + c.slice(1));
+    if (el) el.textContent = invSortCol === c ? (invSortDir === -1 ? '▼' : '▲') : '↕';
+  });
+
+  // Render rows
+  const tbody = document.getElementById('invBody');
+  if (!tbody) return;
+  tbody.innerHTML = sorted.map(r => {
+    const total = r.stock * r.precio;
+    return `<tr>
+      <td style="font-family:monospace;font-size:0.78rem;color:var(--text-muted)">${r.codigo}</td>
+      <td style="font-weight:600">${r.nombre}</td>
+      <td style="text-align:center">${stockIndicador(r.stock)} ${fmtNum(r.stock)}</td>
+      <td style="text-align:right;color:var(--text-muted)">${fmtCOP(r.precio)}</td>
+      <td style="text-align:right;font-weight:700;color:var(--success)">${fmtCOP(total)}</td>
+    </tr>`;
+  }).join('');
+
+  // Footer totals
+  const totalStock = data.reduce((s,r) => s + r.stock, 0);
+  const totalValor = data.reduce((s,r) => s + r.stock * r.precio, 0);
+  const footS = document.getElementById('footStock');
+  const footT = document.getElementById('footTotal');
+  if (footS) footS.textContent = fmtNum(totalStock);
+  if (footT) footT.textContent = fmtCOP(totalValor);
+
+  // Counter
+  const cnt = document.getElementById('invContador');
+  if (cnt) cnt.textContent = `Mostrando ${sorted.length} de ${INVENTARIO.length} productos`;
+}
+
+function initInventario() {
+  // KPI cards
+  const totalProd = INVENTARIO.length;
+  const totalStock = INVENTARIO.reduce((s,r) => s + r.stock, 0);
+  const totalValor = INVENTARIO.reduce((s,r) => s + r.stock * r.precio, 0);
+  const sinStock = INVENTARIO.filter(r => r.stock === 0).length;
+
+  const el = id => document.getElementById(id);
+  if (el('invTotalProd')) el('invTotalProd').textContent = totalProd;
+  if (el('invTotalStock')) el('invTotalStock').textContent = fmtNum(totalStock);
+  if (el('invTotalValor')) el('invTotalValor').textContent = '$ ' + (totalValor/1000000).toFixed(1) + 'M';
+  if (el('invSinStock')) el('invSinStock').textContent = sinStock;
+
+  renderInventario();
+}
+
+
+// ============================================================
+// CONFIRMACIONES — DATA & LOGIC
+// ============================================================
+const CONF_DATA = {
+  byDayTotal: {"2026-01-01":{"total":33,"pendiente":0,"pct":0.0},"2026-01-02":{"total":7,"pendiente":0,"pct":0.0},"2026-01-04":{"total":3,"pendiente":0,"pct":0.0},"2026-01-05":{"total":77,"pendiente":0,"pct":0.0},"2026-01-06":{"total":100,"pendiente":0,"pct":0.0},"2026-01-07":{"total":56,"pendiente":0,"pct":0.0},"2026-01-08":{"total":42,"pendiente":0,"pct":0.0},"2026-01-09":{"total":49,"pendiente":0,"pct":0.0},"2026-01-10":{"total":36,"pendiente":0,"pct":0.0},"2026-01-11":{"total":35,"pendiente":0,"pct":0.0},"2026-01-12":{"total":29,"pendiente":0,"pct":0.0},"2026-01-13":{"total":12,"pendiente":0,"pct":0.0},"2026-01-14":{"total":8,"pendiente":0,"pct":0.0},"2026-01-15":{"total":14,"pendiente":0,"pct":0.0},"2026-01-16":{"total":50,"pendiente":0,"pct":0.0},"2026-01-17":{"total":51,"pendiente":0,"pct":0.0},"2026-01-18":{"total":75,"pendiente":0,"pct":0.0},"2026-01-19":{"total":39,"pendiente":0,"pct":0.0},"2026-01-20":{"total":5,"pendiente":0,"pct":0.0},"2026-01-21":{"total":31,"pendiente":0,"pct":0.0},"2026-01-22":{"total":43,"pendiente":0,"pct":0.0},"2026-01-23":{"total":49,"pendiente":0,"pct":0.0},"2026-01-24":{"total":47,"pendiente":0,"pct":0.0},"2026-01-25":{"total":45,"pendiente":0,"pct":0.0},"2026-01-26":{"total":31,"pendiente":0,"pct":0.0},"2026-01-27":{"total":38,"pendiente":0,"pct":0.0},"2026-01-28":{"total":35,"pendiente":0,"pct":0.0},"2026-01-29":{"total":27,"pendiente":0,"pct":0.0},"2026-01-30":{"total":17,"pendiente":0,"pct":0.0},"2026-01-31":{"total":1,"pendiente":0,"pct":0.0},"2026-02-01":{"total":1,"pendiente":0,"pct":0.0},"2026-02-03":{"total":65,"pendiente":2,"pct":3.1},"2026-02-04":{"total":63,"pendiente":0,"pct":0.0},"2026-02-05":{"total":41,"pendiente":1,"pct":2.4},"2026-02-06":{"total":116,"pendiente":3,"pct":2.6},"2026-02-07":{"total":132,"pendiente":4,"pct":3.0},"2026-02-08":{"total":221,"pendiente":27,"pct":12.2},"2026-02-09":{"total":200,"pendiente":11,"pct":5.5},"2026-02-10":{"total":222,"pendiente":9,"pct":4.1},"2026-02-11":{"total":130,"pendiente":9,"pct":6.9},"2026-02-12":{"total":160,"pendiente":8,"pct":5.0},"2026-02-13":{"total":173,"pendiente":4,"pct":2.3},"2026-02-14":{"total":52,"pendiente":0,"pct":0.0},"2026-02-15":{"total":47,"pendiente":1,"pct":2.1},"2026-02-16":{"total":35,"pendiente":0,"pct":0.0},"2026-02-17":{"total":29,"pendiente":14,"pct":48.3},"2026-02-18":{"total":109,"pendiente":14,"pct":12.8},"2026-02-19":{"total":115,"pendiente":9,"pct":7.8},"2026-02-20":{"total":144,"pendiente":24,"pct":16.7}},
+  byDayTrans: {"2026-01-01":{"ENVIA":0.0,"VELOCES":null,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":0.0},"2026-01-02":{"ENVIA":0.0,"VELOCES":null,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":null},"2026-01-04":{"ENVIA":0.0,"VELOCES":null,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-01-05":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":0.0},"2026-01-06":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":0.0},"2026-01-07":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":0.0},"2026-01-08":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-09":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":0.0},"2026-01-10":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-11":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-12":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-13":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-14":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-01-15":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-16":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-17":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-18":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":0.0},"2026-01-19":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-20":{"ENVIA":0.0,"VELOCES":null,"INTERRAPIDISIMO":null,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-21":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-22":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-23":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-24":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-25":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-26":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-27":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-28":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-29":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-30":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":0.0,"TCC":null},"2026-01-31":{"ENVIA":null,"VELOCES":null,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-02-01":{"ENVIA":null,"VELOCES":null,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-02-03":{"ENVIA":0.0,"VELOCES":4.5,"INTERRAPIDISIMO":5.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-02-04":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":null},"2026-02-05":{"ENVIA":0.0,"VELOCES":9.1,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":0.0},"2026-02-06":{"ENVIA":0.0,"VELOCES":4.8,"INTERRAPIDISIMO":5.9,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":null},"2026-02-07":{"ENVIA":3.2,"VELOCES":0.0,"INTERRAPIDISIMO":5.9,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":null},"2026-02-08":{"ENVIA":11.6,"VELOCES":12.5,"INTERRAPIDISIMO":16.4,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":0.0},"2026-02-09":{"ENVIA":3.4,"VELOCES":4.3,"INTERRAPIDISIMO":8.8,"COORDINADORA":20.0,"JAMV-DRIVE":null,"TCC":0.0},"2026-02-10":{"ENVIA":3.8,"VELOCES":3.0,"INTERRAPIDISIMO":6.5,"COORDINADORA":0.0,"JAMV-DRIVE":0.0,"TCC":null},"2026-02-11":{"ENVIA":6.7,"VELOCES":9.5,"INTERRAPIDISIMO":6.5,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":0.0},"2026-02-12":{"ENVIA":4.0,"VELOCES":0.0,"INTERRAPIDISIMO":7.7,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":null},"2026-02-13":{"ENVIA":1.0,"VELOCES":5.9,"INTERRAPIDISIMO":2.0,"COORDINADORA":100.0,"JAMV-DRIVE":0.0,"TCC":null},"2026-02-14":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-02-15":{"ENVIA":3.4,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-02-16":{"ENVIA":0.0,"VELOCES":0.0,"INTERRAPIDISIMO":0.0,"COORDINADORA":null,"JAMV-DRIVE":null,"TCC":null},"2026-02-17":{"ENVIA":38.9,"VELOCES":66.7,"INTERRAPIDISIMO":50.0,"COORDINADORA":100.0,"JAMV-DRIVE":null,"TCC":100.0},"2026-02-18":{"ENVIA":8.8,"VELOCES":0.0,"INTERRAPIDISIMO":23.1,"COORDINADORA":50.0,"JAMV-DRIVE":50.0,"TCC":0.0},"2026-02-19":{"ENVIA":4.7,"VELOCES":0.0,"INTERRAPIDISIMO":15.0,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":null},"2026-02-20":{"ENVIA":17.4,"VELOCES":0.0,"INTERRAPIDISIMO":18.6,"COORDINADORA":0.0,"JAMV-DRIVE":null,"TCC":100.0}},
+  byTrans: {"COORDINADORA":{"total":55,"pendiente":4,"otros":51,"pct":7.3},"ENVIA":{"total":1539,"pendiente":62,"otros":1477,"pct":4.0},"INTERRAPIDISIMO":{"total":841,"pendiente":52,"otros":789,"pct":6.2},"JAMV-DRIVE":{"total":91,"pendiente":1,"otros":90,"pct":1.1},"TCC":{"total":18,"pendiente":2,"otros":16,"pct":11.1},"VELOCES":{"total":595,"pendiente":19,"otros":576,"pct":3.2}}
+};
+
+const CONF_TRANS = ["ENVIA","VELOCES","INTERRAPIDISIMO","COORDINADORA","JAMV-DRIVE","TCC"];
+const CONF_COLORS = {
+  "ENVIA": "rgba(79,70,229,0.85)",
+  "VELOCES": "rgba(14,165,233,0.85)",
+  "INTERRAPIDISIMO": "rgba(16,185,129,0.85)",
+  "COORDINADORA": "rgba(245,158,11,0.85)",
+  "JAMV-DRIVE": "rgba(239,68,68,0.85)",
+  "TCC": "rgba(168,85,247,0.85)"
+};
+
+let confMesFiltro = '2026-01';
+let chartConfDiaTotal = null;
+let chartConfDiaTrans = null;
+let chartConfTrans = null;
+
+function pctColor(v) {
+  if (v === null) return '';
+  if (v === 0) return 'background:#d1fae5;color:#065f46;';
+  if (v <= 15) return 'background:#fef9c3;color:#854d0e;';
+  return 'background:#fee2e2;color:#991b1b;';
+}
+
+function pctCell(v) {
+  if (v === null) return '<td style="text-align:center;color:#cbd5e1">—</td>';
+  const style = pctColor(v);
+  return `<td style="text-align:center;font-weight:600;${style}">${v.toFixed(1)}%</td>`;
+}
+
+function getConfDays(mes) {
+  const days = Object.keys(CONF_DATA.byDayTotal).sort();
+  if (mes === 'todos') return days;
+  return days.filter(d => d.startsWith(mes));
+}
+
+function formatDia(d) {
+  const parts = d.split('-');
+  return `${parts[2]}/${parts[1]}`;
+}
+
+function filterConfTable() {
+  renderConfTable();
+}
+
+function renderConfTable() {
+  const q = (document.getElementById('confSearch')?.value || '').toLowerCase();
+  const soloPend = document.getElementById('confSoloPend')?.checked;
+  const days = getConfDays(confMesFiltro);
+
+  const filtered = days.filter(d => {
+    const row = CONF_DATA.byDayTotal[d];
+    if (!row) return false;
+    if (soloPend && row.pendiente === 0) return false;
+    if (q && !d.includes(q) && !formatDia(d).includes(q)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('confBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = filtered.map(d => {
+    const tot = CONF_DATA.byDayTotal[d];
+    const dt = CONF_DATA.byDayTrans[d] || {};
+    const pctStyle = pctColor(tot.pct);
+    return `<tr>
+      <td style="font-weight:600">${formatDia(d)}<span style="color:var(--text-muted);font-size:0.75rem;margin-left:4px">${d.slice(0,7)==='2026-01'?'Ene':'Feb'}</span></td>
+      <td style="text-align:center">${tot.total}</td>
+      <td style="text-align:center;color:${tot.pendiente>0?'var(--danger)':'var(--success)'};font-weight:700">${tot.pendiente}</td>
+      <td style="text-align:center;font-weight:700;${pctStyle}">${tot.pct.toFixed(1)}%</td>
+      ${pctCell(dt['ENVIA']??null)}
+      ${pctCell(dt['VELOCES']??null)}
+      ${pctCell(dt['INTERRAPIDISIMO']??null)}
+      ${pctCell(dt['COORDINADORA']??null)}
+      ${pctCell(dt['JAMV-DRIVE']??null)}
+      ${pctCell(dt['TCC']??null)}
+    </tr>`;
+  }).join('');
+
+  // Footer for filtered
+  const totalR = filtered.reduce((s,d) => s + CONF_DATA.byDayTotal[d].total, 0);
+  const pendR  = filtered.reduce((s,d) => s + CONF_DATA.byDayTotal[d].pendiente, 0);
+  const pctR   = totalR > 0 ? (pendR/totalR*100).toFixed(1) : '0.0';
+  const fT = document.getElementById('confFootTotal'); if (fT) fT.textContent = totalR;
+  const fP = document.getElementById('confFootPend');  if (fP) fP.textContent = pendR;
+  const fPc = document.getElementById('confFootPct'); if (fPc) fPc.textContent = pctR + '%';
+
+  const cnt = document.getElementById('confTableInfo');
+  if (cnt) cnt.textContent = `Mostrando ${filtered.length} de ${days.length} días`;
+}
+
+function switchConfMes(mes) {
+  confMesFiltro = mes;
+  ['btnConfEne','btnConfFeb','btnConfAll'].forEach(id => {
+    document.getElementById(id)?.classList.remove('active');
+  });
+  const map = {'2026-01':'btnConfEne','2026-02':'btnConfFeb','todos':'btnConfAll'};
+  document.getElementById(map[mes])?.classList.add('active');
+  renderConfTable();
+  updateConfDiaTrans();
+  updateConfDiaTotal();
+}
+
+function updateConfDiaTotal() {
+  const days = getConfDays(confMesFiltro);
+  const labels = days.map(formatDia);
+  const pcts = days.map(d => CONF_DATA.byDayTotal[d]?.pct ?? 0);
+  const bgColors = pcts.map(p => p === 0 ? 'rgba(16,185,129,0.7)' : p <= 15 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.85)');
+
+  if (chartConfDiaTotal) { chartConfDiaTotal.destroy(); chartConfDiaTotal = null; }
+  const ctx = document.getElementById('chartConfDiaTotal');
+  if (!ctx) return;
+  chartConfDiaTotal = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '% Pendiente Confirmación',
+        data: pcts,
+        backgroundColor: bgColors,
+        borderRadius: 5,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+          anchor: 'end', align: 'top', formatter: v => v.toFixed(1)+'%',
+          font: { size: 10, weight: '700' },
+          color: ctx => ctx.dataset.data[ctx.dataIndex] > 15 ? '#991b1b' : '#92400e'
+        },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const idx = items[0].dataIndex;
+              return days[idx];
+            },
+            label: (item) => {
+              const d = days[item.dataIndex];
+              const r = CONF_DATA.byDayTotal[d];
+              return [`% Pendiente: ${item.raw}%`, `Pendientes: ${r.pendiente}`, `Total: ${r.total}`];
+            }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 55, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,0.06)' } },
+        x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function updateConfDiaTrans() {
+  const days = getConfDays(confMesFiltro);
+  const labels = days.map(formatDia);
+
+  const datasets = CONF_TRANS.map(trans => ({
+    label: trans,
+    data: days.map(d => {
+      const v = (CONF_DATA.byDayTrans[d] || {})[trans];
+      return (v === null || v === undefined) ? null : v;
+    }),
+    borderColor: CONF_COLORS[trans],
+    backgroundColor: CONF_COLORS[trans].replace('0.85','0.15'),
+    borderWidth: 2,
+    pointRadius: 4,
+    pointHoverRadius: 6,
+    tension: 0.3,
+    spanGaps: false
+  }));
+
+  if (chartConfDiaTrans) { chartConfDiaTrans.destroy(); chartConfDiaTrans = null; }
+  const ctx = document.getElementById('chartConfDiaTrans');
+  if (!ctx) return;
+  chartConfDiaTrans = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+        datalabels: { display: false },
+        tooltip: { callbacks: { label: item => `${item.dataset.label}: ${item.raw !== null ? item.raw+'%' : '—'}` } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,0.06)' } },
+        x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initConfirmaciones() {
+  // Gráfico barras por transportadora (acumulado)
+  if (!chartConfTrans) {
+    const ctx = document.getElementById('chartConfTrans');
+    if (ctx) {
+      const trans = Object.keys(CONF_DATA.byTrans);
+      const pcts = trans.map(t => CONF_DATA.byTrans[t].pct);
+      const totales = trans.map(t => CONF_DATA.byTrans[t].total);
+      const pendientes = trans.map(t => CONF_DATA.byTrans[t].pendiente);
+      chartConfTrans = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: trans,
+          datasets: [
+            { label: 'Otros estatus', data: trans.map(t => CONF_DATA.byTrans[t].otros), backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 4, stack: 'a' },
+            { label: 'Pend. Confirmación', data: pendientes, backgroundColor: 'rgba(239,68,68,0.8)', borderRadius: 4, stack: 'a' }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            datalabels: {
+              display: ctx => ctx.datasetIndex === 1 && ctx.dataset.data[ctx.dataIndex] > 0,
+              anchor: 'end', align: 'top',
+              formatter: (v, ctx) => {
+                const t = ctx.chart.data.labels[ctx.dataIndex];
+                return CONF_DATA.byTrans[t].pct + '%';
+              },
+              font: { size: 11, weight: '700' }, color: '#991b1b'
+            },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const t = items[0].label;
+                  const d = CONF_DATA.byTrans[t];
+                  return [`% Pendiente: ${d.pct}%`, `Total: ${d.total}`];
+                }
+              }
+            }
+          },
+          scales: {
+            y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' } },
+            x: { stacked: true, grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+  updateConfDiaTotal();
+  updateConfDiaTrans();
+  renderConfTable();
+}
+
 </script>
 </body>
 </html>
