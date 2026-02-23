@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance (KPIs) TDM — 22.02.2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --accent: #0891b2;
+    --accent2: #06b6d4;
+    --green: #059669;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --text: #1e293b;
+    --muted: #64748b;
+    --header-font: 'Crimson Pro', serif;
+    --body-font: 'Work Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { 
+    background: var(--bg); 
+    color: var(--text); 
+    font-family: var(--body-font); 
+    font-size: 13px; 
+    min-height: 100vh; 
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 28px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  header h1 { 
+    font-family: var(--header-font); 
+    font-size: 32px; 
+    font-weight: 700; 
+    color: #ffffff; 
+    letter-spacing: -0.5px;
+  }
+  .header-badge { 
+    display: inline-block; 
+    background: rgba(255,255,255,0.2); 
+    border: 1px solid rgba(255,255,255,0.3); 
+    padding: 4px 12px; 
+    border-radius: 20px; 
+    font-size: 11px; 
+    font-weight: 600; 
+    margin-left: 12px;
+    color: #ffffff;
+  }
+  header .meta { 
+    color: rgba(255,255,255,0.9); 
+    font-size: 13px; 
+    text-align: right; 
+    line-height: 1.8; 
+  }
+  header .meta span { color: #ffffff; font-weight: 600; }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  nav button {
+    background: none; 
+    border: none; 
+    color: var(--muted);
+    font-family: var(--body-font); 
+    font-size: 13px; 
+    font-weight: 600;
+    padding: 16px 20px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.2px;
+  }
+  nav button:hover { color: var(--accent); }
+  nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN */
+  main { padding: 32px; max-width: 1600px; margin: 0 auto; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi.indigo::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+  .kpi.green::before { background: linear-gradient(90deg, #059669, #10b981); }
+  .kpi.yellow::before { background: linear-gradient(90deg, #d97706, #f59e0b); }
+  .kpi.cyan::before { background: linear-gradient(90deg, #0891b2, #06b6d4); }
+  .kpi.teal::before { background: linear-gradient(90deg, #0d9488, #14b8a6); }
+  .kpi.red::before { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+  .kpi-label { 
+    color: var(--muted); 
+    font-size: 11px; 
+    font-weight: 600; 
+    letter-spacing: 0.5px; 
+    text-transform: uppercase; 
+    margin-bottom: 10px; 
+  }
+  .kpi-value { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 6px; color: var(--text); }
+  .kpi-sub { color: var(--muted); font-size: 11.5px; }
+  .kpi-badge { 
+    display: inline-block; 
+    font-size: 10px; 
+    font-weight: 600; 
+    padding: 3px 8px; 
+    border-radius: 5px; 
+    margin-top: 6px; 
+  }
+  .badge-up { background: rgba(5,150,105,0.12); color: var(--green); }
+  .badge-down { background: rgba(220,38,38,0.12); color: var(--red); }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: var(--header-font);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .icon { font-size: 22px; }
+
+  /* ALERTS */
+  .alerts { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+  .alert {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .alert-red { border-left-color: var(--red); background: rgba(220,38,38,0.02); }
+  .alert-yellow { border-left-color: var(--yellow); background: rgba(217,119,6,0.02); }
+  .alert-green { border-left-color: var(--green); background: rgba(5,150,105,0.02); }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .alert-title { font-weight: 600; font-size: 13.5px; margin-bottom: 4px; color: var(--text); }
+  .alert-body { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+  .alert-stores { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .store-tag { 
+    background: rgba(8,145,178,0.08); 
+    border: 1px solid rgba(8,145,178,0.2); 
+    border-radius: 5px; 
+    padding: 2px 8px; 
+    font-size: 11px; 
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* TABLES */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  thead th {
+    background: #f1f5f9;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: right;
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    position: relative;
+  }
+  thead th:first-child { 
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: #f1f5f9;
+    z-index: 2;
+  }
+  thead th:hover { color: var(--accent); }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: rgba(8,145,178,0.04); }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+  tbody td:first-child { 
+    text-align: left; 
+    font-weight: 600;
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    z-index: 1;
+  }
+  tbody tr:hover td:first-child { background: rgba(8,145,178,0.04); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .chip {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .chip-green { background: rgba(5,150,105,0.12); color: var(--green); }
+  .chip-red { background: rgba(220,38,38,0.12); color: var(--red); }
+  .chip-yellow { background: rgba(217,119,6,0.12); color: var(--yellow); }
+
+  /* CHARTS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+  }
+
+  /* HORIZONTAL BARS */
+  .hbar { display: flex; flex-direction: column; gap: 8px; }
+  .hbar-row { display: flex; align-items: center; gap: 12px; }
+  .hbar-label { width: 40px; font-size: 11.5px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .hbar-track { 
+    flex: 1; 
+    height: 20px; 
+    background: #f1f5f9; 
+    border-radius: 4px; 
+    overflow: hidden; 
+    position: relative; 
+  }
+  .hbar-fill { 
+    height: 100%; 
+    border-radius: 4px; 
+    display: flex; 
+    align-items: center; 
+    padding-left: 8px; 
+    font-size: 10.5px; 
+    font-weight: 600; 
+    transition: width 0.6s ease;
+    color: #ffffff;
+  }
+  .hbar-val { width: 54px; font-size: 11.5px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  /* FILTERS */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-bar input, .filter-bar select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--body-font);
+    font-size: 12.5px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    outline: none;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
+  .filter-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: var(--body-font);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .filter-btn:hover { opacity: 0.9; }
+  .filter-btn.secondary { 
+    background: #f1f5f9; 
+    border: 1px solid var(--border); 
+    color: var(--muted); 
+  }
+
+  /* BAR VIS */
+  .bar-wrap { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .bar-track { width: 80px; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+
+  .rank-num { color: var(--muted); font-size: 11.5px; font-weight: 700; }
+  .rank-1 { color: #d97706; }
+  .rank-2 { color: #94a3b8; }
+  .rank-3 { color: #b87333; }
+
+  .mt-20 { margin-top: 20px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    body { font-size: 12px; }
+    
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 20px;
+    }
+    header h1 { font-size: 24px; }
+    header .meta { text-align: left; font-size: 12px; }
+
+    nav { 
+      padding: 0 16px; 
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button { 
+      padding: 14px 16px; 
+      font-size: 12px; 
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-height: 44px;
+    }
+
+    main { padding: 20px 16px; }
+
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px;
+    }
+    .kpi { padding: 16px 18px; }
+    .kpi-label { font-size: 10px; }
+    .kpi-value { font-size: 20px; }
+    .kpi-sub { font-size: 10.5px; }
+
+    .section-title { font-size: 18px; margin-bottom: 14px; }
+
+    .two-col { 
+      grid-template-columns: 1fr !important; 
+      gap: 18px; 
+    }
+
+    .alerts { gap: 10px; }
+    .alert { 
+      padding: 12px 16px; 
+      flex-direction: column;
+      gap: 10px;
+    }
+    .alert-icon { font-size: 16px; }
+    .alert-title { font-size: 12.5px; }
+    .alert-body { font-size: 11.5px; }
+    .store-tag { font-size: 10px; padding: 2px 7px; }
+
+    .chart-card { padding: 18px; }
+    .chart-title { font-size: 10.5px; margin-bottom: 14px; }
+
+    .hbar-label { width: 34px; font-size: 10.5px; }
+    .hbar-track { height: 16px; }
+    .hbar-fill { font-size: 9.5px; padding-left: 6px; }
+    .hbar-val { width: 50px; font-size: 10.5px; }
+
+    .table-wrap { 
+      position: relative;
+    }
+    .table-wrap::after {
+      content: '← Desliza →';
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(8,145,178,0.15);
+      color: var(--accent);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 5px;
+      pointer-events: none;
+      opacity: 0.8;
+      letter-spacing: 0.3px;
+      border: 1px solid rgba(8,145,178,0.2);
+    }
+    table { 
+      font-size: 11px;
+      min-width: 600px;
+    }
+    thead th { 
+      padding: 10px 12px; 
+      font-size: 10px;
+    }
+    thead th:first-child {
+      position: sticky;
+      left: 0;
+      background: #f1f5f9;
+      z-index: 3;
+    }
+    tbody td { padding: 10px 12px; }
+    tbody td:first-child {
+      position: sticky;
+      left: 0;
+      background: var(--card);
+      z-index: 2;
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+    }
+
+    .chip { font-size: 10px; padding: 2px 7px; }
+
+    .filter-bar { 
+      flex-direction: column; 
+      align-items: stretch; 
+      gap: 10px; 
+    }
+    .filter-bar input, 
+    .filter-bar select,
+    .filter-btn { 
+      width: 100%; 
+      font-size: 12px;
+      padding: 12px 14px;
+      min-height: 44px;
+    }
+
+    .bar-track { width: 60px; }
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 20px; }
+    .kpi-grid { grid-template-columns: 1fr !important; }
+    .kpi-value { font-size: 22px; }
+    table { min-width: 500px; }
+    nav button { font-size: 11px; padding: 12px 14px; }
+  }
+
+  /* Landscape mobile */
+  @media (max-width: 900px) and (orientation: landscape) {
+    header { padding: 16px 20px; }
+    header h1 { font-size: 22px; }
+    nav button { padding: 12px 16px; }
+    .kpi-grid { 
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 12px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Performance (KPIs) TDM<span class="header-badge">Indicadores TDM</span></h1>
+    <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:6px;">Indicadores Templo de la Moda · Corte <span>22 de febrero, 2026</span></div>
+  </div>
+  <div class="meta">
+    <div>28 tiendas activas · 6 inactivas</div>
+    <div>Datos al <span>22/02/2026</span></div>
+    <div style="margin-top:6px;">
+      <span>●</span> Sobre meta: 9 &nbsp;
+      <span>●</span> Bajo meta: 19
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="switchTab('resumen')">📋 Resumen Ejecutivo</button>
+  <button onclick="switchTab('cumplimiento')">🎯 Cumplimiento</button>
+  <button onclick="switchTab('rentabilidad')">💰 Rentabilidad</button>
+  <button onclick="switchTab('clientes')">👥 Clientes</button>
+  <button onclick="switchTab('inventario')">📦 Inventario & M²</button>
+  <button onclick="switchTab('ranking')">🏆 Ranking General</button>
+</nav>
+
+<main>
+
+<!-- TAB: RESUMEN -->
+<div id="tab-resumen" class="tab-panel active">
+
+  <div class="kpi-grid">
+    <div class="kpi indigo">
+      <div class="kpi-label">Ventas Ejecutadas</div>
+      <div class="kpi-value" style="font-size:19px">$3,879M</div>
+      <div class="kpi-sub">Corte 19 Feb 2026</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Utilidad Total</div>
+      <div class="kpi-value" style="font-size:19px">$1,985M</div>
+      <div class="kpi-badge badge-up">Acum 2026</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Cumplimiento Total</div>
+      <div class="kpi-value">100.2%</div>
+      <div class="kpi-sub">vs. ppto corte</div>
+    </div>
+    <div class="kpi cyan">
+      <div class="kpi-label">Rentabilidad Total</div>
+      <div class="kpi-value">51.1%</div>
+      <div class="kpi-badge badge-up">▲ vs 40.9% (2025)</div>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">Efectividad Prom</div>
+      <div class="kpi-value">51.2%</div>
+      <div class="kpi-sub">ing. clientes → compra</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Tiendas Bajo Meta</div>
+      <div class="kpi-value">17 / 28</div>
+      <div class="kpi-sub">61% de la red</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Var Vta vs 2025</div>
+      <div class="kpi-value">+9.1%</div>
+      <div class="kpi-sub">Crecimiento en ventas</div>
+    </div>
+    <div class="kpi cyan">
+      <div class="kpi-label">Var Unds vs 2025</div>
+      <div class="kpi-value">+4.2%</div>
+      <div class="kpi-sub">107,441 unidades</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Var Clientes vs 2025</div>
+      <div class="kpi-value">+0.2%</div>
+      <div class="kpi-sub">48,903 clientes</div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="section-title"><span class="icon">⚠️</span> Señales Críticas</div>
+  <div class="alerts">
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <div class="alert-title">T36 con cumplimiento crítico — 71.9%</div>
+        <div class="alert-body">La tienda T36 está 28 puntos por debajo del presupuesto de corte. Aunque mantiene alta rentabilidad (53.7%), presenta efectividad muy baja (23.8%) y requiere análisis urgente de causas raíz.</div>
+        <div class="alert-stores"><span class="store-tag">T36</span></div>
+      </div>
+    </div>
+    <div class="alert alert-red">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <div class="alert-title">Pérdida de utilidad en 2 tiendas (mejora vs 3 previas)</div>
+        <div class="alert-body">T31 y T30 presentan variación negativa de utilidad 2026 vs 2025. T31: −4.9% (mejoró vs −7.0% anterior), T30: −2.4%. T10 salió del bottom con +0.7% positivo.</div>
+        <div class="alert-stores"><span class="store-tag">T31 −4.9%</span><span class="store-tag">T30 −2.4%</span></div>
+      </div>
+    </div>
+    <div class="alert alert-yellow">
+      <div class="alert-icon">🟡</div>
+      <div>
+        <div class="alert-title">13 tiendas perdiendo clientes compradores (mejora vs 16)</div>
+        <div class="alert-body">El 46% de la red registra caída en clientes vs 2025 (mejora vs 57% anterior). T30 lidera la pérdida (−12.6%), seguida de T05 (−10.9%) y T23 (−10.7%). Tendencia mejorando.</div>
+        <div class="alert-stores"><span class="store-tag">T30</span><span class="store-tag">T05</span><span class="store-tag">T23</span><span class="store-tag">T01</span><span class="store-tag">T10</span></div>
+      </div>
+    </div>
+    <div class="alert alert-yellow">
+      <div class="alert-icon">🟡</div>
+      <div>
+        <div class="alert-title">T10: Peor efectividad de toda la red (15.2%)</div>
+        <div class="alert-body">Solo 15.2% de clientes que ingresan compran en T10. Con 63,767 unidades en inventario (2º mayor de la red), muestra desconexión severa entre tráfico y conversión. Stock alto sin rotación eficiente.</div>
+        <div class="alert-stores"><span class="store-tag">T10</span><span class="store-tag">T24 20.5%</span></div>
+      </div>
+    </div>
+    <div class="alert alert-green">
+      <div class="alert-icon">🟢</div>
+      <div>
+        <div class="alert-title">T29, T20 y T27 lideran con crecimientos excepcionales</div>
+        <div class="alert-body">T29 lidera cumplimiento con 114.8% y +47.4% var utilidad. T20 alcanza 111.8% con +36.3% var utilidad. T27 completa el top 3 con 111.7% y espectacular +57.0% var utilidad.</div>
+        <div class="alert-stores"><span class="store-tag">T29 +47%</span><span class="store-tag">T20 +36%</span><span class="store-tag">T27 +57%</span></div>
+      </div>
+    </div>
+    <div class="alert alert-green">
+      <div class="alert-icon">🟢</div>
+      <div>
+        <div class="alert-title">Rentabilidad 2026 supera significativamente a 2025</div>
+        <div class="alert-body">La rentabilidad total se mantiene en 51.1% en 2026 vs 40.9% en 2025, un incremento sostenido de +10.2 puntos porcentuales. T24, T32 y T36 lideran con rentabilidades superiores al 51.2%.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mini charts -->
+  <div class="two-col mt-20">
+    <div class="chart-card">
+      <div class="chart-title">Distribución de Cumplimiento</div>
+      <div class="hbar" id="hbar-cump"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Variación Utilidad 2026 vs 2025</div>
+      <div class="hbar" id="hbar-util"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB: CUMPLIMIENTO -->
+<div id="tab-cumplimiento" class="tab-panel">
+  <div class="filter-bar">
+    <input type="text" id="cump-search" placeholder="🔍 Buscar tienda..." oninput="renderCumpTable()">
+    <select id="cump-filter" onchange="renderCumpTable()">
+      <option value="all">Todas</option>
+      <option value="over">Sobre meta ≥100%</option>
+      <option value="under">Bajo meta <100%</option>
+    </select>
+    <button class="filter-btn secondary" onclick="document.getElementById('cump-search').value=''; renderCumpTable()">✕ Limpiar</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortCump('tienda')">Tienda ↕</th>
+          <th onclick="sortCump('ejecutado')">Ejecutado ($) ↕</th>
+          <th onclick="sortCump('pptoCorte')">Ppto Corte ($) ↕</th>
+          <th onclick="sortCump('cump')">Cumplimiento ↕</th>
+          <th onclick="sortCump('diferencia')">Diferencia ($) ↕</th>
+          <th>Visual</th>
+          <th onclick="sortCump('varUtil')">Var Utilidad ↕</th>
+          <th onclick="sortCump('varUnds')">Var Unds ↕</th>
+        </tr>
+      </thead>
+      <tbody id="cump-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB: RENTABILIDAD -->
+<div id="tab-rentabilidad" class="tab-panel">
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi green">
+      <div class="kpi-label">Rent. Total 2026</div>
+      <div class="kpi-value">51.1%</div>
+      <div class="kpi-badge badge-up">▲ +10.2pp vs 2025</div>
+    </div>
+    <div class="kpi cyan">
+      <div class="kpi-label">Mayor Rent. 2026</div>
+      <div class="kpi-value">53.8%</div>
+      <div class="kpi-sub">T24</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Menor Rent. 2026</div>
+      <div class="kpi-value">38.8%</div>
+      <div class="kpi-sub">T31</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Mejor Var. Utilidad</div>
+      <div class="kpi-value">+69.6%</div>
+      <div class="kpi-sub">T27</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="section-title"><span class="icon">💰</span> Rentabilidad 2026 por Tienda</div>
+      <div class="chart-card">
+        <div class="hbar" id="hbar-rent"></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title"><span class="icon">📊</span> Detalle Rentabilidad</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortRent('tienda')">Tienda ↕</th>
+              <th onclick="sortRent('rent2026')">Rent 2026 ↕</th>
+              <th onclick="sortRent('rent2025')">Rent 2025 ↕</th>
+              <th onclick="sortRent('varRent')">Var (pp) ↕</th>
+              <th onclick="sortRent('varUtil')">Var Utilidad ↕</th>
+            </tr>
+          </thead>
+          <tbody id="rent-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: CLIENTES -->
+<div id="tab-clientes" class="tab-panel">
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi cyan">
+      <div class="kpi-label">Efectividad Prom</div>
+      <div class="kpi-value">51.2%</div>
+      <div class="kpi-sub">Clientes que compran / ingresan</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Ganando Clientes</div>
+      <div class="kpi-value">11</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Perdiendo Clientes</div>
+      <div class="kpi-value">16</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Mejor Ticket Promedio</div>
+      <div class="kpi-value">$96,552</div>
+      <div class="kpi-sub">T02 (2026)</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="section-title"><span class="icon">👥</span> Efectividad por Tienda</div>
+      <div class="chart-card">
+        <div class="hbar" id="hbar-efect"></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title"><span class="icon">📈</span> Variación Clientes 2026 vs 2025</div>
+      <div class="chart-card">
+        <div class="hbar" id="hbar-clientes"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-20">
+    <div class="section-title"><span class="icon">📋</span> Detalle Clientes</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortClientes('tienda')">Tienda ↕</th>
+            <th onclick="sortClientes('efectividad')">Efectividad ↕</th>
+            <th onclick="sortClientes('varClientes')">Var Clientes ↕</th>
+            <th onclick="sortClientes('promCompra2026')">Prom Compra 2026 ↕</th>
+            <th onclick="sortClientes('promCompra2025')">Prom Compra 2025 ↕</th>
+          </tr>
+        </thead>
+        <tbody id="clientes-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: INVENTARIO -->
+<div id="tab-inventario" class="tab-panel">
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi cyan">
+      <div class="kpi-label">Mayor Stock (Unds)</div>
+      <div class="kpi-value">65,188</div>
+      <div class="kpi-sub">T02</div>
+    </div>
+    <div class="kpi yellow">
+      <div class="kpi-label">Mayor Vta x M² 2026</div>
+      <div class="kpi-value">$251,716</div>
+      <div class="kpi-sub">T20</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Mayor PxM² (productividad)</div>
+      <div class="kpi-value">68.4</div>
+      <div class="kpi-sub">T05 prendas/m²</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Menor PxM²</div>
+      <div class="kpi-value">34.3</div>
+      <div class="kpi-sub">T04</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="section-title"><span class="icon">📦</span> Unidades en Inventario</div>
+      <div class="chart-card">
+        <div class="hbar" id="hbar-inv"></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title"><span class="icon">📐</span> Venta por M²</div>
+      <div class="chart-card">
+        <div class="hbar" id="hbar-vtam2"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-20">
+    <div class="section-title"><span class="icon">📋</span> Detalle Inventario & Productividad</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortInv('tienda')">Tienda ↕</th>
+            <th onclick="sortInv('undsInv')">Unds Inventario ↕</th>
+            <th onclick="sortInv('unds2026')">Unds Vendidas 2026 ↕</th>
+            <th onclick="sortInv('varUnds')">Var Unds ↕</th>
+            <th onclick="sortInv('pxm2')">PxM² ↕</th>
+            <th onclick="sortInv('vtaM2')">Vta x M² 2026 ↕</th>
+          </tr>
+        </thead>
+        <tbody id="inv-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: RANKING -->
+<div id="tab-ranking" class="tab-panel">
+  <div class="section-title"><span class="icon">🏆</span> Ranking General — Todas las Métricas</div>
+  <div class="filter-bar">
+    <select id="rank-sort" onchange="renderRanking()">
+      <option value="cump">Ordenar por: Cumplimiento</option>
+      <option value="rent2026">Rentabilidad 2026</option>
+      <option value="varUtil">Variación Utilidad</option>
+      <option value="efectividad">Efectividad</option>
+      <option value="vtaM2">Venta x M²</option>
+      <option value="ejecutado">Ventas Ejecutadas</option>
+      <option value="venta2025">Venta 2025 ($)</option>
+      <option value="unds2026">Unds 2026</option>
+      <option value="clientesCompran2026">Clientes Compran 2026</option>
+      <option value="pxm2">PxM² (Productividad)</option>
+      <option value="utilidadM2">Utilidad por M² 2026</option>
+      <option value="promCompra2026">Prom Compra por Cliente 2026</option>
+      <option value="undsCliente">Unds por Cliente 2026</option>
+      <option value="pvp">PVP</option>
+      <option value="pvpInv">PVP Inventario</option>
+      <option value="prendasM2">Prendas Vendidas x M²</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Tienda</th>
+          <th>Ejecutado ($)</th>
+          <th>Cump (%)</th>
+          <th>Rent 2026</th>
+          <th>Var Utilidad</th>
+          <th>Efectividad</th>
+          <th>Var Clientes</th>
+          <th>Vta x M²</th>
+          <th>PxM²</th>
+          <th>Venta 2025 ($)</th>
+          <th>Unds 2026</th>
+          <th>Clientes 2026</th>
+          <th>Util x M²</th>
+          <th>Prom Compra</th>
+          <th>PVP</th>
+        </tr>
+      </thead>
+      <tbody id="rank-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<script>
+const STORES = [{"tienda": "T01", "ejecutado": 163664522.5, "cump": 0.9960095203935054, "rent2026": 0.5140096951677477, "rent2025": 0.3920619632152669, "varRent": 0.3110419867114826, "utilidad": 84125151.32, "varUtil": 0.05231576495017354, "efectividad": 0.5323660714285714, "varClientes": -0.08708133971291865, "vtaM2": 143817.6823374341, "unds2026": 4698.0, "unds2025": 4607.0, "varUnds": 0.01975255046668112, "promCompra2026": 85778.05162473794, "promCompra2025": 78202.35933014355, "undsInv": 48711.0, "pxm2": 42.80404217926186, "pptoCorte": 164320239.0629149, "diferencia": -655716.5629148781, "venta2025": 163442931.0, "varVta": 0.001355772921130427, "clientesCompran2026": 1908.0, "utilidadM2": 73923.68305799647, "undsCliente": 2.462264150943396, "pvp": 34837.06311196253, "pvpInv": 40875.40607460327, "prendasM2": 4.12829525483304}, {"tienda": "T02", "ejecutado": 261952714.0, "cump": 1.069015596051086, "rent2026": 0.5161473295520047, "rent2025": 0.4188997510329333, "varRent": 0.2321500031434154, "utilidad": 135206193.8, "varUtil": 0.0819744648216032, "efectividad": 0.3401206636500755, "varClientes": -0.04449152542372881, "vtaM2": 175571.5241286863, "unds2026": 6914.0, "unds2025": 6674.0, "varUnds": 0.03596044351213656, "promCompra2026": 96804.40280857353, "promCompra2025": 86237.34286723164, "undsInv": 65725.0, "pxm2": 44.05160857908847, "pptoCorte": 245041059.2395902, "diferencia": 16911654.76040977, "venta2025": 244224155.0, "varVta": 0.07259134134377487, "clientesCompran2026": 2706.0, "utilidadM2": 90620.7733243968, "undsCliente": 2.555062823355506, "pvp": 37887.28868961527, "pvpInv": 40971.94311905667, "prendasM2": 4.634048257372654}, {"tienda": "T04", "ejecutado": 122296980.5, "cump": 1.011279278403151, "rent2026": 0.5147339304914402, "rent2025": 0.3947068951670105, "varRent": 0.3040915595701545, "utilidad": 62950405.46000002, "varUtil": 0.123405985466754, "efectividad": 0.4936535162950257, "varClientes": -0.0277027027027027, "vtaM2": 108611.8832149201, "unds2026": 3129.0, "unds2025": 3140.0, "varUnds": -0.003503184713375851, "promCompra2026": 84987.47776233495, "promCompra2025": 77057.93581081081, "undsInv": 39031.0, "pxm2": 34.66341030195382, "pptoCorte": 120932944.1547657, "diferencia": 1364036.345234334, "venta2025": 114045745.0, "varVta": 0.07235022665685609, "clientesCompran2026": 1439.0, "utilidadM2": 55906.22154529309, "undsCliente": 2.174426685198054, "pvp": 39085.00495365931, "pvpInv": 37881.56690579282, "prendasM2": 2.778863232682061}, {"tienda": "T05", "ejecutado": 82901038.5, "cump": 0.9901571476666416, "rent2026": 0.5306227558295304, "rent2025": 0.430964022712314, "varRent": 0.2312460620030519, "utilidad": 43989177.51000001, "varUtil": 0.03893519521521371, "efectividad": 0.6266901822457378, "varClientes": -0.1094402673350042, "vtaM2": 303666.8076923077, "unds2026": 2336.0, "unds2025": 2355.0, "varUnds": -0.008067940552016983, "promCompra2026": 77768.32879924953, "promCompra2025": 67787.76524644946, "undsInv": 18889.0, "pxm2": 69.19047619047619, "pptoCorte": 83725132.61693938, "diferencia": -824094.1169393808, "venta2025": 81141955.0, "varVta": 0.02167908697787713, "clientesCompran2026": 1066.0, "utilidadM2": 161132.5183516484, "undsCliente": 2.191369606003752, "pvp": 35488.4582619863, "pvpInv": 38189.25556673197, "prendasM2": 8.556776556776557}, {"tienda": "T06", "ejecutado": 191933490.0, "cump": 0.9917855653367494, "rent2026": 0.5232899500759352, "rent2025": 0.4214246132059001, "varRent": 0.2417166289721802, "utilidad": 100436866.4, "varUtil": 0.1403661971961243, "efectividad": 0.5954231433506045, "varClientes": 0.04747436384352444, "vtaM2": 271860.4674220963, "unds2026": 5264.0, "unds2025": 4905.0, "varUnds": 0.07319062181447511, "promCompra2026": 69591.54822335026, "promCompra2025": 65104.32074060008, "undsInv": 39759.0, "pxm2": 56.31586402266289, "pptoCorte": 193523173.464247, "diferencia": -1589683.464246958, "venta2025": 171419676.51, "varVta": 0.1196701213515783, "clientesCompran2026": 2758.0, "utilidadM2": 142261.8504249292, "undsCliente": 1.908629441624365, "pvp": 36461.52925531915, "pvpInv": 42410.79171256821, "prendasM2": 7.456090651558072}, {"tienda": "T08", "ejecutado": 91169340.5, "cump": 1.085798424429229, "rent2026": 0.5268091360165099, "rent2025": 0.4252348325158091, "varRent": 0.2388663762555825, "utilidad": 48028841.5, "varUtil": 0.1582190567633845, "efectividad": 0.5300092336103417, "varClientes": 0.06099815157116462, "vtaM2": 120435.0601056803, "unds2026": 2518.0, "unds2025": 2364.0, "varUnds": 0.06514382402707275, "promCompra2026": 79415.8018292683, "promCompra2025": 74130.66543438077, "undsInv": 33105.0, "pxm2": 43.73183619550858, "pptoCorte": 83965254.0, "diferencia": 7204086.5, "venta2025": 80209380.0, "varVta": 0.1366418802888141, "clientesCompran2026": 1148.0, "utilidadM2": 63446.28996036988, "undsCliente": 2.193379790940766, "pvp": 36207.0454725973, "pvpInv": 36738.54965715149, "prendasM2": 3.326287978863937}, {"tienda": "T09", "ejecutado": 238052900.0, "cump": 1.08859537755195, "rent2026": 0.5074320054912164, "rent2025": 0.4069472404408895, "varRent": 0.2469233233808417, "utilidad": 120795660.46, "varUtil": 0.1186399875961999, "efectividad": 0.2654867256637168, "varClientes": 0.00547195622435015, "vtaM2": 207363.1533101045, "unds2026": 6546.0, "unds2025": 6110.0, "varUnds": 0.07135842880523735, "promCompra2026": 80970.37414965987, "promCompra2025": 73621.19032147742, "undsInv": 51757.0, "pxm2": 45.08449477351916, "pptoCorte": 218678955.3849999, "diferencia": 19373944.61500007, "venta2025": 215268360.5, "varVta": 0.1058424909590929, "clientesCompran2026": 2940.0, "utilidadM2": 105222.7007491289, "undsCliente": 2.226530612244898, "pvp": 36366.1625420104, "pvpInv": 41406.10413663851, "prendasM2": 5.702090592334494}, {"tienda": "T10", "ejecutado": 280402509.5, "cump": 0.9956044001587955, "rent2026": 0.5013213681669995, "rent2025": 0.4102986394057353, "varRent": 0.2218450660550542, "utilidad": 140571769.7000001, "varUtil": 0.006643034685654302, "efectividad": 0.1522907954597675, "varClientes": -0.07688022284122564, "vtaM2": 188569.2733691997, "unds2026": 7602.0, "unds2025": 7539.0, "varUnds": 0.008356545961002881, "promCompra2026": 84611.49954737477, "promCompra2025": 77110.91904456825, "undsInv": 61497.0, "pxm2": 41.35642232683255, "pptoCorte": 281640488.3860264, "diferencia": -1237978.886026382, "venta2025": 276828199.37, "varVta": 0.01291165473074751, "clientesCompran2026": 3314.0, "utilidadM2": 94533.80611970415, "undsCliente": 2.293904646952324, "pvp": 36885.36036569323, "pvpInv": 39507.20036749759, "prendasM2": 5.112306657700069}, {"tienda": "T11", "ejecutado": 162036168.99, "cump": 1.014110827540125, "rent2026": 0.516214213723864, "rent2025": 0.4027255638670239, "varRent": 0.2818014549836549, "utilidad": 83645373.57000001, "varUtil": 0.1148266929164428, "efectividad": 0.5225671797547613, "varClientes": -0.01717369970559368, "vtaM2": 136394.0816414141, "unds2026": 4427.0, "unds2025": 4395.0, "varUnds": 0.007281001137656506, "promCompra2026": 80896.73938592113, "promCompra2025": 73914.90186457311, "undsInv": 42927.0, "pxm2": 36.13383838383838, "pptoCorte": 159781519.5238992, "diferencia": 2254649.466100842, "venta2025": 150638570.0, "varVta": 0.07566189051051131, "clientesCompran2026": 2003.0, "utilidadM2": 70408.56361111112, "undsCliente": 2.210184722915626, "pvp": 36601.80008809578, "pvpInv": 42565.74392107529, "prendasM2": 3.726430976430976}, {"tienda": "T13", "ejecutado": 123929322.68, "cump": 0.99913690241622, "rent2026": 0.515809141433452, "rent2025": 0.4126975785335154, "varRent": 0.2498477535689321, "utilidad": 63923877.53000002, "varUtil": 0.08052882274532247, "efectividad": 0.6668032786885246, "varClientes": -0.009135200974421442, "vtaM2": 133832.9618574514, "unds2026": 3497.0, "unds2025": 3536.0, "varUnds": -0.01102941176470584, "promCompra2026": 76170.45032575293, "promCompra2025": 71139.22959196103, "undsInv": 34711.0, "pxm2": 37.48488120950324, "pptoCorte": 124036378.1783065, "diferencia": -107055.4983065128, "venta2025": 116810614.99, "varVta": 0.06094230126782074, "clientesCompran2026": 1627.0, "utilidadM2": 69032.26515118794, "undsCliente": 2.149354640442532, "pvp": 35438.75398341436, "pvpInv": 37764.90064820951, "prendasM2": 3.776457883369331}, {"tienda": "T14", "ejecutado": 185662567.43, "cump": 1.045583161378194, "rent2026": 0.5165705633482635, "rent2025": 0.3886614722945373, "varRent": 0.3291015451019377, "utilidad": 95907817.05000006, "varUtil": 0.2192021364300243, "efectividad": 0.4151278409090909, "varClientes": 0.05267897343538941, "vtaM2": 157207.9317781541, "unds2026": 4934.0, "unds2025": 4516.0, "varUnds": 0.09255978742249771, "promCompra2026": 79410.85005560308, "promCompra2025": 72838.47490769923, "undsInv": 43243.0, "pxm2": 36.6155800169348, "pptoCorte": 177568436.7231739, "diferencia": 8094130.706826121, "venta2025": 161774252.77, "varVta": 0.1476645031639421, "clientesCompran2026": 2338.0, "utilidadM2": 81208.98988145644, "undsCliente": 2.110350727117194, "pvp": 37629.21917916497, "pvpInv": 40296.08871956154, "prendasM2": 4.177815410668924}, {"tienda": "T16", "ejecutado": 127578666.5, "cump": 0.9347137394312437, "rent2026": 0.5240517429299203, "rent2025": 0.4216584078339584, "varRent": 0.2428347999081821, "utilidad": 66857822.54000004, "varUtil": 0.1127316018138904, "efectividad": 0.2400906002265006, "varClientes": 0.01193317422434359, "vtaM2": 164617.6341935484, "unds2026": 3444.0, "unds2025": 3477.0, "varUnds": -0.009490940465918918, "promCompra2026": 75223.27034198113, "promCompra2025": 69748.2965334129, "undsInv": 35335.0, "pxm2": 45.59354838709677, "pptoCorte": 136489559.4426902, "diferencia": -8910892.942690223, "venta2025": 116898144.99, "varVta": 0.09136604786084201, "clientesCompran2026": 1696.0, "utilidadM2": 86268.1581161291, "undsCliente": 2.03066037735849, "pvp": 37043.74753193961, "pvpInv": 40185.33845195981, "prendasM2": 4.443870967741935}, {"tienda": "T17", "ejecutado": 186587003.83, "cump": 0.9955557689633914, "rent2026": 0.5286430036138493, "rent2025": 0.4192791112528285, "varRent": 0.2608379225815365, "utilidad": 98637914.14000002, "varUtil": 0.1776938163507971, "efectividad": 0.4123633622314361, "varClientes": -0.0009132420091324533, "vtaM2": 201933.9868290043, "unds2026": 5103.0, "unds2025": 4839.0, "varUnds": 0.0545567265964042, "promCompra2026": 85277.42405393053, "promCompra2025": 74697.47260273973, "undsInv": 38165.0, "pxm2": 41.30411255411256, "pptoCorte": 187419941.3502281, "diferencia": -832937.5202280581, "venta2025": 163587465.0, "varVta": 0.140594750520769, "clientesCompran2026": 2188.0, "utilidadM2": 106750.9893290043, "undsCliente": 2.332266910420475, "pvp": 36564.17868508721, "pvpInv": 42263.3992768243, "prendasM2": 5.522727272727272}, {"tienda": "T18", "ejecutado": 47621138.7, "cump": 0.9960017681843132, "rent2026": 0.5048061677281983, "rent2025": 0.3867403081009106, "varRent": 0.3052845983576173, "utilidad": 24039444.52999999, "varUtil": 0.1877780982772055, "efectividad": 0.8463901689708141, "varClientes": 0.003642987249544705, "vtaM2": 119052.84675, "unds2026": 1312.0, "unds2025": 1320.0, "varUnds": -0.0060606060606061, "promCompra2026": 86426.74900181488, "promCompra2025": 76066.28415300546, "undsInv": 24834.0, "pxm2": 62.085, "pptoCorte": 47812303.3725253, "diferencia": -191164.6725253016, "venta2025": 41760390.0, "varVta": 0.1403422884700072, "clientesCompran2026": 551.0, "utilidadM2": 60098.61132499999, "undsCliente": 2.381125226860254, "pvp": 36296.59961890244, "pvpInv": 36173.56141580092, "prendasM2": 3.280000000000001}, {"tienda": "T19", "ejecutado": 155340234.0, "cump": 0.9813959330528799, "rent2026": 0.4897210171577314, "rent2025": 0.427230338872605, "varRent": 0.1462692898871127, "utilidad": 76073377.40000002, "varUtil": 0.08002471478060347, "efectividad": 0.3575724439584472, "varClientes": 0.1301843317972351, "vtaM2": 153650.0830860534, "unds2026": 4251.0, "unds2025": 3616.0, "varUnds": 0.175608407079646, "promCompra2026": 79174.43119266054, "promCompra2025": 78226.99308755761, "undsInv": 50460.0, "pxm2": 49.91097922848665, "pptoCorte": 158284978.3336425, "diferencia": -2944744.333642542, "venta2025": 135802060.0, "varVta": 0.1438724419938844, "clientesCompran2026": 1962.0, "utilidadM2": 75245.67497527204, "undsCliente": 2.166666666666667, "pvp": 36542.04516584333, "pvpInv": 37452.73736821243, "prendasM2": 4.204747774480712}, {"tienda": "T20", "ejecutado": 150878723.0, "cump": 1.11821586444797, "rent2026": 0.5212895234406248, "rent2025": 0.4058190072226229, "varRent": 0.284536983637776, "utilidad": 78651497.61000004, "varUtil": 0.3630942393412333, "efectividad": 0.8471986417657046, "varClientes": 0.1451520367183017, "vtaM2": 311090.1505154638, "unds2026": 4199.0, "unds2025": 3551.0, "varUnds": 0.1824838073782034, "promCompra2026": 75590.54258517035, "promCompra2025": 66118.73924268503, "undsInv": 28080.0, "pxm2": 57.89690721649485, "pptoCorte": 134928083.0266921, "diferencia": 15950639.97330788, "venta2025": 115244962.5, "varVta": 0.3092001570133704, "clientesCompran2026": 1996.0, "utilidadM2": 162168.0363092785, "undsCliente": 2.10370741482966, "pvp": 35932.06072874494, "pvpInv": 38052.6266417379, "prendasM2": 8.657731958762886}, {"tienda": "T23", "ejecutado": 146698425.69, "cump": 0.9806163971531504, "rent2026": 0.5216782852988504, "rent2025": 0.4174488783435925, "varRent": 0.2496818469577229, "utilidad": 76529383.17000002, "varUtil": 0.04672536819599182, "efectividad": 0.4358675373134328, "varClientes": -0.1074498567335244, "vtaM2": 183373.0321125, "unds2026": 4055.0, "unds2025": 4253.0, "varUnds": -0.04655537267810961, "promCompra2026": 78490.32942215088, "promCompra2025": 68401.23234001911, "undsInv": 41587.0, "pxm2": 51.98375, "pptoCorte": 149598177.3462931, "diferencia": -2899751.656293124, "venta2025": 143232180.52, "varVta": 0.02420018432600757, "clientesCompran2026": 1869.0, "utilidadM2": 95661.72896250003, "undsCliente": 2.169609416800428, "pvp": 36177.17033045623, "pvpInv": 37974.32812561617, "prendasM2": 5.068749999999999}, {"tienda": "T24", "ejecutado": 92914840.80000001, "cump": 0.8969476753939396, "rent2026": 0.5370300587115683, "rent2025": 0.417001623980635, "varRent": 0.2878368520130925, "utilidad": 49898062.41000003, "varUtil": 0.06206426757011529, "efectividad": 0.2053034000325362, "varClientes": -0.04969879518072284, "vtaM2": 232287.102, "unds2026": 2533.0, "unds2025": 2638.0, "varUnds": -0.03980288097043216, "promCompra2026": 73625.07194928685, "promCompra2025": 69358.52409638555, "undsInv": 24353.0, "pxm2": 60.8825, "pptoCorte": 103590034.679773, "diferencia": -10675193.87977302, "venta2025": 92108120.0, "varVta": 0.008758411310533898, "clientesCompran2026": 1262.0, "utilidadM2": 124745.1560250001, "undsCliente": 2.007131537242472, "pvp": 36681.73738649823, "pvpInv": 40596.08984929988, "prendasM2": 6.3325}, {"tienda": "T26", "ejecutado": 110624783.0, "cump": 0.9005756155039001, "rent2026": 0.5040934195550014, "rent2025": 0.4090837570796823, "varRent": 0.2322499019603288, "utilidad": 55765225.14999999, "varUtil": 0.0243106281793144, "efectividad": 0.77145659637077, "varClientes": -0.01502817783343768, "vtaM2": 201135.9690909091, "unds2026": 3442.0, "unds2025": 3351.0, "varUnds": 0.02715607281408539, "promCompra2026": 70327.26191989829, "promCompra2025": 67716.48716343143, "undsInv": 27698.0, "pxm2": 50.36, "pptoCorte": 122837861.8025339, "diferencia": -12213078.80253391, "venta2025": 108143230.0, "varVta": 0.02294691031514406, "clientesCompran2026": 1573.0, "utilidadM2": 101391.3184545454, "undsCliente": 2.188175460902734, "pvp": 32139.6812899477, "pvpInv": 39462.9374431367, "prendasM2": 6.258181818181816}, {"tienda": "T27", "ejecutado": 65606829.0, "cump": 1.116659049003977, "rent2026": 0.5246444773302487, "rent2025": 0.3921440831610455, "varRent": 0.3378870161730527, "utilidad": 34420260.51000001, "varUtil": 0.5699080699579, "efectividad": 0.4581328200192493, "varClientes": 0.1567436208991495, "vtaM2": 198207.9425981873, "unds2026": 1942.0, "unds2025": 1485.0, "varUnds": 0.3077441077441077, "promCompra2026": 68914.73634453781, "promCompra2025": 54458.43863912515, "undsInv": 21731.0, "pxm2": 65.65256797583082, "pptoCorte": 58752784.97811766, "diferencia": 6854044.021882348, "venta2025": 44819295.0, "varVta": 0.4638076971090241, "clientesCompran2026": 952.0, "utilidadM2": 103988.7024471299, "undsCliente": 2.039915966386554, "pvp": 33783.12512873326, "pvpInv": 36647.1279462519, "prendasM2": 5.867069486404834}, {"tienda": "T28", "ejecutado": 109505235.12, "cump": 0.9544337883079328, "rent2026": 0.5202784840155503, "rent2025": 0.4071444437866261, "varRent": 0.2778719983913496, "utilidad": 56973217.72000001, "varUtil": 0.01062282966514561, "efectividad": 0.4634404803956199, "varClientes": -0.07410021171489056, "vtaM2": 144085.8356842105, "unds2026": 2945.0, "unds2025": 3335.0, "varUnds": -0.1169415292353823, "promCompra2026": 83464.35603658536, "promCompra2025": 79284.364848271, "undsInv": 28388.0, "pxm2": 37.35263157894737, "pptoCorte": 114733192.036439, "diferencia": -5227956.916438982, "venta2025": 112345944.99, "varVta": -0.02528537963922817, "clientesCompran2026": 1312.0, "utilidadM2": 74964.76015789475, "undsCliente": 2.244664634146341, "pvp": 37183.44146689304, "pvpInv": 39862.0012505284, "prendasM2": 3.875}, {"tienda": "T29", "ejecutado": 62973013.49, "cump": 1.148234236571981, "rent2026": 0.5337331384869699, "rent2025": 0.4011999747210153, "varRent": 0.3303419045779226, "utilidad": 33610784.13, "varUtil": 0.4743065420571666, "efectividad": 0.7414089347079039, "varClientes": 0.05759803921568629, "vtaM2": 162720.9650904393, "unds2026": 1683.0, "unds2025": 1445.0, "varUnds": 0.1647058823529413, "promCompra2026": 72969.88816917728, "promCompra2025": 56236.93014705883, "undsInv": 25691.0, "pxm2": 66.38501291989664, "pptoCorte": 54843351.19461693, "diferencia": 8129662.295383073, "venta2025": 45889335.0, "varVta": 0.3722799314917071, "clientesCompran2026": 863.0, "utilidadM2": 86849.57139534883, "undsCliente": 1.950173812282735, "pvp": 37417.12031491385, "pvpInv": 35730.71361177066, "prendasM2": 4.348837209302325}, {"tienda": "T30", "ejecutado": 68448709.0, "cump": 0.9201343939649803, "rent2026": 0.528852414002432, "rent2025": 0.4231161891826339, "varRent": 0.2498987926320118, "utilidad": 36199264.98999999, "varUtil": -0.0235075195488611, "efectividad": 0.7374701670644391, "varClientes": -0.1262959472196041, "vtaM2": 131632.1326923077, "unds2026": 1787.0, "unds2025": 2017.0, "varUnds": -0.1140307387208725, "promCompra2026": 73838.95253505933, "promCompra2025": 67815.25622054665, "undsInv": 23217.0, "pxm2": 44.64807692307692, "pptoCorte": 74389903.74552298, "diferencia": -5941194.745522976, "venta2025": 71951986.85, "varVta": -0.0486891051014805, "clientesCompran2026": 927.0, "utilidadM2": 69613.97113461538, "undsCliente": 1.927723840345199, "pvp": 38303.69837716844, "pvpInv": 36180.4621613473, "prendasM2": 3.436538461538462}, {"tienda": "T31", "ejecutado": 173399623.0, "cump": 0.953616870909878, "rent2026": 0.3845548231670608, "rent2025": 0.3619353223828989, "varRent": 0.06249597479251334, "utilidad": 66681661.36000001, "varUtil": -0.04906929574045904, "efectividad": 0.6505900461775269, "varClientes": 0.1811830461108523, "vtaM2": 196375.56398641, "unds2026": 6057.0, "unds2025": 4857.0, "varUnds": 0.2470660901791228, "promCompra2026": 68375.24566246057, "promCompra2025": 70419.64136003726, "undsInv": 35109.0, "pxm2": 39.76104190260476, "pptoCorte": 181833636.0120743, "diferencia": -8434013.012074292, "venta2025": 151190970.0, "varVta": 0.1468913983421101, "clientesCompran2026": 2536.0, "utilidadM2": 75517.17028312573, "undsCliente": 2.388406940063092, "pvp": 28627.97143800561, "pvpInv": 39317.93751744567, "prendasM2": 6.859569648924123}, {"tienda": "T32", "ejecutado": 176366008.5, "cump": 1.060823927135924, "rent2026": 0.5371835092588149, "rent2025": 0.4173995985835809, "varRent": 0.286976583307011, "utilidad": 94740911.35999998, "varUtil": 0.1527921684884594, "efectividad": 0.752361673414305, "varClientes": 0.03720930232558151, "vtaM2": 271332.3207692308, "unds2026": 4782.0, "unds2025": 4619.0, "varUnds": 0.03528902359818153, "promCompra2026": 79087.8961883408, "promCompra2025": 74890.7976744186, "undsInv": 31681.0, "pxm2": 48.74, "pptoCorte": 166253799.5123881, "diferencia": 10112208.98761195, "venta2025": 161015215.0, "varVta": 0.0953375337852389, "clientesCompran2026": 2230.0, "utilidadM2": 145755.2482461538, "undsCliente": 2.144394618834081, "pvp": 36881.2230238394, "pvpInv": 39100.60055238155, "prendasM2": 7.356923076923077}, {"tienda": "T33", "ejecutado": 103357608.0, "cump": 1.038407345708066, "rent2026": 0.5264610276197568, "rent2025": 0.4154802305746822, "varRent": 0.2671145072090881, "utilidad": 54413752.52, "varUtil": 0.2083489008373802, "efectividad": 0.4011681524746388, "varClientes": 0.03653693407466241, "vtaM2": 188953.5795246801, "unds2026": 2775.0, "unds2025": 2560.0, "varUnds": 0.083984375, "promCompra2026": 79201.23218390804, "promCompra2025": 70298.41858617951, "undsInv": 33686.0, "pxm2": 61.58318098720292, "pptoCorte": 99534742.72615324, "diferencia": 3822865.27384676, "venta2025": 88505709.0, "varVta": 0.1678072428073538, "clientesCompran2026": 1305.0, "utilidadM2": 99476.69564899452, "undsCliente": 2.126436781609196, "pvp": 37245.98486486486, "pvpInv": 37028.31004571632, "prendasM2": 5.073126142595978}, {"tienda": "T35", "ejecutado": 135256962.0, "cump": 0.9574459315712659, "rent2026": 0.5109434546518945, "rent2025": 0.4172729885737796, "varRent": 0.2244824578707487, "utilidad": 69108659.43, "varUtil": 0.1083457798680718, "efectividad": 0.637016354208217, "varClientes": 0.02833226014166135, "vtaM2": 217105.8780096309, "unds2026": 3661.0, "unds2025": 3499.0, "varUnds": 0.04629894255501577, "promCompra2026": 84694.4032561052, "promCompra2025": 78678.60592401803, "undsInv": 30410.0, "pxm2": 48.81219903691814, "pptoCorte": 141268511.9232055, "diferencia": -6011549.923205525, "venta2025": 122187875.0, "varVta": 0.1069589515326295, "clientesCompran2026": 1597.0, "utilidadM2": 110928.8273354735, "undsCliente": 2.292423293675642, "pvp": 36945.35973777656, "pvpInv": 43275.8809832292, "prendasM2": 5.876404494382023}, {"tienda": "T36", "ejecutado": 61610244.0, "cump": 0.7192632835456279, "rent2026": 0.5355695461942986, "rent2025": 0, "varRent": 0, "utilidad": 32996570.42000001, "varUtil": 0, "efectividad": 0.237649063032368, "varClientes": 0, "vtaM2": 88014.63428571429, "unds2026": 1605.0, "unds2025": 0.0, "varUnds": 0, "promCompra2026": 73608.41577060932, "promCompra2025": 0, "undsInv": 26072.0, "pxm2": 37.24571428571429, "pptoCorte": 85657429.4968744, "diferencia": -24047185.49687441, "venta2025": 0.0, "varVta": 0, "clientesCompran2026": 837.0, "utilidadM2": 47137.95774285715, "undsCliente": 1.917562724014337, "pvp": 38386.44485981308, "pvpInv": 39767.40414237497, "prendasM2": 2.292857142857143}];
+
+const STORES_MAP = {};
+STORES.forEach(s => STORES_MAP[s.tienda] = s);
+
+// ---- UTILITIES ----
+const fmt = (n, dec=1) => isNaN(n) ? '—' : (n * 100).toFixed(dec) + '%';
+const fmtM = (n) => {
+  if (isNaN(n) || n === 0) return '—';
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  return '$' + n.toLocaleString('es-CO', {maximumFractionDigits: 0});
+};
+const fmtN = (n) => isNaN(n) || n===0 ? '—' : n.toLocaleString('es-CO', {maximumFractionDigits: 0});
+const chip = (v, t='%', threshold=0) => {
+  const cls = v > threshold ? 'chip-green' : v < threshold ? 'chip-red' : 'chip-yellow';
+  const sign = v > 0 ? '+' : '';
+  const val = t === '%' ? sign + (v*100).toFixed(1) + '%' : sign + v.toFixed(1);
+  return `<span class="chip ${cls}">${val}</span>`;
+};
+const chipCump = (v) => {
+  const cls = v >= 1 ? 'chip-green' : v >= 0.9 ? 'chip-yellow' : 'chip-red';
+  return `<span class="chip ${cls}">${(v*100).toFixed(1)}%</span>`;
+};
+
+// ---- TAB SWITCHING ----
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  renderTab(id);
+}
+
+function renderTab(id) {
+  if (id === 'resumen') { renderHbarCump(); renderHbarUtil(); }
+  if (id === 'cumplimiento') renderCumpTable();
+  if (id === 'rentabilidad') { renderHbarRent(); renderRentTable(); }
+  if (id === 'clientes') { renderHbarEfect(); renderHbarClientes(); renderClientesTable(); }
+  if (id === 'inventario') { renderHbarInv(); renderHbarVtaM2(); renderInvTable(); }
+  if (id === 'ranking') renderRanking();
+}
+
+// ---- HBAR ----
+function makeHbar(containerId, data, colorFn, labelFn, maxVal) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const max = maxVal || Math.max(...data.map(d => Math.abs(d.value)));
+  el.innerHTML = data.map(d => {
+    const pct = Math.min(Math.abs(d.value) / max * 100, 100);
+    const color = colorFn(d.value);
+    const label = labelFn(d.value);
+    return `<div class="hbar-row">
+      <div class="hbar-label">${d.label}</div>
+      <div class="hbar-track">
+        <div class="hbar-fill" style="width:${pct}%;background:${color}" title="${d.label}: ${label}">${pct > 15 ? label : ''}</div>
+      </div>
+      <div class="hbar-val" style="color:${color}">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHbarCump() {
+  const data = [...STORES].sort((a,b) => b.cump - a.cump).map(s => ({
+    label: s.tienda,
+    value: s.cump
+  }));
+  makeHbar('hbar-cump', data,
+    v => v >= 1 ? '#059669' : v >= 0.9 ? '#d97706' : '#dc2626',
+    v => (v*100).toFixed(1) + '%',
+    1.3
+  );
+}
+
+function renderHbarUtil() {
+  const data = [...STORES].filter(s => s.varUtil !== 0).sort((a,b) => b.varUtil - a.varUtil).map(s => ({
+    label: s.tienda,
+    value: s.varUtil
+  }));
+  makeHbar('hbar-util', data,
+    v => v >= 0 ? '#059669' : '#dc2626',
+    v => (v >= 0 ? '+' : '') + (v*100).toFixed(1) + '%',
+    null
+  );
+}
+
+function renderHbarRent() {
+  const data = [...STORES].sort((a,b) => b.rent2026 - a.rent2026).map(s => ({
+    label: s.tienda,
+    value: s.rent2026
+  }));
+  makeHbar('hbar-rent', data,
+    v => v >= 0.53 ? '#059669' : v >= 0.50 ? '#0891b2' : '#d97706',
+    v => (v*100).toFixed(1) + '%',
+    0.6
+  );
+}
+
+function renderHbarEfect() {
+  const data = [...STORES].sort((a,b) => b.efectividad - a.efectividad).map(s => ({
+    label: s.tienda,
+    value: s.efectividad
+  }));
+  makeHbar('hbar-efect', data,
+    v => v >= 0.8 ? '#059669' : v >= 0.5 ? '#0891b2' : '#dc2626',
+    v => (v*100).toFixed(1) + '%',
+    1
+  );
+}
+
+function renderHbarClientes() {
+  const data = [...STORES].filter(s => s.varClientes !== 0).sort((a,b) => b.varClientes - a.varClientes).map(s => ({
+    label: s.tienda,
+    value: s.varClientes
+  }));
+  makeHbar('hbar-clientes', data,
+    v => v >= 0 ? '#059669' : '#dc2626',
+    v => (v >= 0 ? '+' : '') + (v*100).toFixed(1) + '%',
+    null
+  );
+}
+
+function renderHbarInv() {
+  const data = [...STORES].filter(s => s.undsInv > 0).sort((a,b) => b.undsInv - a.undsInv).map(s => ({
+    label: s.tienda,
+    value: s.undsInv
+  }));
+  makeHbar('hbar-inv', data,
+    v => '#0891b2',
+    v => v.toLocaleString('es-CO'),
+    null
+  );
+}
+
+function renderHbarVtaM2() {
+  const data = [...STORES].filter(s => s.vtaM2 > 0).sort((a,b) => b.vtaM2 - a.vtaM2).map(s => ({
+    label: s.tienda,
+    value: s.vtaM2
+  }));
+  makeHbar('hbar-vtam2', data,
+    v => '#06b6d4',
+    v => '$' + (v/1000).toFixed(0) + 'K',
+    null
+  );
+}
+
+// ---- SORT STATE ----
+let cumpSortKey = 'cump', cumpSortDir = -1;
+let rentSortKey = 'rent2026', rentSortDir = -1;
+let clientesSortKey = 'efectividad', clientesSortDir = -1;
+let invSortKey = 'undsInv', invSortDir = -1;
+
+function sortCump(key) { cumpSortKey = key; cumpSortDir *= -1; renderCumpTable(); }
+function sortRent(key) { rentSortKey = key; rentSortDir *= -1; renderRentTable(); }
+function sortClientes(key) { clientesSortKey = key; clientesSortDir *= -1; renderClientesTable(); }
+function sortInv(key) { invSortKey = key; invSortDir *= -1; renderInvTable(); }
+
+function renderCumpTable() {
+  const search = document.getElementById('cump-search').value.toLowerCase();
+  const filter = document.getElementById('cump-filter').value;
+  let rows = [...STORES];
+  if (search) rows = rows.filter(r => r.tienda.toLowerCase().includes(search));
+  if (filter === 'over') rows = rows.filter(r => r.cump >= 1);
+  if (filter === 'under') rows = rows.filter(r => r.cump < 1);
+  rows.sort((a,b) => {
+    const av = a[cumpSortKey] || 0, bv = b[cumpSortKey] || 0;
+    return cumpSortDir * (typeof av === 'string' ? av.localeCompare(bv) : bv - av);
+  });
+  document.getElementById('cump-tbody').innerHTML = rows.map(r => {
+    const pct = Math.min(r.cump * 100, 130);
+    const color = r.cump >= 1 ? '#059669' : r.cump >= 0.9 ? '#d97706' : '#dc2626';
+    return `<tr>
+      <td>${r.tienda}</td>
+      <td>${fmtM(r.ejecutado)}</td>
+      <td>${fmtM(r.pptoCorte)}</td>
+      <td>${chipCump(r.cump)}</td>
+      <td style="color:${r.diferencia>=0?'#059669':'#dc2626'}">${r.diferencia>=0?'+':''}${fmtM(Math.abs(r.diferencia))}</td>
+      <td>
+        <div class="bar-wrap">
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${Math.min(pct/130*100,100)}%;background:${color}"></div>
+          </div>
+        </div>
+      </td>
+      <td>${chip(r.varUtil)}</td>
+      <td>${chip(r.varUnds)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRentTable() {
+  let rows = [...STORES].sort((a,b) => {
+    const av = a[rentSortKey]||0, bv = b[rentSortKey]||0;
+    return rentSortDir * (bv - av);
+  });
+  document.getElementById('rent-tbody').innerHTML = rows.map(r => `<tr>
+    <td>${r.tienda}</td>
+    <td>${fmt(r.rent2026)}</td>
+    <td>${fmt(r.rent2025)}</td>
+    <td>${r.varRent > 0 ? chip(r.varRent) : '<span class="chip chip-red">—</span>'}</td>
+    <td>${r.varUtil !== 0 ? chip(r.varUtil) : '—'}</td>
+  </tr>`).join('');
+}
+
+function renderClientesTable() {
+  let rows = [...STORES].sort((a,b) => {
+    const av = a[clientesSortKey]||0, bv = b[clientesSortKey]||0;
+    return clientesSortDir * (bv - av);
+  });
+  document.getElementById('clientes-tbody').innerHTML = rows.map(r => `<tr>
+    <td>${r.tienda}</td>
+    <td>${fmt(r.efectividad)}</td>
+    <td>${r.varClientes !== 0 ? chip(r.varClientes) : '—'}</td>
+    <td>${r.promCompra2026 > 0 ? fmtM(r.promCompra2026) : '—'}</td>
+    <td>${r.promCompra2025 > 0 ? fmtM(r.promCompra2025) : '—'}</td>
+  </tr>`).join('');
+}
+
+function renderInvTable() {
+  let rows = [...STORES].sort((a,b) => {
+    const av = a[invSortKey]||0, bv = b[invSortKey]||0;
+    return invSortDir * (bv - av);
+  });
+  document.getElementById('inv-tbody').innerHTML = rows.map(r => `<tr>
+    <td>${r.tienda}</td>
+    <td>${r.undsInv > 0 ? fmtN(r.undsInv) : '—'}</td>
+    <td>${fmtN(r.unds2026)}</td>
+    <td>${chip(r.varUnds)}</td>
+    <td>${r.pxm2 > 0 ? r.pxm2.toFixed(1) : '—'}</td>
+    <td>${r.vtaM2 > 0 ? fmtM(r.vtaM2) : '—'}</td>
+  </tr>`).join('');
+}
+
+function renderRanking() {
+  const sortKey = document.getElementById('rank-sort').value;
+  let rows = [...STORES].sort((a,b) => (b[sortKey]||0) - (a[sortKey]||0));
+  document.getElementById('rank-tbody').innerHTML = rows.map((r, i) => {
+    const rank = i + 1;
+    const rankStyle = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+    return `<tr>
+      <td><span class="rank-num ${rankStyle}">#${rank}</span></td>
+      <td><b>${r.tienda}</b></td>
+      <td>${fmtM(r.ejecutado)}</td>
+      <td>${chipCump(r.cump)}</td>
+      <td>${fmt(r.rent2026)}</td>
+      <td>${r.varUtil !== 0 ? chip(r.varUtil) : '—'}</td>
+      <td>${fmt(r.efectividad)}</td>
+      <td>${r.varClientes !== 0 ? chip(r.varClientes) : '—'}</td>
+      <td>${r.vtaM2 > 0 ? fmtM(r.vtaM2) : '—'}</td>
+      <td>${r.pxm2 > 0 ? r.pxm2.toFixed(1) : '—'}</td>
+      <td>${r.venta2025 > 0 ? fmtM(r.venta2025) : '—'}</td>
+      <td>${r.unds2026 > 0 ? fmtN(r.unds2026) : '—'}</td>
+      <td>${r.clientesCompran2026 > 0 ? fmtN(r.clientesCompran2026) : '—'}</td>
+      <td>${r.utilidadM2 > 0 ? fmtM(r.utilidadM2) : '—'}</td>
+      <td>${r.promCompra2026 > 0 ? fmtM(r.promCompra2026) : '—'}</td>
+      <td>${r.pvp > 0 ? fmtM(r.pvp) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- INIT ----
+renderHbarCump();
+renderHbarUtil();
+</script>
+</body>
+</html>
