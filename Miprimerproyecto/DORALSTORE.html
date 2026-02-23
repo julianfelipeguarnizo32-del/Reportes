@@ -227,6 +227,21 @@
     </div>
   </div>
 
+  <div class="section-title">📈 Facturación Diaria por Mes</div>
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:0.83rem;font-weight:600;color:var(--text-muted);">Ver mes:</span>
+    <button class="month-btn active" id="btnFactDiaEne" onclick="switchFactDia('2026-01')">Enero 2026</button>
+    <button class="month-btn" id="btnFactDiaFeb" onclick="switchFactDia('2026-02')">Febrero 2026</button>
+  </div>
+  <div class="chart-grid" style="margin-bottom:24px;">
+    <div class="chart-card full">
+      <div class="chart-title" id="factDiaTitulo">Facturación Diaria — Enero 2026</div>
+      <div class="chart-subtitle" id="factDiaSubtitulo">Ventas por día (IDs únicos) · Línea punteada = tendencia lineal</div>
+      <div style="display:flex;gap:24px;margin-bottom:8px;font-size:0.82rem;flex-wrap:wrap;" id="factDiaStats"></div>
+      <div class="chart-wrap" style="height:300px"><canvas id="chartFactDia"></canvas></div>
+    </div>
+  </div>
+
   <div class="section-title">🗺️ Distribución Geográfica de Pedidos</div>
   <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
     <div class="stat-card blue">
@@ -438,6 +453,50 @@
   <div style="margin-top:10px;font-size:0.78rem;color:var(--text-muted);">
     💡 % medido sobre guías activas (excl. cancelados). % Confirmación = 100% − % Pendiente &nbsp;|&nbsp; <strong>Verde</strong>: 0% pendiente &nbsp;|&nbsp; <strong>Amarillo</strong>: 1–15% &nbsp;|&nbsp; <strong>Rojo</strong>: &gt;15% &nbsp;|&nbsp; <strong>—</strong>: sin registros ese día
   </div>
+
+  <!-- Tabla pendientes detalle -->
+  <div class="section-title" style="margin-top:28px;">🔎 Detalle de Pedidos Pendientes de Confirmación</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:0.83rem;font-weight:600;color:var(--text-muted);">Filtrar por día:</span>
+    <button class="month-btn active" id="pendBtnTodos" onclick="filterPendDia('todos')">Todos</button>
+    <button class="month-btn" id="pendBtn03" onclick="filterPendDia('2026-02-03')">3 Feb</button>
+    <button class="month-btn" id="pendBtn05" onclick="filterPendDia('2026-02-05')">5 Feb</button>
+    <button class="month-btn" id="pendBtn06" onclick="filterPendDia('2026-02-06')">6 Feb</button>
+    <button class="month-btn" id="pendBtn07" onclick="filterPendDia('2026-02-07')">7 Feb</button>
+    <button class="month-btn" id="pendBtn08" onclick="filterPendDia('2026-02-08')">8 Feb</button>
+    <button class="month-btn" id="pendBtn09" onclick="filterPendDia('2026-02-09')">9 Feb</button>
+    <button class="month-btn" id="pendBtn10" onclick="filterPendDia('2026-02-10')">10 Feb</button>
+    <button class="month-btn" id="pendBtn11" onclick="filterPendDia('2026-02-11')">11 Feb</button>
+    <button class="month-btn" id="pendBtn12" onclick="filterPendDia('2026-02-12')">12 Feb</button>
+    <button class="month-btn" id="pendBtn13" onclick="filterPendDia('2026-02-13')">13 Feb</button>
+    <button class="month-btn" id="pendBtn15" onclick="filterPendDia('2026-02-15')">15 Feb</button>
+    <button class="month-btn" id="pendBtn17" onclick="filterPendDia('2026-02-17')">17 Feb</button>
+    <button class="month-btn" id="pendBtn18" onclick="filterPendDia('2026-02-18')">18 Feb</button>
+    <button class="month-btn" id="pendBtn19" onclick="filterPendDia('2026-02-19')">19 Feb</button>
+    <button class="month-btn" id="pendBtn20" onclick="filterPendDia('2026-02-20')">20 Feb</button>
+    <button class="month-btn" id="pendBtn21" onclick="filterPendDia('2026-02-21')">21 Feb</button>
+    <div id="pendTableInfo" style="font-size:0.81rem;color:var(--text-muted);margin-left:auto;"></div>
+  </div>
+  <div class="table-wrap">
+    <table id="pendTable" style="font-size:0.82rem;">
+      <thead>
+        <tr>
+          <th style="width:120px">FECHA</th>
+          <th style="width:110px">ID PEDIDO</th>
+          <th style="text-align:left">TAGS</th>
+          <th style="text-align:left;width:160px">TRANSPORTADORA</th>
+          <th style="text-align:left">PRODUCTO</th>
+        </tr>
+      </thead>
+      <tbody id="pendBody"></tbody>
+      <tfoot>
+        <tr style="background:var(--primary-light);font-weight:700;border-top:2px solid var(--primary);">
+          <td colspan="2" style="padding:10px 16px">TOTAL PENDIENTES</td>
+          <td colspan="3" style="padding:10px 16px" id="pendFootCount">—</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 </div>
 
 <div id="tab-pedidos" class="tab-pane">
@@ -448,6 +507,24 @@
     <div class="alert-text">
       <strong>Metodología</strong>
       Los pedidos generados se calculan con IDs únicos (sin repetidos). La tasa de despacho incluye todos los pedidos que salieron de bodega: Despachada, En Reparto, Entregado, En Tránsito, Novedades y estados posteriores. Se excluyen: Cancelado, Pendiente y estados previos al despacho.
+    </div>
+  </div>
+
+  <div class="stat-grid" style="margin-bottom:24px;">
+    <div class="stat-card sky">
+      <div class="stat-label">Tasa de Despacho Enero</div>
+      <div class="stat-value">90.3%</div>
+      <div class="stat-sub">976 de 1,081 pedidos despachados</div>
+    </div>
+    <div class="stat-card sky">
+      <div class="stat-label">Tasa de Despacho Febrero</div>
+      <div class="stat-value">86.1%</div>
+      <div class="stat-sub">1,810 de 2,102 pedidos despachados</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Tasa de Despacho Global</div>
+      <div class="stat-value">87.5%</div>
+      <div class="stat-sub">2,786 de 3,183 pedidos despachados</div>
     </div>
   </div>
 
@@ -550,6 +627,7 @@
       <div class="stat-value" style="font-size:1.4rem">$37,351,865</div>
       <div class="stat-sub">% sobre facturación: 17.4%</div>
     </div>
+
   </div>
 
   <div class="chart-grid">
@@ -877,6 +955,10 @@ const DATA = {
   facturacionMes: {"2026-01": 139613042, "2026-02": 215118162},
   fleteMes: {"2026-01": 19555449, "2026-02": 37351865},
   tiempoGuiaMes: {"2026-01": 0.89, "2026-02": 0.41},
+  factDia: {
+    "2026-01": {"2026-01-01":4242487,"2026-01-02":929300,"2026-01-04":162400,"2026-01-05":9645305,"2026-01-06":11742200,"2026-01-07":6177959,"2026-01-08":4717915,"2026-01-09":6155905,"2026-01-10":4740404,"2026-01-11":4692599,"2026-01-12":3802099,"2026-01-13":1488800,"2026-01-14":680100,"2026-01-15":1138528,"2026-01-16":6418159,"2026-01-17":6833364,"2026-01-18":9737504,"2026-01-19":5156099,"2026-01-20":479499,"2026-01-21":4381404,"2026-01-22":5685710,"2026-01-23":5989975,"2026-01-24":6681536,"2026-01-25":5861449,"2026-01-26":4854854,"2026-01-27":5180209,"2026-01-28":4991501,"2026-01-29":3737304,"2026-01-30":2360105,"2026-01-31":159900},
+    "2026-02": {"2026-02-01":159900,"2026-02-03":6684052,"2026-02-04":5771082,"2026-02-05":4028404,"2026-02-06":11880651,"2026-02-07":11698008,"2026-02-08":18369300,"2026-02-09":18167520,"2026-02-10":21012135,"2026-02-11":13769114,"2026-02-12":14998699,"2026-02-13":17567759,"2026-02-14":5079900,"2026-02-15":4745300,"2026-02-16":3391600,"2026-02-17":2782104,"2026-02-18":11094119,"2026-02-19":9734908,"2026-02-20":14642273,"2026-02-21":12372298,"2026-02-22":74900}
+  },
   tiempoGuiaTrans: {"COORDINADORA": 0.55, "ENVIA": 0.53, "INTERRAPIDISIMO": 0.66, "JAMV-DRIVE": 1.01, "TCC": 0.55, "VELOCES": 0.61},
   tasaDespacho: {
     "ENVIA": {"2026-01": 87.9, "2026-02": 86.8},
@@ -1290,7 +1372,7 @@ function buildGeoTable() {
   el.innerHTML=h;
 }
 
-document.addEventListener('DOMContentLoaded', () => { buildGeoCharts('pedidos'); buildGeoTable(); });
+document.addEventListener('DOMContentLoaded', () => { buildGeoCharts('pedidos'); buildGeoTable(); renderFactDia(); });
 
 // ===================== PEDIDOS GEO =====================
 let chartPedDep = null, chartPedCity = null, chartDepMes = null;
@@ -2063,6 +2145,8 @@ const CONF_DATA = {
   byTrans: {"COORDINADORA":{"total":61,"guias":56,"pendiente":5,"otros":51,"pct":8.9},"ENVIA":{"total":1594,"guias":1471,"pendiente":69,"otros":1402,"pct":4.7},"INTERRAPIDISIMO":{"total":874,"guias":804,"pendiente":58,"otros":746,"pct":7.2},"JAMV-DRIVE":{"total":91,"guias":82,"pendiente":1,"otros":81,"pct":1.2},"TCC":{"total":18,"guias":13,"pendiente":2,"otros":11,"pct":15.4},"VELOCES":{"total":620,"guias":565,"pendiente":20,"otros":545,"pct":3.5}}
 };
 
+
+const PEND_DETALLE = [{"id": "64785534", "dia": "2026-02-03", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS07 Trampa Ratón"}, {"id": "64863931", "dia": "2026-02-03", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS03 Bloqueo Antirobo Carro"}, {"id": "65006126", "dia": "2026-02-05", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS07 Trampa Ratón"}, {"id": "65179482", "dia": "2026-02-06", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65181988", "dia": "2026-02-06", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "Máscara LED Facial"}, {"id": "65182929", "dia": "2026-02-06", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65253589", "dia": "2026-02-07", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65265265", "dia": "2026-02-07", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65271528", "dia": "2026-02-07", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65306715", "dia": "2026-02-07", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65310163", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65312255", "dia": "2026-02-08", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65313496", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65315418", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65317700", "dia": "2026-02-08", "tags": "NO CONTESTA-SC,venta x wpp", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65318022", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65321361", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65341923", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65348407", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65351318", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65352486", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65353308", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65359997", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65360550", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65361186", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65361222", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65364316", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65378139", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65380027", "dia": "2026-02-08", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65460098", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65533940", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65400149", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65401177", "dia": "2026-02-09", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65406649", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "COORDINADORA", "prod": "JS11 GiroLed Pro"}, {"id": "65408514", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65448385", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65455149", "dia": "2026-02-09", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65465841", "dia": "2026-02-09", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65471375", "dia": "2026-02-09", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65517478", "dia": "2026-02-09", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65580399", "dia": "2026-02-09", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65691711", "dia": "2026-02-09", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65523772", "dia": "2026-02-10", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65524099", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "Máscara LED Facial"}, {"id": "65526390", "dia": "2026-02-10", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65577801", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65579214", "dia": "2026-02-10", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65594703", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "65603778", "dia": "2026-02-10", "tags": "", "trans": "VELOCES", "prod": "JS10 Extensor De Toma"}, {"id": "65613890", "dia": "2026-02-10", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "65673671", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65634611", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS10 Extensor De Toma"}, {"id": "65646482", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65657979", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65661882", "dia": "2026-02-11", "tags": "NO ASUME EXC FLETE,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65684607", "dia": "2026-02-11", "tags": "CANCELO ORDEN", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "65685131", "dia": "2026-02-11", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65685204", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65728577", "dia": "2026-02-11", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65729450", "dia": "2026-02-11", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65758036", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65776940", "dia": "2026-02-12", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS05 Bloqueo Antirobo Carro"}, {"id": "65788351", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "65791165", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65793243", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65798831", "dia": "2026-02-12", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65799833", "dia": "2026-02-12", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65861584", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "65861943", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65862261", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "COORDINADORA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "65907379", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66091469", "dia": "2026-02-15", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66285305", "dia": "2026-02-17", "tags": "", "trans": "COORDINADORA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66285336", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66285347", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66285352", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66285359", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285367", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285378", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285397", "dia": "2026-02-17", "tags": "", "trans": "TCC", "prod": "JS11 GiroLed Pro"}, {"id": "66285470", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66285481", "dia": "2026-02-17", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285487", "dia": "2026-02-17", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285513", "dia": "2026-02-17", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285527", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66298705", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66363824", "dia": "2026-02-18", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66366487", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66377683", "dia": "2026-02-18", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66379529", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66380863", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66382938", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66404333", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66404355", "dia": "2026-02-18", "tags": "", "trans": "COORDINADORA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66404497", "dia": "2026-02-18", "tags": "", "trans": "JAMV-DRIVE", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66409921", "dia": "2026-02-18", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66411500", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66411519", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66411612", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66415189", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66464347", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66464932", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66467568", "dia": "2026-02-19", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66469410", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66469517", "dia": "2026-02-19", "tags": "NO CONTESTA-SC,MAL HISTORIAL,venta x wpp", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66471548", "dia": "2026-02-19", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66472269", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66492546", "dia": "2026-02-19", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66496685", "dia": "2026-02-19", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66569207", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66569603", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66570528", "dia": "2026-02-20", "tags": "venta x wpp", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66570599", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66571523", "dia": "2026-02-20", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66571800", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66573755", "dia": "2026-02-20", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66574060", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66576311", "dia": "2026-02-20", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66601093", "dia": "2026-02-20", "tags": "", "trans": "TCC", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66601397", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66603789", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66609720", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66610226", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66611141", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66611178", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66611289", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66611305", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "66611318", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "66620156", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66629129", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66677077", "dia": "2026-02-21", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66678262", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66678521", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66678606", "dia": "2026-02-21", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66678644", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66683219", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66683283", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66683839", "dia": "2026-02-21", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66684257", "dia": "2026-02-21", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "Máscara LED Facial"}, {"id": "66685166", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66686900", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66686990", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66690260", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66700776", "dia": "2026-02-21", "tags": "", "trans": "COORDINADORA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66701099", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}];
 const CONF_TRANS = ["ENVIA","VELOCES","INTERRAPIDISIMO","COORDINADORA","JAMV-DRIVE","TCC"];
 const CONF_COLORS = {
   "ENVIA": "rgba(79,70,229,0.85)",
@@ -2214,6 +2298,183 @@ function updateConfDiaTotal() {
 function initConfirmaciones() {
   updateConfDiaTotal();
   renderConfTable();
+}
+
+
+// ── Facturación Diaria Chart ──────────────────────────────
+let chartFactDia = null;
+let factDiaMes = '2026-01';
+
+function linRegTrend(vals) {
+  const n = vals.length;
+  const sumX = vals.reduce((s,_,i)=>s+i, 0);
+  const sumY = vals.reduce((s,v)=>s+v, 0);
+  const sumXY = vals.reduce((s,v,i)=>s+i*v, 0);
+  const sumX2 = vals.reduce((s,_,i)=>s+i*i, 0);
+  const m = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  const b = (sumY - m*sumX) / n;
+  return vals.map((_,i) => Math.round(m*i + b));
+}
+
+function fmtM(v) {
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
+  return '$' + v;
+}
+
+function switchFactDia(mes) {
+  factDiaMes = mes;
+  ['btnFactDiaEne','btnFactDiaFeb'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(mes==='2026-01'?'btnFactDiaEne':'btnFactDiaFeb')?.classList.add('active');
+  const labels = {
+    '2026-01': 'Enero 2026',
+    '2026-02': 'Febrero 2026'
+  };
+  document.getElementById('factDiaTitulo').textContent = 'Facturación Diaria — ' + labels[mes];
+  renderFactDia();
+  renderPendTable(PEND_DETALLE);
+}
+
+function renderFactDia() {
+  const raw = DATA.factDia[factDiaMes];
+  const dias = Object.keys(raw).sort();
+  const vals = dias.map(d => raw[d]);
+  const trend = linRegTrend(vals);
+
+  // Stats
+  const total = vals.reduce((a,b)=>a+b,0);
+  const prom = Math.round(total/vals.length);
+  const maxVal = Math.max(...vals);
+  const maxDia = dias[vals.indexOf(maxVal)];
+  const [,mm,dd] = maxDia.split('-');
+  const statsEl = document.getElementById('factDiaStats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <span>📦 Total: <strong style="color:var(--primary)">${fmtM(total)}</strong></span>
+      <span>📊 Promedio/día: <strong>${fmtM(prom)}</strong></span>
+      <span>🏆 Mejor día: <strong style="color:var(--success)">${parseInt(dd)}/${parseInt(mm)} → ${fmtM(maxVal)}</strong></span>
+    `;
+  }
+
+  const labels = dias.map(d => { const [,m,day] = d.split('-'); return parseInt(day)+'/'+parseInt(m); });
+
+  if (chartFactDia) chartFactDia.destroy();
+  chartFactDia = new Chart('chartFactDia', {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Facturación',
+          data: vals,
+          backgroundColor: vals.map(v => v === maxVal ? 'rgba(16,185,129,0.85)' : 'rgba(79,70,229,0.65)'),
+          borderRadius: 5,
+          borderSkipped: false,
+          order: 2
+        },
+        {
+          type: 'line',
+          label: 'Tendencia',
+          data: trend,
+          borderColor: 'rgba(245,158,11,0.9)',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { font: { size: 12 }, boxWidth: 20 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              return ctx.dataset.label + ': ' + fmtM(v);
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => fmtM(v), font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,0.06)' }
+        },
+        x: {
+          ticks: { maxRotation: 45, font: { size: 10 } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+// ── Tabla Detalle Pendientes ──────────────────────────────
+const TAG_COLORS = {
+  'MAL HISTORIAL':     'background:#fee2e2;color:#991b1b',
+  'NO CONTESTA-SC':    'background:#fef9c3;color:#854d0e',
+  'CANCELO ORDEN':     'background:#fee2e2;color:#991b1b',
+  'NO ASUME EXC FLETE':'background:#fef9c3;color:#854d0e',
+  'venta x wpp':       'background:#dbeafe;color:#1e40af',
+};
+
+function tagBadge(tag) {
+  if (!tag) return '<span style="color:var(--text-muted);font-style:italic;">Sin tag</span>';
+  return tag.split(',').filter(t=>t.trim()).map(t => {
+    const style = TAG_COLORS[t.trim()] || 'background:#e0e7ff;color:#3730a3';
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:99px;font-size:0.76rem;font-weight:600;${style};margin:2px 2px 2px 0">${t.trim()}</span>`;
+  }).join('');
+}
+
+const PEND_DIAS = ['2026-02-03','2026-02-05','2026-02-06','2026-02-07','2026-02-08',
+  '2026-02-09','2026-02-10','2026-02-11','2026-02-12','2026-02-13','2026-02-15',
+  '2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-21'];
+
+const PEND_BTN_MAP = {
+  'todos':'pendBtnTodos','2026-02-03':'pendBtn03','2026-02-05':'pendBtn05',
+  '2026-02-06':'pendBtn06','2026-02-07':'pendBtn07','2026-02-08':'pendBtn08',
+  '2026-02-09':'pendBtn09','2026-02-10':'pendBtn10','2026-02-11':'pendBtn11',
+  '2026-02-12':'pendBtn12','2026-02-13':'pendBtn13','2026-02-15':'pendBtn15',
+  '2026-02-17':'pendBtn17','2026-02-18':'pendBtn18','2026-02-19':'pendBtn19',
+  '2026-02-20':'pendBtn20','2026-02-21':'pendBtn21'
+};
+
+function filterPendDia(dia) {
+  // update active button
+  Object.values(PEND_BTN_MAP).forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(PEND_BTN_MAP[dia])?.classList.add('active');
+  const rows = dia === 'todos' ? PEND_DETALLE : PEND_DETALLE.filter(r => r.dia === dia);
+  renderPendTable(rows);
+}
+
+function filterPendTable() { filterPendDia('todos'); }
+
+function renderPendTable(rows) {
+  const tbody = document.getElementById('pendBody');
+  if (!tbody) return;
+  const months = {'2026-01':'Ene','2026-02':'Feb'};
+  tbody.innerHTML = rows.map(r => {
+    const [,mm,dd] = r.dia.split('-');
+    const dLabel = `${parseInt(dd)}/${parseInt(mm)}`;
+    return `<tr>
+      <td style="font-weight:600">${dLabel} <span style="color:var(--text-muted);font-size:0.75rem">${months[r.dia.slice(0,7)]||''}</span></td>
+      <td style="font-family:monospace;font-size:0.82rem;color:var(--primary);font-weight:700">${r.id}</td>
+      <td>${tagBadge(r.tags)}</td>
+      <td style="font-size:0.80rem">${r.trans}</td>
+      <td style="font-size:0.80rem;color:var(--text-muted)">${r.prod}</td>
+    </tr>`;
+  }).join('');
+  const fc = document.getElementById('pendFootCount');
+  if (fc) fc.textContent = rows.length + ' pedidos';
+  const info = document.getElementById('pendTableInfo');
+  if (info) info.textContent = `Mostrando ${rows.length} de ${PEND_DETALLE.length} pedidos`;
 }
 
 </script>
