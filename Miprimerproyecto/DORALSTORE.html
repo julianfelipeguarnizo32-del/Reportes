@@ -287,10 +287,6 @@
     </div>
   </div>
 
-  <div class="section-title">📋 Tabla Resumen por Departamento</div>
-  <div class="chart-card">
-    <div class="table-wrap" id="tableGeoDep"></div>
-  </div>
 </div>
 
 <!-- ========= PEDIDOS ========= -->
@@ -922,12 +918,6 @@
     </div>
   </div>
 
-  <div class="section-title">🔍 Top Novedad por Departamento</div>
-  <div class="chart-card" style="margin-bottom:20px;">
-    <div class="chart-title">Tipo de Novedad más frecuente — Top 8 Departamentos</div>
-    <div class="chart-subtitle">Novedad predominante en cada zona geográfica</div>
-    <div id="depTopNovContainer"></div>
-  </div>
 
   <div class="section-title">📋 Tabla: Novedades por Departamento</div>
   <div class="chart-card">
@@ -948,1047 +938,619 @@
 </div>
 
 <script>
-// ===================== DATA =====================
-const DATA = {"meses": ["2026-01", "2026-02"], "mesesLabel": ["Enero", "Febrero"], "pedidosMes": {"2026-01": 1081, "2026-02": 2242}, "facturacionMes": {"2026-01": 138824590, "2026-02": 223439036}, "fleteMes": {"2026-01": 19473454, "2026-02": 38822391}, "tiempoGuiaMes": {"2026-01": 0.89, "2026-02": 0.38}, "tiempoGuiaTrans": {"ENVIA": 0.49, "VELOCES": 0.57, "INTERRAPIDISIMO": 0.61, "COORDINADORA": 0.44, "JAMV-DRIVE": 1.02, "TCC": 0.43}, "factDia": {"2026-01": {"2026-01-01": 4242487, "2026-01-02": 929300, "2026-01-04": 162400, "2026-01-05": 9645305, "2026-01-06": 11742200, "2026-01-07": 6177959, "2026-01-08": 4717915, "2026-01-09": 6155905, "2026-01-10": 4740404, "2026-01-11": 4692599, "2026-01-12": 3802099, "2026-01-13": 1488800, "2026-01-14": 680100, "2026-01-15": 1138528, "2026-01-16": 6418159, "2026-01-17": 6833364, "2026-01-18": 9737504, "2026-01-19": 5156099, "2026-01-20": 479499, "2026-01-21": 4381404, "2026-01-22": 5685710, "2026-01-23": 5989975, "2026-01-24": 6681536, "2026-01-25": 5861449, "2026-01-26": 4854854, "2026-01-27": 5180209, "2026-01-28": 4991501, "2026-01-29": 3737304, "2026-01-30": 2360105, "2026-01-31": 159900}, "2026-02": {"2026-02-01": 159900, "2026-02-03": 6684052, "2026-02-04": 5771082, "2026-02-05": 4028404, "2026-02-06": 11880651, "2026-02-07": 11698008, "2026-02-08": 18369300, "2026-02-09": 18167520, "2026-02-10": 21012135, "2026-02-11": 13769114, "2026-02-12": 15138599, "2026-02-13": 17567759, "2026-02-14": 5079900, "2026-02-15": 4745300, "2026-02-16": 3391600, "2026-02-17": 2782104, "2026-02-18": 11094119, "2026-02-19": 9734908, "2026-02-20": 14642273, "2026-02-21": 12372298, "2026-02-22": 74900, "2026-02-23": 15275106}}, "tasaDespacho": {"ENVIA": {"2026-01": 88.8, "2026-02": 89.1}, "VELOCES": {"2026-01": 95.1, "2026-02": 84.6}, "INTERRAPIDISIMO": {"2026-01": 91.0, "2026-02": 84.3}, "COORDINADORA": {"2026-01": 63.6, "2026-02": 88.7}, "JAMV-DRIVE": {"2026-01": 91.8, "2026-02": 40.0}, "TCC": {"2026-01": 50.0, "2026-02": 71.4}, "99MINUTOS": {"2026-01": 0.0}}, "estatusTrans": {"ENVIA": {"ENTREGADO": 1090, "CANCELADO": 113, "DEVOLUCION": 103, "EN BODEGA ORIGEN": 74, "PENDIENTE CONFIRMACION": 65, "EN REPARTO": 64, "NOVEDAD": 38, "DESPACHADA": 37, "EN BODEGA DESTINO": 17, "RECHAZADO": 11, "EN REEXPEDICION": 10, "PREPARADO PARA TRANSPORTADORA": 1, "EN ESPERA DE RX": 1, "EN ESPERA DE RUTA DOMESTICA": 1}, "VELOCES": {"ENTREGADO": 433, "CANCELADO": 52, "DEVOLUCION": 47, "PENDIENTE CONFIRMACION": 21, "DEVOLUCION EN BODEGA": 17, "BODEGA DESTINO": 11, "EN BODEGA ORIGEN": 10, "RECHAZADO": 7, "TRANSITO A DEVOLUCION PROVEEDOR": 7, "NOVEDAD SOLUCIONADA": 6, "EN TRANSITO": 4, "EN PROCESO DE DEVOLUCION": 4, "NOVEDAD": 3, "DEVOLUCION EN RUTA": 2, "GUIA_GENERADA": 1, "EN RUTA": 1}, "INTERRAPIDISIMO": {"ENTREGADO": 482, "DEVOLUCION": 98, "RECLAME EN OFICINA": 78, "CANCELADO": 62, "PENDIENTE CONFIRMACION": 60, "PREPARADO PARA TRANSPORTADORA": 42, "EN BODEGA TRANSPORTADORA": 30, "INTENTO DE ENTREGA": 20, "EN PROCESAMIENTO": 16, "EN REPARTO": 4, "RECHAZADO": 2, "TELEMERCADEO": 1}, "COORDINADORA": {"ENTREGADO": 31, "EN TERMINAL ORIGEN": 8, "PENDIENTE CONFIRMACION": 5, "NOVEDAD SOLUCIONADA": 5, "CANCELADO": 5, "EN REPARTO": 4, "DEVOLUCION": 4, "EN TRANSPORTE": 1, "EN PUNTO DROOP": 1}, "JAMV-DRIVE": {"ENTREGADO": 71, "CANCELADO": 9, "DEVOLUCION": 6, "EN PROCESO DE DEVOLUCION": 3, "PENDIENTE CONFIRMACION": 1}, "TCC": {"ENTREGADO": 9, "CANCELADO": 5, "EN DESPACHO": 4, "PENDIENTE CONFIRMACION": 3, "DEVOLUCION": 1}}, "ventasProd": {"JS18 PACK TRAMPA DE RATA": 4949, "JS10 Extensor De Toma": 992, "Roach Expert Gel Cucaracha": 906, "JS13 BLOQUEO PEDAL CARRO": 587, "JS11 GiroLed Pro": 586, "JS07 Trampa Ratón": 481, "JS12 PELOTA DE MASCOTA": 323, "Máscara LED Facial": 164, "JS14 HERRAMIENTA 18 EN 1": 120, "Cepillo Giratorio 360": 57, "PLATO BEBÉ": 50, "JS03 Bloqueo Antirobo Carro": 44, "JS05 Bloqueo Antirobo Carro": 42, "Pelota PET": 24, "PULL UP": 20}, "tiendaStats": {"LUCIDBOT": {"CANTIDAD": 3222, "TOTAL DE LA ORDEN": 121580566}, "OTROS": {"CANTIDAD": 1852, "TOTAL DE LA ORDEN": 50161023}, "SHOPIFY": {"CANTIDAD": 4242, "TOTAL DE LA ORDEN": 184867064}, "CHATEA PRO": {"CANTIDAD": 84, "TOTAL DE LA ORDEN": 5654900}}, "novTrans": {"ENVIA": 249, "VELOCES": 194, "INTERRAPIDISIMO": 0, "COORDINADORA": 13, "JAMV-DRIVE": 8, "TCC": 2}, "novSolTrans": {"ENVIA": 214, "VELOCES": 166, "INTERRAPIDISIMO": 0, "COORDINADORA": 12, "JAMV-DRIVE": 7, "TCC": 1}, "novSolEntTrans": {"ENVIA": 49, "VELOCES": 81, "INTERRAPIDISIMO": 0, "COORDINADORA": 3, "JAMV-DRIVE": 3, "TCC": 0}, "novTypes": {"DESTINATARIO SE REHUSA A RECIBIR": 100, "COORDINAR LA ENTREGA": 93, "No hay quien reciba": 71, "Reprogramar entrega": 38, "No contesta Cliente": 21, "DIRECCION DESTINATARIO NO EXISTE": 19, "Direccion incorrecta": 13, "Déficit de Capacidad": 12, "El cliente se niega a recibir": 10, "Pedido cancelado por  el cliente": 9, "Pedido cancelado": 9, "DESTINATARIO FIJA FECHA Y HORA DE RECIBO MAYOR AL DIA SIGUIENTE": 9, "DIRECCION DESTINATARIO INCOMPLETA": 9, "Se visita, no se logra entrega": 7, "PARA ENTREGAR EN BODEGA - RECEPTORIA": 5}, "topDep": {"CUNDINAMARCA": 614, "ANTIOQUIA": 509, "VALLE": 391, "BOLIVAR": 203, "ATLANTICO": 202, "SANTANDER": 132, "NARIÑO": 111, "CORDOBA": 100, "CAUCA": 98, "TOLIMA": 87, "MAGDALENA": 86, "META": 85, "HUILA": 79, "CESAR": 77, "BOYACA": 70}, "topCity": {"BOGOTA": 421, "CALI": 200, "MEDELLIN": 186, "CARTAGENA": 141, "BARRANQUILLA": 137, "SANTA MARTA": 46, "POPAYAN": 42, "PEREIRA": 42, "IBAGUE": 40, "BUENAVENTURA": 39, "VALLEDUPAR": 37, "MONTERIA": 37, "VILLAVICENCIO": 36, "TUMACO": 36, "BELLO": 33}, "factDep": {"CUNDINAMARCA": 68315420, "ANTIOQUIA": 56499325, "VALLE": 43073763, "BOLIVAR": 22241524, "ATLANTICO": 20690425, "SANTANDER": 14449095, "NARIÑO": 11229073, "CAUCA": 10648776, "CORDOBA": 9905133, "TOLIMA": 9539659}, "factCity": {"BOGOTA": 47384364, "CALI": 23132197, "MEDELLIN": 21403013, "CARTAGENA": 15452726, "BARRANQUILLA": 14575783, "SANTA MARTA": 5476774, "PEREIRA": 4777025, "POPAYAN": 4690793, "IBAGUE": 4479255, "BUENAVENTURA": 3930431}, "depStats": {"CUNDINAMARCA": {"pedidos": 614, "despachados": 542, "entregados": 384, "tasa_despacho": 88.3, "tasa_entrega": 62.5, "facturacion": 68315420, "flete": 10126404, "ticket": 111262}, "ANTIOQUIA": {"pedidos": 509, "despachados": 461, "entregados": 333, "tasa_despacho": 90.6, "tasa_entrega": 65.4, "facturacion": 56499325, "flete": 8755066, "ticket": 111000}, "VALLE": {"pedidos": 391, "despachados": 342, "entregados": 276, "tasa_despacho": 87.5, "tasa_entrega": 70.6, "facturacion": 43073763, "flete": 5537993, "ticket": 110163}, "BOLIVAR": {"pedidos": 203, "despachados": 178, "entregados": 127, "tasa_despacho": 87.7, "tasa_entrega": 62.6, "facturacion": 22241524, "flete": 3733368, "ticket": 109564}, "ATLANTICO": {"pedidos": 202, "despachados": 176, "entregados": 121, "tasa_despacho": 87.1, "tasa_entrega": 59.9, "facturacion": 20690425, "flete": 3400693, "ticket": 102427}, "SANTANDER": {"pedidos": 132, "despachados": 116, "entregados": 83, "tasa_despacho": 87.9, "tasa_entrega": 62.9, "facturacion": 14449095, "flete": 2409739, "ticket": 109462}, "NARIÑO": {"pedidos": 111, "despachados": 93, "entregados": 56, "tasa_despacho": 83.8, "tasa_entrega": 50.5, "facturacion": 11229073, "flete": 2138375, "ticket": 101162}, "CORDOBA": {"pedidos": 100, "despachados": 85, "entregados": 57, "tasa_despacho": 85.0, "tasa_entrega": 57.0, "facturacion": 9905133, "flete": 1808613, "ticket": 99051}, "CAUCA": {"pedidos": 98, "despachados": 85, "entregados": 64, "tasa_despacho": 86.7, "tasa_entrega": 65.3, "facturacion": 10648776, "flete": 1658829, "ticket": 108660}, "TOLIMA": {"pedidos": 87, "despachados": 82, "entregados": 58, "tasa_despacho": 94.3, "tasa_entrega": 66.7, "facturacion": 9539659, "flete": 1558877, "ticket": 109651}, "MAGDALENA": {"pedidos": 86, "despachados": 74, "entregados": 53, "tasa_despacho": 86.0, "tasa_entrega": 61.6, "facturacion": 9476358, "flete": 1618063, "ticket": 110190}, "META": {"pedidos": 85, "despachados": 73, "entregados": 53, "tasa_despacho": 85.9, "tasa_entrega": 62.4, "facturacion": 8840868, "flete": 1646025, "ticket": 104010}, "HUILA": {"pedidos": 79, "despachados": 71, "entregados": 56, "tasa_despacho": 89.9, "tasa_entrega": 70.9, "facturacion": 8340767, "flete": 1443216, "ticket": 105579}, "CESAR": {"pedidos": 77, "despachados": 66, "entregados": 48, "tasa_despacho": 85.7, "tasa_entrega": 62.3, "facturacion": 7628390, "flete": 1361327, "ticket": 99070}, "BOYACA": {"pedidos": 70, "despachados": 66, "entregados": 47, "tasa_despacho": 94.3, "tasa_entrega": 67.1, "facturacion": 7506967, "flete": 1354987, "ticket": 107242}}, "cityStats": {"BOGOTA": {"pedidos": 421, "despachados": 374, "entregados": 263, "tasa_despacho": 88.8, "tasa_entrega": 62.5, "facturacion": 47384364, "flete": 6603395, "ticket": 112551}, "CALI": {"pedidos": 200, "despachados": 175, "entregados": 140, "tasa_despacho": 87.5, "tasa_entrega": 70.0, "facturacion": 23132197, "flete": 2594162, "ticket": 115660}, "MEDELLIN": {"pedidos": 186, "despachados": 168, "entregados": 131, "tasa_despacho": 90.3, "tasa_entrega": 70.4, "facturacion": 21403013, "flete": 2808906, "ticket": 115069}, "CARTAGENA": {"pedidos": 141, "despachados": 124, "entregados": 95, "tasa_despacho": 87.9, "tasa_entrega": 67.4, "facturacion": 15452726, "flete": 2447159, "ticket": 109593}, "BARRANQUILLA": {"pedidos": 137, "despachados": 119, "entregados": 83, "tasa_despacho": 86.9, "tasa_entrega": 60.6, "facturacion": 14575783, "flete": 2326077, "ticket": 106392}, "SANTA MARTA": {"pedidos": 46, "despachados": 38, "entregados": 31, "tasa_despacho": 82.6, "tasa_entrega": 67.4, "facturacion": 5476774, "flete": 810037, "ticket": 119060}, "POPAYAN": {"pedidos": 42, "despachados": 40, "entregados": 32, "tasa_despacho": 95.2, "tasa_entrega": 76.2, "facturacion": 4690793, "flete": 650129, "ticket": 111685}, "PEREIRA": {"pedidos": 42, "despachados": 36, "entregados": 32, "tasa_despacho": 85.7, "tasa_entrega": 76.2, "facturacion": 4777025, "flete": 651714, "ticket": 113738}, "IBAGUE": {"pedidos": 40, "despachados": 38, "entregados": 28, "tasa_despacho": 95.0, "tasa_entrega": 70.0, "facturacion": 4479255, "flete": 689913, "ticket": 111981}, "BUENAVENTURA": {"pedidos": 39, "despachados": 36, "entregados": 29, "tasa_despacho": 92.3, "tasa_entrega": 74.4, "facturacion": 3930431, "flete": 706216, "ticket": 100780}, "VALLEDUPAR": {"pedidos": 37, "despachados": 32, "entregados": 24, "tasa_despacho": 86.5, "tasa_entrega": 64.9, "facturacion": 3886400, "flete": 633598, "ticket": 105037}, "MONTERIA": {"pedidos": 37, "despachados": 34, "entregados": 28, "tasa_despacho": 91.9, "tasa_entrega": 75.7, "facturacion": 3528584, "flete": 618610, "ticket": 95367}, "VILLAVICENCIO": {"pedidos": 36, "despachados": 32, "entregados": 23, "tasa_despacho": 88.9, "tasa_entrega": 63.9, "facturacion": 3826222, "flete": 603277, "ticket": 106283}, "TUMACO": {"pedidos": 36, "despachados": 26, "entregados": 15, "tasa_despacho": 72.2, "tasa_entrega": 41.7, "facturacion": 3425009, "flete": 725589, "ticket": 95139}, "BELLO": {"pedidos": 33, "despachados": 27, "entregados": 17, "tasa_despacho": 81.8, "tasa_entrega": 51.5, "facturacion": 3456700, "flete": 467484, "ticket": 104748}}, "depMes": {"CUNDINAMARCA": {"2026-01": 172, "2026-02": 442}, "ANTIOQUIA": {"2026-01": 174, "2026-02": 335}, "VALLE": {"2026-01": 127, "2026-02": 264}, "BOLIVAR": {"2026-01": 79, "2026-02": 124}, "ATLANTICO": {"2026-01": 62, "2026-02": 140}, "SANTANDER": {"2026-01": 50, "2026-02": 82}, "NARIÑO": {"2026-01": 21, "2026-02": 90}, "CORDOBA": {"2026-01": 30, "2026-02": 70}, "CAUCA": {"2026-01": 28, "2026-02": 70}, "TOLIMA": {"2026-01": 33, "2026-02": 54}, "MAGDALENA": {"2026-01": 32, "2026-02": 54}, "META": {"2026-01": 26, "2026-02": 59}, "HUILA": {"2026-01": 24, "2026-02": 55}, "CESAR": {"2026-01": 21, "2026-02": 56}, "BOYACA": {"2026-01": 26, "2026-02": 44}}, "depFact": {"CUNDINAMARCA": {"facturacion": 68315420, "flete": 10126404, "ticket": 111262, "pct_flete": 14.8}, "ANTIOQUIA": {"facturacion": 56499325, "flete": 8755066, "ticket": 111000, "pct_flete": 15.5}, "VALLE": {"facturacion": 43073763, "flete": 5537993, "ticket": 110163, "pct_flete": 12.9}, "BOLIVAR": {"facturacion": 22241524, "flete": 3733368, "ticket": 109564, "pct_flete": 16.8}, "ATLANTICO": {"facturacion": 20690425, "flete": 3400693, "ticket": 102427, "pct_flete": 16.4}, "SANTANDER": {"facturacion": 14449095, "flete": 2409739, "ticket": 109462, "pct_flete": 16.7}, "NARIÑO": {"facturacion": 11229073, "flete": 2138375, "ticket": 101162, "pct_flete": 19.0}, "CAUCA": {"facturacion": 10648776, "flete": 1658829, "ticket": 108660, "pct_flete": 15.6}, "CORDOBA": {"facturacion": 9905133, "flete": 1808613, "ticket": 99051, "pct_flete": 18.3}, "TOLIMA": {"facturacion": 9539659, "flete": 1558877, "ticket": 109651, "pct_flete": 16.3}, "MAGDALENA": {"facturacion": 9476358, "flete": 1618063, "ticket": 110190, "pct_flete": 17.1}, "META": {"facturacion": 8840868, "flete": 1646025, "ticket": 104010, "pct_flete": 18.6}, "HUILA": {"facturacion": 8340767, "flete": 1443216, "ticket": 105579, "pct_flete": 17.3}, "CESAR": {"facturacion": 7628390, "flete": 1361327, "ticket": 99070, "pct_flete": 17.8}, "BOYACA": {"facturacion": 7506967, "flete": 1354987, "ticket": 107242, "pct_flete": 18.0}}, "cityFact": {"BOGOTA": {"facturacion": 47384364, "flete": 6603395, "ticket": 112551, "pct_flete": 13.9}, "CALI": {"facturacion": 23132197, "flete": 2594162, "ticket": 115660, "pct_flete": 11.2}, "MEDELLIN": {"facturacion": 21403013, "flete": 2808906, "ticket": 115069, "pct_flete": 13.1}, "CARTAGENA": {"facturacion": 15452726, "flete": 2447159, "ticket": 109593, "pct_flete": 15.8}, "BARRANQUILLA": {"facturacion": 14575783, "flete": 2326077, "ticket": 106392, "pct_flete": 16.0}, "SANTA MARTA": {"facturacion": 5476774, "flete": 810037, "ticket": 119060, "pct_flete": 14.8}, "PEREIRA": {"facturacion": 4777025, "flete": 651714, "ticket": 113738, "pct_flete": 13.6}, "POPAYAN": {"facturacion": 4690793, "flete": 650129, "ticket": 111685, "pct_flete": 13.9}, "IBAGUE": {"facturacion": 4479255, "flete": 689913, "ticket": 111981, "pct_flete": 15.4}, "BUENAVENTURA": {"facturacion": 3930431, "flete": 706216, "ticket": 100780, "pct_flete": 18.0}, "VALLEDUPAR": {"facturacion": 3886400, "flete": 633598, "ticket": 105037, "pct_flete": 16.3}, "VILLAVICENCIO": {"facturacion": 3826222, "flete": 603277, "ticket": 106283, "pct_flete": 15.8}, "ENVIGADO": {"facturacion": 3534674, "flete": 385362, "ticket": 135949, "pct_flete": 10.9}, "MONTERIA": {"facturacion": 3528584, "flete": 618610, "ticket": 95367, "pct_flete": 17.5}, "BUCARAMANGA": {"facturacion": 3496890, "flete": 512854, "ticket": 112802, "pct_flete": 14.7}}, "depFactMes": {"CUNDINAMARCA": {"2026-01": 22821719, "2026-02": 45493700}, "ANTIOQUIA": {"2026-01": 23310640, "2026-02": 33188684}, "VALLE": {"2026-01": 16332043, "2026-02": 26741720}, "BOLIVAR": {"2026-01": 9748065, "2026-02": 12493459}, "ATLANTICO": {"2026-01": 7540599, "2026-02": 13149825}, "SANTANDER": {"2026-01": 6475415, "2026-02": 7973679}, "NARIÑO": {"2026-01": 2660799, "2026-02": 8568273}, "CORDOBA": {"2026-01": 3509092, "2026-02": 6396040}, "CAUCA": {"2026-01": 3492199, "2026-02": 7156576}, "TOLIMA": {"2026-01": 4283854, "2026-02": 5255805}, "MAGDALENA": {"2026-01": 4091800, "2026-02": 5384558}, "META": {"2026-01": 3209200, "2026-02": 5631668}, "HUILA": {"2026-01": 2960300, "2026-02": 5380467}, "CESAR": {"2026-01": 2247405, "2026-02": 5380985}, "BOYACA": {"2026-01": 2896363, "2026-02": 4610604}}, "depProd": {"CUNDINAMARCA": {"unidades": 1811, "facturacion": 68315420, "unid_por_pedido": 2.9}, "ANTIOQUIA": {"unidades": 1266, "facturacion": 56499325, "unid_por_pedido": 2.5}, "VALLE": {"unidades": 951, "facturacion": 43073763, "unid_por_pedido": 2.4}, "BOLIVAR": {"unidades": 553, "facturacion": 22241524, "unid_por_pedido": 2.7}, "ATLANTICO": {"unidades": 580, "facturacion": 20690425, "unid_por_pedido": 2.9}, "SANTANDER": {"unidades": 370, "facturacion": 14449095, "unid_por_pedido": 2.8}, "NARIÑO": {"unidades": 381, "facturacion": 11229073, "unid_por_pedido": 3.4}, "CORDOBA": {"unidades": 348, "facturacion": 9905133, "unid_por_pedido": 3.5}, "CAUCA": {"unidades": 280, "facturacion": 10648776, "unid_por_pedido": 2.9}, "TOLIMA": {"unidades": 251, "facturacion": 9539659, "unid_por_pedido": 2.9}, "MAGDALENA": {"unidades": 255, "facturacion": 9476358, "unid_por_pedido": 3.0}, "META": {"unidades": 267, "facturacion": 8840868, "unid_por_pedido": 3.1}, "HUILA": {"unidades": 205, "facturacion": 8340767, "unid_por_pedido": 2.6}, "CESAR": {"unidades": 228, "facturacion": 7628390, "unid_por_pedido": 3.0}, "BOYACA": {"unidades": 219, "facturacion": 7506967, "unid_por_pedido": 3.1}}, "cityProd": {"BOGOTA": {"unidades": 1217, "facturacion": 47384364, "unid_por_pedido": 2.9}, "CALI": {"unidades": 449, "facturacion": 23132197, "unid_por_pedido": 2.2}, "MEDELLIN": {"unidades": 396, "facturacion": 21403013, "unid_por_pedido": 2.1}, "CARTAGENA": {"unidades": 386, "facturacion": 15452726, "unid_por_pedido": 2.7}, "BARRANQUILLA": {"unidades": 374, "facturacion": 14575783, "unid_por_pedido": 2.7}, "SANTA MARTA": {"unidades": 114, "facturacion": 5476774, "unid_por_pedido": 2.5}, "POPAYAN": {"unidades": 135, "facturacion": 4690793, "unid_por_pedido": 3.2}, "PEREIRA": {"unidades": 96, "facturacion": 4777025, "unid_por_pedido": 2.3}, "IBAGUE": {"unidades": 88, "facturacion": 4479255, "unid_por_pedido": 2.2}, "BUENAVENTURA": {"unidades": 134, "facturacion": 3930431, "unid_por_pedido": 3.4}, "VALLEDUPAR": {"unidades": 107, "facturacion": 3886400, "unid_por_pedido": 2.9}, "MONTERIA": {"unidades": 143, "facturacion": 3528584, "unid_por_pedido": 3.9}, "VILLAVICENCIO": {"unidades": 108, "facturacion": 3826222, "unid_por_pedido": 3.0}, "TUMACO": {"unidades": 152, "facturacion": 3425009, "unid_por_pedido": 4.2}, "BELLO": {"unidades": 48, "facturacion": 3456700, "unid_por_pedido": 1.5}}, "tiendaDep": {"CUNDINAMARCA": {"LUCIDBOT": 250, "SHOPIFY": 280, "CHATEA PRO": 6}, "ANTIOQUIA": {"LUCIDBOT": 182, "SHOPIFY": 241, "CHATEA PRO": 12}, "VALLE": {"LUCIDBOT": 136, "SHOPIFY": 195, "CHATEA PRO": 7}, "BOLIVAR": {"LUCIDBOT": 59, "SHOPIFY": 108, "CHATEA PRO": 5}, "ATLANTICO": {"LUCIDBOT": 76, "SHOPIFY": 102, "CHATEA PRO": 3}, "SANTANDER": {"LUCIDBOT": 40, "SHOPIFY": 69, "CHATEA PRO": 1}, "NARIÑO": {"LUCIDBOT": 40, "SHOPIFY": 56, "CHATEA PRO": 1}, "CORDOBA": {"LUCIDBOT": 30, "SHOPIFY": 59, "CHATEA PRO": 1}, "CAUCA": {"LUCIDBOT": 35, "SHOPIFY": 45, "CHATEA PRO": 1}, "TOLIMA": {"LUCIDBOT": 33, "SHOPIFY": 36, "CHATEA PRO": 2}, "MAGDALENA": {"LUCIDBOT": 26, "SHOPIFY": 48, "CHATEA PRO": 1}, "META": {"LUCIDBOT": 29, "SHOPIFY": 42, "CHATEA PRO": 1}, "HUILA": {"LUCIDBOT": 30, "SHOPIFY": 33, "CHATEA PRO": 1}, "CESAR": {"LUCIDBOT": 28, "SHOPIFY": 38}, "BOYACA": {"LUCIDBOT": 32, "SHOPIFY": 20, "CHATEA PRO": 2}}, "depNov": {"CUNDINAMARCA": {"novedades": 155, "solucionadas": 137, "tasa_sol": 88.4, "tasa_nov": 25.2}, "ANTIOQUIA": {"novedades": 77, "solucionadas": 66, "tasa_sol": 85.7, "tasa_nov": 15.1}, "VALLE": {"novedades": 62, "solucionadas": 51, "tasa_sol": 82.3, "tasa_nov": 15.9}, "BOLIVAR": {"novedades": 27, "solucionadas": 19, "tasa_sol": 70.4, "tasa_nov": 13.3}, "ATLANTICO": {"novedades": 29, "solucionadas": 27, "tasa_sol": 93.1, "tasa_nov": 14.4}, "SANTANDER": {"novedades": 10, "solucionadas": 10, "tasa_sol": 100.0, "tasa_nov": 7.6}, "NARIÑO": {"novedades": 5, "solucionadas": 5, "tasa_sol": 100.0, "tasa_nov": 4.5}, "CORDOBA": {"novedades": 17, "solucionadas": 16, "tasa_sol": 94.1, "tasa_nov": 17.0}, "CAUCA": {"novedades": 3, "solucionadas": 2, "tasa_sol": 66.7, "tasa_nov": 3.1}, "TOLIMA": {"novedades": 10, "solucionadas": 7, "tasa_sol": 70.0, "tasa_nov": 11.5}, "MAGDALENA": {"novedades": 11, "solucionadas": 9, "tasa_sol": 81.8, "tasa_nov": 12.8}, "META": {"novedades": 6, "solucionadas": 2, "tasa_sol": 33.3, "tasa_nov": 7.1}, "HUILA": {"novedades": 5, "solucionadas": 4, "tasa_sol": 80.0, "tasa_nov": 6.3}, "CESAR": {"novedades": 4, "solucionadas": 4, "tasa_sol": 100.0, "tasa_nov": 5.2}, "BOYACA": {"novedades": 5, "solucionadas": 5, "tasa_sol": 100.0, "tasa_nov": 7.1}}, "cityNov": {"BOGOTA": {"novedades": 129, "solucionadas": 114, "tasa_sol": 88.4, "tasa_nov": 30.6}, "CALI": {"novedades": 40, "solucionadas": 32, "tasa_sol": 80.0, "tasa_nov": 20.0}, "MEDELLIN": {"novedades": 40, "solucionadas": 37, "tasa_sol": 92.5, "tasa_nov": 21.5}, "CARTAGENA": {"novedades": 27, "solucionadas": 19, "tasa_sol": 70.4, "tasa_nov": 19.1}, "BARRANQUILLA": {"novedades": 18, "solucionadas": 16, "tasa_sol": 88.9, "tasa_nov": 13.1}, "SANTA MARTA": {"novedades": 7, "solucionadas": 6, "tasa_sol": 85.7, "tasa_nov": 15.2}, "POPAYAN": {"novedades": 2, "solucionadas": 1, "tasa_sol": 50.0, "tasa_nov": 4.8}, "PEREIRA": {"novedades": 5, "solucionadas": 5, "tasa_sol": 100.0, "tasa_nov": 11.9}, "IBAGUE": {"novedades": 7, "solucionadas": 4, "tasa_sol": 57.1, "tasa_nov": 17.5}, "BUENAVENTURA": {"novedades": 7, "solucionadas": 5, "tasa_sol": 71.4, "tasa_nov": 17.9}, "VALLEDUPAR": {"novedades": 1, "solucionadas": 1, "tasa_sol": 100.0, "tasa_nov": 2.7}, "MONTERIA": {"novedades": 8, "solucionadas": 8, "tasa_sol": 100.0, "tasa_nov": 21.6}, "VILLAVICENCIO": {"novedades": 5, "solucionadas": 1, "tasa_sol": 20.0, "tasa_nov": 13.9}, "TUMACO": {"novedades": 0, "solucionadas": 0, "tasa_sol": 0, "tasa_nov": 0.0}, "BELLO": {"novedades": 13, "solucionadas": 10, "tasa_sol": 76.9, "tasa_nov": 39.4}}, "depTopNov": {"CUNDINAMARCA": {"No hay quien reciba": 34, "DESTINATARIO SE REHUSA A RECIBIR": 31, "Reprogramar entrega": 16}, "ANTIOQUIA": {"Reprogramar entrega": 16, "No hay quien reciba": 14, "No contesta Cliente": 6}, "VALLE": {"No hay quien reciba": 23, "COORDINAR LA ENTREGA": 7, "Reprogramar entrega": 6}, "BOLIVAR": {"COORDINAR LA ENTREGA": 21, "DESTINATARIO SE REHUSA A RECIBIR": 3, "DIRECCION DESTINATARIO NO EXISTE": 2}, "ATLANTICO": {"DESTINATARIO SE REHUSA A RECIBIR": 18, "COORDINAR LA ENTREGA": 6, "DESTINATARIO FIJA FECHA Y HORA DE RECIBO MAYOR AL DIA SIGUIENTE": 2}, "SANTANDER": {"DESTINATARIO SE REHUSA A RECIBIR": 4, "Se visita, no se logra entrega": 2, "PARA ENTREGAR EN BODEGA - RECEPTORIA": 1}, "NARIÑO": {"DESTINATARIO SE REHUSA A RECIBIR": 4, "COORDINAR LA ENTREGA": 1}, "CORDOBA": {"COORDINAR LA ENTREGA": 9, "DESTINATARIO SE REHUSA A RECIBIR": 3, "DIRECCION DESTINATARIO NO EXISTE": 2}, "CAUCA": {"DESTINATARIO SE REHUSA A RECIBIR": 1, "COORDINAR LA ENTREGA": 1, "DESTINARIO NO RECIBE EN DIA SABADO": 1}, "TOLIMA": {"DESTINATARIO SE REHUSA A RECIBIR": 6, "COORDINAR LA ENTREGA": 3, "DESTINATARIO FIJA FECHA Y HORA DE RECIBO MAYOR AL DIA SIGUIENTE": 1}, "MAGDALENA": {"COORDINAR LA ENTREGA": 4, "DESTINATARIO SE REHUSA A RECIBIR": 3, "DIRECCION DESTINATARIO INCOMPLETA": 1}, "META": {"DESTINATARIO SE REHUSA A RECIBIR": 3, "COORDINAR LA ENTREGA": 2, "DIRECCION DESTINATARIO NO EXISTE": 1}, "HUILA": {"DESTINATARIO SE REHUSA A RECIBIR": 3, "DESTINATARIO EXIGE INVENTARIO DE MERCANCIA": 1, "COORDINAR LA ENTREGA": 1}, "CESAR": {"COORDINAR LA ENTREGA": 3, "DESTINATARIO SE REHUSA A RECIBIR": 1}, "BOYACA": {"COORDINAR LA ENTREGA": 3, "DESTINATARIO SE REHUSA A RECIBIR": 2}}};
-
-// ===================== CONF_DATA =====================
-const CONF_DATA = {"byDayTotal": {"2026-01-01": {"total": 24, "pendiente": 0, "pct": 0.0}, "2026-01-02": {"total": 4, "pendiente": 0, "pct": 0.0}, "2026-01-04": {"total": 3, "pendiente": 0, "pct": 0.0}, "2026-01-05": {"total": 63, "pendiente": 0, "pct": 0.0}, "2026-01-06": {"total": 78, "pendiente": 0, "pct": 0.0}, "2026-01-07": {"total": 49, "pendiente": 0, "pct": 0.0}, "2026-01-08": {"total": 38, "pendiente": 0, "pct": 0.0}, "2026-01-09": {"total": 44, "pendiente": 0, "pct": 0.0}, "2026-01-10": {"total": 35, "pendiente": 0, "pct": 0.0}, "2026-01-11": {"total": 35, "pendiente": 0, "pct": 0.0}, "2026-01-12": {"total": 28, "pendiente": 0, "pct": 0.0}, "2026-01-13": {"total": 11, "pendiente": 0, "pct": 0.0}, "2026-01-14": {"total": 8, "pendiente": 0, "pct": 0.0}, "2026-01-15": {"total": 12, "pendiente": 0, "pct": 0.0}, "2026-01-16": {"total": 44, "pendiente": 0, "pct": 0.0}, "2026-01-17": {"total": 51, "pendiente": 0, "pct": 0.0}, "2026-01-18": {"total": 69, "pendiente": 0, "pct": 0.0}, "2026-01-19": {"total": 37, "pendiente": 0, "pct": 0.0}, "2026-01-20": {"total": 4, "pendiente": 0, "pct": 0.0}, "2026-01-21": {"total": 29, "pendiente": 0, "pct": 0.0}, "2026-01-22": {"total": 41, "pendiente": 0, "pct": 0.0}, "2026-01-23": {"total": 45, "pendiente": 0, "pct": 0.0}, "2026-01-24": {"total": 47, "pendiente": 0, "pct": 0.0}, "2026-01-25": {"total": 42, "pendiente": 0, "pct": 0.0}, "2026-01-26": {"total": 30, "pendiente": 0, "pct": 0.0}, "2026-01-27": {"total": 36, "pendiente": 0, "pct": 0.0}, "2026-01-28": {"total": 34, "pendiente": 0, "pct": 0.0}, "2026-01-29": {"total": 24, "pendiente": 0, "pct": 0.0}, "2026-01-30": {"total": 11, "pendiente": 0, "pct": 0.0}, "2026-01-31": {"total": 0, "pendiente": 0, "pct": 0.0}, "2026-02-01": {"total": 0, "pendiente": 0, "pct": 0.0}, "2026-02-03": {"total": 55, "pendiente": 2, "pct": 3.6}, "2026-02-04": {"total": 56, "pendiente": 0, "pct": 0.0}, "2026-02-05": {"total": 40, "pendiente": 1, "pct": 2.5}, "2026-02-06": {"total": 107, "pendiente": 3, "pct": 2.8}, "2026-02-07": {"total": 112, "pendiente": 4, "pct": 3.6}, "2026-02-08": {"total": 190, "pendiente": 21, "pct": 11.1}, "2026-02-09": {"total": 178, "pendiente": 11, "pct": 6.2}, "2026-02-10": {"total": 180, "pendiente": 9, "pct": 5.0}, "2026-02-11": {"total": 118, "pendiente": 9, "pct": 7.6}, "2026-02-12": {"total": 146, "pendiente": 7, "pct": 4.8}, "2026-02-13": {"total": 152, "pendiente": 4, "pct": 2.6}, "2026-02-14": {"total": 51, "pendiente": 0, "pct": 0.0}, "2026-02-15": {"total": 47, "pendiente": 1, "pct": 2.1}, "2026-02-16": {"total": 34, "pendiente": 0, "pct": 0.0}, "2026-02-17": {"total": 29, "pendiente": 14, "pct": 48.3}, "2026-02-18": {"total": 108, "pendiente": 14, "pct": 13.0}, "2026-02-19": {"total": 106, "pendiente": 9, "pct": 8.5}, "2026-02-20": {"total": 134, "pendiente": 21, "pct": 15.7}, "2026-02-21": {"total": 117, "pendiente": 15, "pct": 12.8}, "2026-02-22": {"total": 0, "pendiente": 0, "pct": 0.0}, "2026-02-23": {"total": 140, "pendiente": 10, "pct": 7.1}}, "byDayTrans": {"2026-01-01": {"ENVIA": 0.0, "VELOCES": null, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": 0.0}, "2026-01-02": {"ENVIA": 0.0, "VELOCES": null, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": null}, "2026-01-04": {"ENVIA": 0.0, "VELOCES": null, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-01-05": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-06": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-07": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": 0.0, "TCC": 0.0}, "2026-01-08": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-09": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": 0.0}, "2026-01-10": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-11": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-12": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-13": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-14": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-01-15": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-16": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-17": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-18": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": 0.0}, "2026-01-19": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-20": {"ENVIA": 0.0, "VELOCES": null, "INTERRAPIDISIMO": null, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-21": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-22": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-23": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-24": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-25": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-26": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-27": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-28": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-29": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-01-30": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-01-31": {"ENVIA": null, "VELOCES": null, "INTERRAPIDISIMO": null, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-01": {"ENVIA": null, "VELOCES": null, "INTERRAPIDISIMO": null, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-03": {"ENVIA": 0.0, "VELOCES": 5.6, "INTERRAPIDISIMO": 6.2, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-04": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": null}, "2026-02-05": {"ENVIA": 0.0, "VELOCES": 10.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": 0.0}, "2026-02-06": {"ENVIA": 0.0, "VELOCES": 5.6, "INTERRAPIDISIMO": 6.5, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-07": {"ENVIA": 3.8, "VELOCES": 0.0, "INTERRAPIDISIMO": 7.1, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": null}, "2026-02-08": {"ENVIA": 9.8, "VELOCES": 12.0, "INTERRAPIDISIMO": 15.6, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": 0.0}, "2026-02-09": {"ENVIA": 3.7, "VELOCES": 4.9, "INTERRAPIDISIMO": 10.4, "COORDINADORA": 20.0, "JAMV-DRIVE": null, "TCC": 0.0}, "2026-02-10": {"ENVIA": 4.4, "VELOCES": 4.0, "INTERRAPIDISIMO": 8.3, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": null}, "2026-02-11": {"ENVIA": 7.5, "VELOCES": 10.5, "INTERRAPIDISIMO": 6.9, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": 0.0}, "2026-02-12": {"ENVIA": 3.3, "VELOCES": 0.0, "INTERRAPIDISIMO": 8.5, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": null}, "2026-02-13": {"ENVIA": 1.1, "VELOCES": 6.7, "INTERRAPIDISIMO": 2.3, "COORDINADORA": 100.0, "JAMV-DRIVE": 0.0, "TCC": null}, "2026-02-14": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-15": {"ENVIA": 3.4, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-16": {"ENVIA": 0.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 0.0, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-17": {"ENVIA": 38.9, "VELOCES": 66.7, "INTERRAPIDISIMO": 50.0, "COORDINADORA": 100.0, "JAMV-DRIVE": null, "TCC": 100.0}, "2026-02-18": {"ENVIA": 9.0, "VELOCES": 0.0, "INTERRAPIDISIMO": 23.1, "COORDINADORA": 50.0, "JAMV-DRIVE": 50.0, "TCC": 0.0}, "2026-02-19": {"ENVIA": 5.3, "VELOCES": 0.0, "INTERRAPIDISIMO": 15.4, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": null}, "2026-02-20": {"ENVIA": 15.4, "VELOCES": 0.0, "INTERRAPIDISIMO": 19.0, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": 100.0}, "2026-02-21": {"ENVIA": 13.0, "VELOCES": 4.2, "INTERRAPIDISIMO": 18.2, "COORDINADORA": 16.7, "JAMV-DRIVE": null, "TCC": null}, "2026-02-22": {"ENVIA": null, "VELOCES": null, "INTERRAPIDISIMO": null, "COORDINADORA": null, "JAMV-DRIVE": null, "TCC": null}, "2026-02-23": {"ENVIA": 4.2, "VELOCES": 14.3, "INTERRAPIDISIMO": 8.7, "COORDINADORA": 0.0, "JAMV-DRIVE": null, "TCC": 25.0}}, "byTrans": {"ENVIA": {"total": 1625, "guias": 1512, "pendiente": 65, "otros": 1447, "pct": 4.3}, "VELOCES": {"total": 626, "guias": 574, "pendiente": 21, "otros": 553, "pct": 3.7}, "INTERRAPIDISIMO": {"total": 895, "guias": 833, "pendiente": 60, "otros": 773, "pct": 7.2}, "COORDINADORA": {"total": 64, "guias": 59, "pendiente": 5, "otros": 54, "pct": 8.5}, "JAMV-DRIVE": {"total": 90, "guias": 81, "pendiente": 1, "otros": 80, "pct": 1.2}, "TCC": {"total": 22, "guias": 17, "pendiente": 3, "otros": 14, "pct": 17.6}}};
-
-// ===================== PEND_DETALLE =====================
-const PEND_DETALLE = [{"id": "64785534", "dia": "2026-02-03", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS07 Trampa Ratón"}, {"id": "64863931", "dia": "2026-02-03", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS03 Bloqueo Antirobo Carro"}, {"id": "65006126", "dia": "2026-02-05", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS07 Trampa Ratón"}, {"id": "65179482", "dia": "2026-02-06", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65181988", "dia": "2026-02-06", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "Máscara LED Facial"}, {"id": "65182929", "dia": "2026-02-06", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65253589", "dia": "2026-02-07", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65265265", "dia": "2026-02-07", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65271528", "dia": "2026-02-07", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65306715", "dia": "2026-02-07", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65310163", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65312255", "dia": "2026-02-08", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65313496", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65315418", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65317700", "dia": "2026-02-08", "tags": "NO CONTESTA-SC,venta x wpp", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65318022", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65321361", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65341923", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65348407", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65351318", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65352486", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65353308", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65359997", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65360550", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65361186", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65361222", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65364316", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65378139", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65380027", "dia": "2026-02-08", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65460098", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65533940", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65400149", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65401177", "dia": "2026-02-09", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65406649", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "COORDINADORA", "prod": "JS11 GiroLed Pro"}, {"id": "65408514", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65448385", "dia": "2026-02-09", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65455149", "dia": "2026-02-09", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65465841", "dia": "2026-02-09", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65471375", "dia": "2026-02-09", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65517478", "dia": "2026-02-09", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65580399", "dia": "2026-02-09", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65691711", "dia": "2026-02-09", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65523772", "dia": "2026-02-10", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65524099", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "Máscara LED Facial"}, {"id": "65526390", "dia": "2026-02-10", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65577801", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65579214", "dia": "2026-02-10", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65594703", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "65603778", "dia": "2026-02-10", "tags": "", "trans": "VELOCES", "prod": "JS10 Extensor De Toma"}, {"id": "65613890", "dia": "2026-02-10", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "65673671", "dia": "2026-02-10", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65634611", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS10 Extensor De Toma"}, {"id": "65646482", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65657979", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65661882", "dia": "2026-02-11", "tags": "NO ASUME EXC FLETE,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65684607", "dia": "2026-02-11", "tags": "CANCELO ORDEN", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "65685131", "dia": "2026-02-11", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65685204", "dia": "2026-02-11", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65728577", "dia": "2026-02-11", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65729450", "dia": "2026-02-11", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65758036", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65776940", "dia": "2026-02-12", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS05 Bloqueo Antirobo Carro"}, {"id": "65788351", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "65791165", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65793243", "dia": "2026-02-12", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65798831", "dia": "2026-02-12", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65799833", "dia": "2026-02-12", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65861584", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "65861943", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65862261", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "COORDINADORA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "65907379", "dia": "2026-02-13", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66091469", "dia": "2026-02-15", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66285305", "dia": "2026-02-17", "tags": "", "trans": "COORDINADORA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66285336", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66285347", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66285352", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66285359", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285367", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285378", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285397", "dia": "2026-02-17", "tags": "", "trans": "TCC", "prod": "JS11 GiroLed Pro"}, {"id": "66285470", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66285481", "dia": "2026-02-17", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285487", "dia": "2026-02-17", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285513", "dia": "2026-02-17", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285527", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66298705", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66363824", "dia": "2026-02-18", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66366487", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66377683", "dia": "2026-02-18", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66379529", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66380863", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66382938", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66404333", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66404355", "dia": "2026-02-18", "tags": "", "trans": "COORDINADORA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66404497", "dia": "2026-02-18", "tags": "", "trans": "JAMV-DRIVE", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66409921", "dia": "2026-02-18", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66411500", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66411519", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66411612", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66415189", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66464347", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66464932", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66467568", "dia": "2026-02-19", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66469410", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66469517", "dia": "2026-02-19", "tags": "NO CONTESTA-SC,MAL HISTORIAL,venta x wpp", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66471548", "dia": "2026-02-19", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66472269", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66492546", "dia": "2026-02-19", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66496685", "dia": "2026-02-19", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66569207", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66569603", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66570528", "dia": "2026-02-20", "tags": "venta x wpp", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66570599", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66571523", "dia": "2026-02-20", "tags": "NO CONTESTA-SC", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66571800", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66573755", "dia": "2026-02-20", "tags": "NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66574060", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66576311", "dia": "2026-02-20", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66601093", "dia": "2026-02-20", "tags": "", "trans": "TCC", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66601397", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66603789", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66609720", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66610226", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66611141", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66611178", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66611289", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66611305", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "66611318", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "66620156", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66629129", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66677077", "dia": "2026-02-21", "tags": "MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66678262", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66678521", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66678606", "dia": "2026-02-21", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66678644", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66683219", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66683283", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66683839", "dia": "2026-02-21", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66684257", "dia": "2026-02-21", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "Máscara LED Facial"}, {"id": "66685166", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66686900", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66686990", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66690260", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66700776", "dia": "2026-02-21", "tags": "", "trans": "COORDINADORA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66701099", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66855044", "dia": "2026-02-23", "tags": "", "trans": "ENVIA", "prod": "JS10 Extensor De Toma"}, {"id": "66855743", "dia": "2026-02-23", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66856105", "dia": "2026-02-23", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66856160", "dia": "2026-02-23", "tags": "MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66860312", "dia": "2026-02-23", "tags": "MAL HISTORIAL", "trans": "VELOCES", "prod": "Máscara LED Facial"}, {"id": "66876553", "dia": "2026-02-23", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "TCC", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66878799", "dia": "2026-02-23", "tags": "CANCELO ORDEN,MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66879262", "dia": "2026-02-23", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66886179", "dia": "2026-02-23", "tags": "NO CONTESTA-SC,venta x wpp", "trans": "INTERRAPIDISIMO", "prod": "JS10 Extensor De Toma"}, {"id": "66911066", "dia": "2026-02-23", "tags": "NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}];
-
-// ===================== INVENTARIO =====================
-const INVENTARIO = [{"codigo": "JS186000", "nombre": "TRAMPAS DE RATÓN", "stock": 2113, "precio": 1778}, {"codigo": "JS151800", "nombre": "PELOTA DE MASCOTA", "stock": 1800, "precio": 3877}, {"codigo": "6995568965820", "nombre": "GEL EXTER CUCARACHA", "stock": 1631, "precio": 2884}, {"codigo": "JS121800", "nombre": "PELOTA PET", "stock": 1508, "precio": 3880}, {"codigo": "14272025", "nombre": "FORTALECEDOR DE ANTEBRAZO", "stock": 1409, "precio": 11486}, {"codigo": "JS201200", "nombre": "BOLSO PARA DAMA", "stock": 1200, "precio": 8671}, {"codigo": "JS172000", "nombre": "GUANTES PARA TRAMPAS", "stock": 1171, "precio": 161}, {"codigo": "JS191000", "nombre": "PEGAMENTO PARA RATAS", "stock": 1000, "precio": 1229}, {"codigo": "JS131200", "nombre": "BLOQUEO DE CARRO", "stock": 713, "precio": 15474}, {"codigo": "JS045002025", "nombre": "MASCARA LED", "stock": 499, "precio": 37957}, {"codigo": "JS160480", "nombre": "EXTENSOR DE TOMA", "stock": 475, "precio": 38233}, {"codigo": "JS15-01", "nombre": "CEPILLO DE MASCOTA", "stock": 460, "precio": 3950}, {"codigo": "6939247629146", "nombre": "CEPILLO DE LIMPIEZA 360", "stock": 449, "precio": 42193}, {"codigo": "04832025", "nombre": "PULL UP", "stock": 423, "precio": 38041}, {"codigo": "7709864581115", "nombre": "MASCARILLA SOUL COLLINE", "stock": 330, "precio": 13200}, {"codigo": "4182025", "nombre": "PLATO DE BEBÉ", "stock": 317, "precio": 12932}, {"codigo": "JS144001", "nombre": "HERRAMIENTA TODO EN 1", "stock": 301, "precio": 36953}, {"codigo": "JS101008", "nombre": "EXTERNSOR DE ENERGIA", "stock": 169, "precio": 30400}, {"codigo": "0003", "nombre": "MASCARA FACIAL LUZ LED", "stock": 105, "precio": 37957}, {"codigo": "01312025", "nombre": "POWER BANK", "stock": 87, "precio": 36843}, {"codigo": "JSINSU065", "nombre": "STICKERS DE GUIAS", "stock": 65, "precio": 17484}, {"codigo": "JS073400", "nombre": "PACK TRAMPA DE RATAS", "stock": 44, "precio": 612}, {"codigo": "JS110726", "nombre": "DIRECCIONAL LED PARA MOTO", "stock": 34, "precio": 19016}, {"codigo": "JS091008", "nombre": "PEGANTE DE RATAS", "stock": 18, "precio": 492}, {"codigo": "JS05292025", "nombre": "PEDAL ANTIRROBO CARRO", "stock": 4, "precio": 12400}, {"codigo": "12002025", "nombre": "PEDAL ANTIRROBO CARRO", "stock": 2, "precio": 12400}, {"codigo": "20002025", "nombre": "PELOTA PET", "stock": 2, "precio": 3856}, {"codigo": "202502488", "nombre": "CREATINA MAX WELLNESS (TARRO)", "stock": 1, "precio": 35000}, {"codigo": "0004", "nombre": "DIRECCIONAL MOTO LED", "stock": 1, "precio": 22616}, {"codigo": "00552025", "nombre": "EXTENSOR DE TOMA", "stock": 1, "precio": 34929}, {"codigo": "0006", "nombre": "CREATINA MAX WELLNESS", "stock": 0, "precio": 22000}, {"codigo": "191202510", "nombre": "CUBRE PEZÓN", "stock": 0, "precio": 3012}, {"codigo": "05732025", "nombre": "HERRAMIENTA 18 EN 1", "stock": 0, "precio": 36955}];
-
-// ===================== PEND FILTER =====================
+const DATA = {"meses": ["2026-01", "2026-02"], "mesesLabel": ["Enero", "Febrero"], "pedidosMes": {"2026-01": 1081, "2026-02": 2242}, "facturacionMes": {"2026-01": 138824590, "2026-02": 223439036}, "fleteMes": {"2026-01": 19473454, "2026-02": 38822391}, "tiempoGuiaMes": {"2026-01": 0.89, "2026-02": 0.38}, "tiempoGuiaTrans": {"ENVIA": 0.49, "INTERRAPIDISIMO": 0.61, "VELOCES": 0.57, "JAMV-DRIVE": 1.02, "COORDINADORA": 0.44, "TCC": 0.43}, "factDia": {"2026-01": {"2026-01-01": 4242487, "2026-01-02": 929300, "2026-01-04": 162400, "2026-01-05": 9645305, "2026-01-06": 11742200, "2026-01-07": 6177959, "2026-01-08": 4717915, "2026-01-09": 6155905, "2026-01-10": 4740404, "2026-01-11": 4692599, "2026-01-12": 3802099, "2026-01-13": 1488800, "2026-01-14": 680100, "2026-01-15": 1138528, "2026-01-16": 6418159, "2026-01-17": 6833364, "2026-01-18": 9737504, "2026-01-19": 5156099, "2026-01-20": 479499, "2026-01-21": 4381404, "2026-01-22": 5685710, "2026-01-23": 5989975, "2026-01-24": 6681536, "2026-01-25": 5861449, "2026-01-26": 4854854, "2026-01-27": 5180209, "2026-01-28": 4991501, "2026-01-29": 3737304, "2026-01-30": 2360105, "2026-01-31": 159900}, "2026-02": {"2026-02-01": 159900, "2026-02-03": 6684052, "2026-02-04": 5771082, "2026-02-05": 4028404, "2026-02-06": 11880651, "2026-02-07": 11698008, "2026-02-08": 18369300, "2026-02-09": 18167520, "2026-02-10": 21012135, "2026-02-11": 13769114, "2026-02-12": 15138599, "2026-02-13": 17567759, "2026-02-14": 5079900, "2026-02-15": 4745300, "2026-02-16": 3391600, "2026-02-17": 2782104, "2026-02-18": 11094119, "2026-02-19": 9734908, "2026-02-20": 14642273, "2026-02-21": 12372298, "2026-02-22": 74900, "2026-02-23": 15275106}}, "tasaDespacho": {"ENVIA": {"2026-01": 88.8, "2026-02": 89.1}, "INTERRAPIDISIMO": {"2026-01": 91.0, "2026-02": 84.3}, "VELOCES": {"2026-01": 95.1, "2026-02": 84.6}, "JAMV-DRIVE": {"2026-01": 91.8, "2026-02": 40.0}, "COORDINADORA": {"2026-01": 63.6, "2026-02": 88.7}, "TCC": {"2026-01": 50.0, "2026-02": 71.4}}, "estatusTrans": {"ENVIA": {"ENTREGADO": 1090, "CANCELADO": 113, "DEVOLUCION": 103, "EN BODEGA ORIGEN": 74, "PENDIENTE CONFIRMACION": 65, "EN REPARTO": 64, "NOVEDAD": 38, "DESPACHADA": 37, "EN BODEGA DESTINO": 17, "RECHAZADO": 11, "EN REEXPEDICION": 10, "PREPARADO PARA TRANSPORTADORA": 1, "EN ESPERA DE RX": 1, "EN ESPERA DE RUTA DOMESTICA": 1}, "INTERRAPIDISIMO": {"ENTREGADO": 482, "DEVOLUCION": 98, "RECLAME EN OFICINA": 78, "CANCELADO": 62, "PENDIENTE CONFIRMACION": 60, "PREPARADO PARA TRANSPORTADORA": 42, "EN BODEGA TRANSPORTADORA": 30, "INTENTO DE ENTREGA": 20, "EN PROCESAMIENTO": 16, "EN REPARTO": 4, "RECHAZADO": 2, "TELEMERCADEO": 1}, "VELOCES": {"ENTREGADO": 433, "CANCELADO": 52, "DEVOLUCION": 47, "PENDIENTE CONFIRMACION": 21, "DEVOLUCION EN BODEGA": 17, "BODEGA DESTINO": 11, "EN BODEGA ORIGEN": 10, "RECHAZADO": 7, "TRANSITO A DEVOLUCION PROVEEDOR": 7, "NOVEDAD SOLUCIONADA": 6, "EN TRANSITO": 4, "EN PROCESO DE DEVOLUCION": 4, "NOVEDAD": 3, "DEVOLUCION EN RUTA": 2, "GUIA_GENERADA": 1, "EN RUTA": 1}, "JAMV-DRIVE": {"ENTREGADO": 71, "CANCELADO": 9, "DEVOLUCION": 6, "EN PROCESO DE DEVOLUCION": 3, "PENDIENTE CONFIRMACION": 1}, "COORDINADORA": {"ENTREGADO": 31, "EN TERMINAL ORIGEN": 8, "PENDIENTE CONFIRMACION": 5, "NOVEDAD SOLUCIONADA": 5, "CANCELADO": 5, "EN REPARTO": 4, "DEVOLUCION": 4, "EN TRANSPORTE": 1, "EN PUNTO DROOP": 1}, "TCC": {"ENTREGADO": 9, "CANCELADO": 5, "EN DESPACHO": 4, "PENDIENTE CONFIRMACION": 3, "DEVOLUCION": 1}}, "ventasProd": {"JS18 PACK TRAMPA DE RATA": 4949, "JS10 Extensor De Toma": 992, "Roach Expert Gel Cucaracha": 906, "JS13 BLOQUEO PEDAL CARRO": 587, "JS11 GiroLed Pro": 586, "JS07 Trampa Ratón": 481, "JS12 PELOTA DE MASCOTA": 323, "Máscara LED Facial": 164, "JS14 HERRAMIENTA 18 EN 1": 120, "Cepillo Giratorio 360": 57, "PLATO BEBÉ": 50, "JS03 Bloqueo Antirobo Carro": 44, "JS05 Bloqueo Antirobo Carro": 42, "Pelota PET": 24, "PULL UP": 20}, "tiendaStats": {"SHOPIFY": {"CANTIDAD": 4242, "TOTAL DE LA ORDEN": 184867118}, "LUCIDBOT": {"CANTIDAD": 3222, "TOTAL DE LA ORDEN": 121580568}, "CHATEA PRO": {"CANTIDAD": 84, "TOTAL DE LA ORDEN": 5654900}, "OTROS": {"CANTIDAD": 1852, "TOTAL DE LA ORDEN": 50161038}}, "novTrans": {"ENVIA": 249, "INTERRAPIDISIMO": 0, "VELOCES": 194, "JAMV-DRIVE": 8, "COORDINADORA": 13, "TCC": 2}, "novSolTrans": {"ENVIA": 214, "INTERRAPIDISIMO": 0, "VELOCES": 166, "JAMV-DRIVE": 7, "COORDINADORA": 12, "TCC": 1}, "novSolEntTrans": {"ENVIA": 49, "INTERRAPIDISIMO": 0, "VELOCES": 81, "JAMV-DRIVE": 3, "COORDINADORA": 3, "TCC": 0}, "novTypes": {"DESTINATARIO SE REHUSA A RECIBIR": 100, "COORDINAR LA ENTREGA": 93, "No hay quien reciba": 71, "Reprogramar entrega": 38, "No contesta Cliente": 21, "DIRECCION DESTINATARIO NO EXISTE": 19, "Direccion incorrecta": 13, "Déficit de Capacidad": 12, "El cliente se niega a recibir": 10, "Pedido cancelado por  el cliente": 9, "Pedido cancelado": 9, "DESTINATARIO FIJA FECHA Y HORA DE RECIBO MAYOR AL DIA SIGUIENTE": 9, "DIRECCION DESTINATARIO INCOMPLETA": 9, "Se visita, no se logra entrega": 7, "PARA ENTREGAR EN BODEGA - RECEPTORIA": 5}, "topDep": {"CUNDINAMARCA": 614, "ANTIOQUIA": 509, "VALLE": 391, "BOLIVAR": 203, "ATLANTICO": 202, "SANTANDER": 132, "NARIÑO": 111, "CORDOBA": 100, "CAUCA": 98, "TOLIMA": 87, "MAGDALENA": 86, "META": 85, "HUILA": 79, "CESAR": 77, "BOYACA": 70}, "topCity": {"BOGOTA": 421, "CALI": 200, "MEDELLIN": 186, "CARTAGENA": 141, "BARRANQUILLA": 137, "SANTA MARTA": 46, "POPAYAN": 42, "PEREIRA": 42, "IBAGUE": 40, "BUENAVENTURA": 39, "VALLEDUPAR": 37, "MONTERIA": 37, "VILLAVICENCIO": 36, "TUMACO": 36, "BELLO": 33}, "depStats": {"CUNDINAMARCA": {"pedidos": 614, "tasa_despacho": 88.3, "tasa_entrega": 62.5, "facturacion": 68315420, "flete": 10126404, "ticket": 111262, "pct_flete": 14.8}, "ANTIOQUIA": {"pedidos": 509, "tasa_despacho": 90.6, "tasa_entrega": 65.4, "facturacion": 56499325, "flete": 8755066, "ticket": 111000, "pct_flete": 15.5}, "VALLE": {"pedidos": 391, "tasa_despacho": 87.5, "tasa_entrega": 70.6, "facturacion": 43073763, "flete": 5537993, "ticket": 110163, "pct_flete": 12.9}, "BOLIVAR": {"pedidos": 203, "tasa_despacho": 87.7, "tasa_entrega": 62.6, "facturacion": 22241524, "flete": 3733368, "ticket": 109564, "pct_flete": 16.8}, "ATLANTICO": {"pedidos": 202, "tasa_despacho": 87.1, "tasa_entrega": 59.9, "facturacion": 20690425, "flete": 3400693, "ticket": 102427, "pct_flete": 16.4}, "SANTANDER": {"pedidos": 132, "tasa_despacho": 87.9, "tasa_entrega": 62.9, "facturacion": 14449095, "flete": 2409739, "ticket": 109462, "pct_flete": 16.7}, "NARIÑO": {"pedidos": 111, "tasa_despacho": 83.8, "tasa_entrega": 50.5, "facturacion": 11229073, "flete": 2138375, "ticket": 101162, "pct_flete": 19.0}, "CORDOBA": {"pedidos": 100, "tasa_despacho": 85.0, "tasa_entrega": 57.0, "facturacion": 9905133, "flete": 1808613, "ticket": 99051, "pct_flete": 18.3}, "CAUCA": {"pedidos": 98, "tasa_despacho": 86.7, "tasa_entrega": 65.3, "facturacion": 10648776, "flete": 1658829, "ticket": 108660, "pct_flete": 15.6}, "TOLIMA": {"pedidos": 87, "tasa_despacho": 94.3, "tasa_entrega": 66.7, "facturacion": 9539659, "flete": 1558877, "ticket": 109651, "pct_flete": 16.3}, "MAGDALENA": {"pedidos": 86, "tasa_despacho": 86.0, "tasa_entrega": 61.6, "facturacion": 9476358, "flete": 1618063, "ticket": 110190, "pct_flete": 17.1}, "META": {"pedidos": 85, "tasa_despacho": 85.9, "tasa_entrega": 62.4, "facturacion": 8840868, "flete": 1646025, "ticket": 104010, "pct_flete": 18.6}, "HUILA": {"pedidos": 79, "tasa_despacho": 89.9, "tasa_entrega": 70.9, "facturacion": 8340767, "flete": 1443216, "ticket": 105579, "pct_flete": 17.3}, "CESAR": {"pedidos": 77, "tasa_despacho": 85.7, "tasa_entrega": 62.3, "facturacion": 7628390, "flete": 1361327, "ticket": 99070, "pct_flete": 17.8}, "BOYACA": {"pedidos": 70, "tasa_despacho": 94.3, "tasa_entrega": 67.1, "facturacion": 7506967, "flete": 1354987, "ticket": 107242, "pct_flete": 18.0}}, "cityStats": {"BOGOTA": {"pedidos": 421, "tasa_despacho": 88.8, "tasa_entrega": 62.5, "facturacion": 47384364, "flete": 6603395, "ticket": 112551, "pct_flete": 13.9}, "CALI": {"pedidos": 200, "tasa_despacho": 87.5, "tasa_entrega": 70.0, "facturacion": 23132197, "flete": 2594162, "ticket": 115660, "pct_flete": 11.2}, "MEDELLIN": {"pedidos": 186, "tasa_despacho": 90.3, "tasa_entrega": 70.4, "facturacion": 21403013, "flete": 2808906, "ticket": 115069, "pct_flete": 13.1}, "CARTAGENA": {"pedidos": 141, "tasa_despacho": 87.9, "tasa_entrega": 67.4, "facturacion": 15452726, "flete": 2447159, "ticket": 109593, "pct_flete": 15.8}, "BARRANQUILLA": {"pedidos": 137, "tasa_despacho": 86.9, "tasa_entrega": 60.6, "facturacion": 14575783, "flete": 2326077, "ticket": 106392, "pct_flete": 16.0}, "SANTA MARTA": {"pedidos": 46, "tasa_despacho": 82.6, "tasa_entrega": 67.4, "facturacion": 5476774, "flete": 810037, "ticket": 119060, "pct_flete": 14.8}, "POPAYAN": {"pedidos": 42, "tasa_despacho": 95.2, "tasa_entrega": 76.2, "facturacion": 4690793, "flete": 650129, "ticket": 111685, "pct_flete": 13.9}, "PEREIRA": {"pedidos": 42, "tasa_despacho": 85.7, "tasa_entrega": 76.2, "facturacion": 4777025, "flete": 651714, "ticket": 113738, "pct_flete": 13.6}, "IBAGUE": {"pedidos": 40, "tasa_despacho": 95.0, "tasa_entrega": 70.0, "facturacion": 4479255, "flete": 689913, "ticket": 111981, "pct_flete": 15.4}, "BUENAVENTURA": {"pedidos": 39, "tasa_despacho": 92.3, "tasa_entrega": 74.4, "facturacion": 3930431, "flete": 706216, "ticket": 100780, "pct_flete": 18.0}, "VALLEDUPAR": {"pedidos": 37, "tasa_despacho": 86.5, "tasa_entrega": 64.9, "facturacion": 3886400, "flete": 633598, "ticket": 105037, "pct_flete": 16.3}, "MONTERIA": {"pedidos": 37, "tasa_despacho": 91.9, "tasa_entrega": 75.7, "facturacion": 3528584, "flete": 618610, "ticket": 95367, "pct_flete": 17.5}, "VILLAVICENCIO": {"pedidos": 36, "tasa_despacho": 88.9, "tasa_entrega": 63.9, "facturacion": 3826222, "flete": 603277, "ticket": 106283, "pct_flete": 15.8}, "TUMACO": {"pedidos": 36, "tasa_despacho": 72.2, "tasa_entrega": 41.7, "facturacion": 3425009, "flete": 725589, "ticket": 95139, "pct_flete": 21.2}, "BELLO": {"pedidos": 33, "tasa_despacho": 81.8, "tasa_entrega": 51.5, "facturacion": 3456700, "flete": 467484, "ticket": 104748, "pct_flete": 13.5}}, "depMes": {"CUNDINAMARCA": {"2026-01": 172, "2026-02": 442}, "ANTIOQUIA": {"2026-01": 174, "2026-02": 335}, "VALLE": {"2026-01": 127, "2026-02": 264}, "BOLIVAR": {"2026-01": 79, "2026-02": 124}, "ATLANTICO": {"2026-01": 62, "2026-02": 140}, "SANTANDER": {"2026-01": 50, "2026-02": 82}, "NARIÑO": {"2026-01": 21, "2026-02": 90}, "CORDOBA": {"2026-01": 30, "2026-02": 70}, "CAUCA": {"2026-01": 28, "2026-02": 70}, "TOLIMA": {"2026-01": 33, "2026-02": 54}, "MAGDALENA": {"2026-01": 32, "2026-02": 54}, "META": {"2026-01": 26, "2026-02": 59}, "HUILA": {"2026-01": 24, "2026-02": 55}, "CESAR": {"2026-01": 21, "2026-02": 56}, "BOYACA": {"2026-01": 26, "2026-02": 44}}, "depFact": {"CUNDINAMARCA": {"facturacion": 68315420, "flete": 10126404, "ticket": 111262, "pct_flete": 14.8}, "ANTIOQUIA": {"facturacion": 56499325, "flete": 8755066, "ticket": 111000, "pct_flete": 15.5}, "VALLE": {"facturacion": 43073763, "flete": 5537993, "ticket": 110163, "pct_flete": 12.9}, "BOLIVAR": {"facturacion": 22241524, "flete": 3733368, "ticket": 109564, "pct_flete": 16.8}, "ATLANTICO": {"facturacion": 20690425, "flete": 3400693, "ticket": 102427, "pct_flete": 16.4}, "SANTANDER": {"facturacion": 14449095, "flete": 2409739, "ticket": 109462, "pct_flete": 16.7}, "NARIÑO": {"facturacion": 11229073, "flete": 2138375, "ticket": 101162, "pct_flete": 19.0}, "CAUCA": {"facturacion": 10648776, "flete": 1658829, "ticket": 108660, "pct_flete": 15.6}, "CORDOBA": {"facturacion": 9905133, "flete": 1808613, "ticket": 99051, "pct_flete": 18.3}, "TOLIMA": {"facturacion": 9539659, "flete": 1558877, "ticket": 109651, "pct_flete": 16.3}, "MAGDALENA": {"facturacion": 9476358, "flete": 1618063, "ticket": 110190, "pct_flete": 17.1}, "META": {"facturacion": 8840868, "flete": 1646025, "ticket": 104010, "pct_flete": 18.6}, "HUILA": {"facturacion": 8340767, "flete": 1443216, "ticket": 105579, "pct_flete": 17.3}, "CESAR": {"facturacion": 7628390, "flete": 1361327, "ticket": 99070, "pct_flete": 17.8}, "BOYACA": {"facturacion": 7506967, "flete": 1354987, "ticket": 107242, "pct_flete": 18.0}}, "cityFact": {"BOGOTA": {"facturacion": 47384364, "flete": 6603395, "ticket": 112551, "pct_flete": 13.9}, "CALI": {"facturacion": 23132197, "flete": 2594162, "ticket": 115660, "pct_flete": 11.2}, "MEDELLIN": {"facturacion": 21403013, "flete": 2808906, "ticket": 115069, "pct_flete": 13.1}, "CARTAGENA": {"facturacion": 15452726, "flete": 2447159, "ticket": 109593, "pct_flete": 15.8}, "BARRANQUILLA": {"facturacion": 14575783, "flete": 2326077, "ticket": 106392, "pct_flete": 16.0}, "SANTA MARTA": {"facturacion": 5476774, "flete": 810037, "ticket": 119060, "pct_flete": 14.8}, "PEREIRA": {"facturacion": 4777025, "flete": 651714, "ticket": 113738, "pct_flete": 13.6}, "POPAYAN": {"facturacion": 4690793, "flete": 650129, "ticket": 111685, "pct_flete": 13.9}, "IBAGUE": {"facturacion": 4479255, "flete": 689913, "ticket": 111981, "pct_flete": 15.4}, "BUENAVENTURA": {"facturacion": 3930431, "flete": 706216, "ticket": 100780, "pct_flete": 18.0}, "VALLEDUPAR": {"facturacion": 3886400, "flete": 633598, "ticket": 105037, "pct_flete": 16.3}, "VILLAVICENCIO": {"facturacion": 3826222, "flete": 603277, "ticket": 106283, "pct_flete": 15.8}, "ENVIGADO": {"facturacion": 3534674, "flete": 385362, "ticket": 135949, "pct_flete": 10.9}, "MONTERIA": {"facturacion": 3528584, "flete": 618610, "ticket": 95367, "pct_flete": 17.5}, "BUCARAMANGA": {"facturacion": 3496890, "flete": 512854, "ticket": 112802, "pct_flete": 14.7}}, "depFactMes": {"CUNDINAMARCA": {"2026-01": 22821719, "2026-02": 45493700}, "ANTIOQUIA": {"2026-01": 23310640, "2026-02": 33188684}, "VALLE": {"2026-01": 16332043, "2026-02": 26741720}, "BOLIVAR": {"2026-01": 9748065, "2026-02": 12493459}, "ATLANTICO": {"2026-01": 7540599, "2026-02": 13149825}, "SANTANDER": {"2026-01": 6475415, "2026-02": 7973679}, "NARIÑO": {"2026-01": 2660799, "2026-02": 8568273}, "CAUCA": {"2026-01": 3492199, "2026-02": 7156576}, "CORDOBA": {"2026-01": 3509092, "2026-02": 6396040}, "TOLIMA": {"2026-01": 4283854, "2026-02": 5255805}, "MAGDALENA": {"2026-01": 4091800, "2026-02": 5384558}, "META": {"2026-01": 3209200, "2026-02": 5631668}, "HUILA": {"2026-01": 2960300, "2026-02": 5380467}, "CESAR": {"2026-01": 2247405, "2026-02": 5380985}, "BOYACA": {"2026-01": 2896363, "2026-02": 4610604}}, "depProd": {"CUNDINAMARCA": {"unidades": 1811, "facturacion": 68315420, "unid_por_pedido": 2.9}, "ANTIOQUIA": {"unidades": 1266, "facturacion": 56499325, "unid_por_pedido": 2.5}, "VALLE": {"unidades": 951, "facturacion": 43073763, "unid_por_pedido": 2.4}, "BOLIVAR": {"unidades": 553, "facturacion": 22241524, "unid_por_pedido": 2.7}, "ATLANTICO": {"unidades": 580, "facturacion": 20690425, "unid_por_pedido": 2.9}, "SANTANDER": {"unidades": 370, "facturacion": 14449095, "unid_por_pedido": 2.8}, "NARIÑO": {"unidades": 381, "facturacion": 11229073, "unid_por_pedido": 3.4}, "CORDOBA": {"unidades": 348, "facturacion": 9905133, "unid_por_pedido": 3.5}, "CAUCA": {"unidades": 280, "facturacion": 10648776, "unid_por_pedido": 2.9}, "TOLIMA": {"unidades": 251, "facturacion": 9539659, "unid_por_pedido": 2.9}, "MAGDALENA": {"unidades": 255, "facturacion": 9476358, "unid_por_pedido": 3.0}, "META": {"unidades": 267, "facturacion": 8840868, "unid_por_pedido": 3.1}, "HUILA": {"unidades": 205, "facturacion": 8340767, "unid_por_pedido": 2.6}, "CESAR": {"unidades": 228, "facturacion": 7628390, "unid_por_pedido": 3.0}, "BOYACA": {"unidades": 219, "facturacion": 7506967, "unid_por_pedido": 3.1}}, "cityProd": {"BOGOTA": {"unidades": 1217, "facturacion": 47384364, "unid_por_pedido": 2.9}, "CALI": {"unidades": 449, "facturacion": 23132197, "unid_por_pedido": 2.2}, "MEDELLIN": {"unidades": 396, "facturacion": 21403013, "unid_por_pedido": 2.1}, "CARTAGENA": {"unidades": 386, "facturacion": 15452726, "unid_por_pedido": 2.7}, "BARRANQUILLA": {"unidades": 374, "facturacion": 14575783, "unid_por_pedido": 2.7}, "SANTA MARTA": {"unidades": 114, "facturacion": 5476774, "unid_por_pedido": 2.5}, "POPAYAN": {"unidades": 135, "facturacion": 4690793, "unid_por_pedido": 3.2}, "PEREIRA": {"unidades": 96, "facturacion": 4777025, "unid_por_pedido": 2.3}, "IBAGUE": {"unidades": 88, "facturacion": 4479255, "unid_por_pedido": 2.2}, "BUENAVENTURA": {"unidades": 134, "facturacion": 3930431, "unid_por_pedido": 3.4}, "VALLEDUPAR": {"unidades": 107, "facturacion": 3886400, "unid_por_pedido": 2.9}, "MONTERIA": {"unidades": 143, "facturacion": 3528584, "unid_por_pedido": 3.9}, "VILLAVICENCIO": {"unidades": 108, "facturacion": 3826222, "unid_por_pedido": 3.0}, "TUMACO": {"unidades": 152, "facturacion": 3425009, "unid_por_pedido": 4.2}, "BELLO": {"unidades": 48, "facturacion": 3456700, "unid_por_pedido": 1.5}}, "tiendaDep": {"CUNDINAMARCA": {"SHOPIFY": 280, "LUCIDBOT": 250, "CHATEA PRO": 6}, "ANTIOQUIA": {"SHOPIFY": 241, "LUCIDBOT": 182, "CHATEA PRO": 12}, "VALLE": {"SHOPIFY": 195, "LUCIDBOT": 136, "CHATEA PRO": 7}, "BOLIVAR": {"SHOPIFY": 108, "LUCIDBOT": 59, "CHATEA PRO": 5}, "ATLANTICO": {"SHOPIFY": 102, "LUCIDBOT": 76, "CHATEA PRO": 3}, "SANTANDER": {"SHOPIFY": 69, "LUCIDBOT": 40, "CHATEA PRO": 1}, "NARIÑO": {"SHOPIFY": 56, "LUCIDBOT": 40, "CHATEA PRO": 1}, "CORDOBA": {"SHOPIFY": 59, "LUCIDBOT": 30, "CHATEA PRO": 1}, "CAUCA": {"SHOPIFY": 45, "LUCIDBOT": 35, "CHATEA PRO": 1}, "TOLIMA": {"SHOPIFY": 36, "LUCIDBOT": 33, "CHATEA PRO": 2}, "MAGDALENA": {"SHOPIFY": 48, "LUCIDBOT": 26, "CHATEA PRO": 1}, "META": {"SHOPIFY": 42, "LUCIDBOT": 29, "CHATEA PRO": 1}, "HUILA": {"SHOPIFY": 33, "LUCIDBOT": 30, "CHATEA PRO": 1}, "CESAR": {"SHOPIFY": 38, "LUCIDBOT": 28}, "BOYACA": {"SHOPIFY": 20, "LUCIDBOT": 32, "CHATEA PRO": 2}}, "depNov": {"CUNDINAMARCA": {"novedades": 155, "solucionadas": 137, "tasa_sol": 88.4, "tasa_nov": 25.2}, "ANTIOQUIA": {"novedades": 77, "solucionadas": 66, "tasa_sol": 85.7, "tasa_nov": 15.1}, "VALLE": {"novedades": 62, "solucionadas": 51, "tasa_sol": 82.3, "tasa_nov": 15.9}, "BOLIVAR": {"novedades": 27, "solucionadas": 19, "tasa_sol": 70.4, "tasa_nov": 13.3}, "ATLANTICO": {"novedades": 29, "solucionadas": 27, "tasa_sol": 93.1, "tasa_nov": 14.4}, "SANTANDER": {"novedades": 10, "solucionadas": 10, "tasa_sol": 100.0, "tasa_nov": 7.6}, "NARIÑO": {"novedades": 5, "solucionadas": 5, "tasa_sol": 100.0, "tasa_nov": 4.5}, "CORDOBA": {"novedades": 17, "solucionadas": 16, "tasa_sol": 94.1, "tasa_nov": 17.0}, "CAUCA": {"novedades": 3, "solucionadas": 2, "tasa_sol": 66.7, "tasa_nov": 3.1}, "TOLIMA": {"novedades": 10, "solucionadas": 7, "tasa_sol": 70.0, "tasa_nov": 11.5}, "MAGDALENA": {"novedades": 11, "solucionadas": 9, "tasa_sol": 81.8, "tasa_nov": 12.8}, "META": {"novedades": 6, "solucionadas": 2, "tasa_sol": 33.3, "tasa_nov": 7.1}, "HUILA": {"novedades": 5, "solucionadas": 4, "tasa_sol": 80.0, "tasa_nov": 6.3}, "CESAR": {"novedades": 4, "solucionadas": 4, "tasa_sol": 100.0, "tasa_nov": 5.2}, "BOYACA": {"novedades": 5, "solucionadas": 5, "tasa_sol": 100.0, "tasa_nov": 7.1}}, "cityNov": {"BOGOTA": {"novedades": 129, "solucionadas": 114, "tasa_sol": 88.4, "tasa_nov": 30.6}, "CALI": {"novedades": 40, "solucionadas": 32, "tasa_sol": 80.0, "tasa_nov": 20.0}, "MEDELLIN": {"novedades": 40, "solucionadas": 37, "tasa_sol": 92.5, "tasa_nov": 21.5}, "CARTAGENA": {"novedades": 27, "solucionadas": 19, "tasa_sol": 70.4, "tasa_nov": 19.1}, "BARRANQUILLA": {"novedades": 18, "solucionadas": 16, "tasa_sol": 88.9, "tasa_nov": 13.1}, "SANTA MARTA": {"novedades": 7, "solucionadas": 6, "tasa_sol": 85.7, "tasa_nov": 15.2}, "POPAYAN": {"novedades": 2, "solucionadas": 1, "tasa_sol": 50.0, "tasa_nov": 4.8}, "PEREIRA": {"novedades": 5, "solucionadas": 5, "tasa_sol": 100.0, "tasa_nov": 11.9}, "IBAGUE": {"novedades": 7, "solucionadas": 4, "tasa_sol": 57.1, "tasa_nov": 17.5}, "BUENAVENTURA": {"novedades": 7, "solucionadas": 5, "tasa_sol": 71.4, "tasa_nov": 17.9}, "VALLEDUPAR": {"novedades": 1, "solucionadas": 1, "tasa_sol": 100.0, "tasa_nov": 2.7}, "MONTERIA": {"novedades": 8, "solucionadas": 8, "tasa_sol": 100.0, "tasa_nov": 21.6}, "VILLAVICENCIO": {"novedades": 5, "solucionadas": 1, "tasa_sol": 20.0, "tasa_nov": 13.9}, "TUMACO": {"novedades": 0, "solucionadas": 0, "tasa_sol": 0, "tasa_nov": 0.0}, "BELLO": {"novedades": 13, "solucionadas": 10, "tasa_sol": 76.9, "tasa_nov": 39.4}}, "depTopNov": {"CUNDINAMARCA": {"No hay quien reciba": 34, "DESTINATARIO SE REHUSA A RECIBIR": 31, "Reprogramar entrega": 16}, "ANTIOQUIA": {"Reprogramar entrega": 16, "No hay quien reciba": 14, "No contesta Cliente": 6}, "VALLE": {"No hay quien reciba": 23, "COORDINAR LA ENTREGA": 7, "Reprogramar entrega": 6}, "BOLIVAR": {"COORDINAR LA ENTREGA": 21, "DESTINATARIO SE REHUSA A RECIBIR": 3, "DIRECCION DESTINATARIO NO EXISTE": 2}, "ATLANTICO": {"DESTINATARIO SE REHUSA A RECIBIR": 18, "COORDINAR LA ENTREGA": 6, "DESTINATARIO FIJA FECHA Y HORA DE RECIBO MAYOR AL DIA SIGUIENTE": 2}, "SANTANDER": {"DESTINATARIO SE REHUSA A RECIBIR": 4, "Se visita, no se logra entrega": 2, "PARA ENTREGAR EN BODEGA - RECEPTORIA": 1}, "NARIÑO": {"DESTINATARIO SE REHUSA A RECIBIR": 4, "COORDINAR LA ENTREGA": 1}, "CORDOBA": {"COORDINAR LA ENTREGA": 9, "DESTINATARIO SE REHUSA A RECIBIR": 3, "DIRECCION DESTINATARIO NO EXISTE": 2}, "CAUCA": {"DESTINATARIO SE REHUSA A RECIBIR": 1, "COORDINAR LA ENTREGA": 1, "DESTINARIO NO RECIBE EN DIA SABADO": 1}, "TOLIMA": {"DESTINATARIO SE REHUSA A RECIBIR": 6, "COORDINAR LA ENTREGA": 3, "DESTINATARIO FIJA FECHA Y HORA DE RECIBO MAYOR AL DIA SIGUIENTE": 1}, "MAGDALENA": {"COORDINAR LA ENTREGA": 4, "DESTINATARIO SE REHUSA A RECIBIR": 3, "DIRECCION DESTINATARIO INCOMPLETA": 1}, "META": {"DESTINATARIO SE REHUSA A RECIBIR": 3, "COORDINAR LA ENTREGA": 2, "DIRECCION DESTINATARIO NO EXISTE": 1}, "HUILA": {"DESTINATARIO SE REHUSA A RECIBIR": 3, "DESTINATARIO EXIGE INVENTARIO DE MERCANCIA": 1, "COORDINAR LA ENTREGA": 1}, "CESAR": {"COORDINAR LA ENTREGA": 3, "DESTINATARIO SE REHUSA A RECIBIR": 1}, "BOYACA": {"COORDINAR LA ENTREGA": 3, "DESTINATARIO SE REHUSA A RECIBIR": 2}}};
+const CONF_DATA = {"byDayTotal": {"2026-01-01": {"total": 24, "pendiente": 0, "pct": 0.0}, "2026-01-02": {"total": 4, "pendiente": 0, "pct": 0.0}, "2026-01-04": {"total": 3, "pendiente": 0, "pct": 0.0}, "2026-01-05": {"total": 63, "pendiente": 0, "pct": 0.0}, "2026-01-06": {"total": 78, "pendiente": 0, "pct": 0.0}, "2026-01-07": {"total": 49, "pendiente": 0, "pct": 0.0}, "2026-01-08": {"total": 38, "pendiente": 0, "pct": 0.0}, "2026-01-09": {"total": 44, "pendiente": 0, "pct": 0.0}, "2026-01-10": {"total": 35, "pendiente": 0, "pct": 0.0}, "2026-01-11": {"total": 35, "pendiente": 0, "pct": 0.0}, "2026-01-12": {"total": 28, "pendiente": 0, "pct": 0.0}, "2026-01-13": {"total": 11, "pendiente": 0, "pct": 0.0}, "2026-01-14": {"total": 8, "pendiente": 0, "pct": 0.0}, "2026-01-15": {"total": 12, "pendiente": 0, "pct": 0.0}, "2026-01-16": {"total": 44, "pendiente": 0, "pct": 0.0}, "2026-01-17": {"total": 51, "pendiente": 0, "pct": 0.0}, "2026-01-18": {"total": 69, "pendiente": 0, "pct": 0.0}, "2026-01-19": {"total": 37, "pendiente": 0, "pct": 0.0}, "2026-01-20": {"total": 4, "pendiente": 0, "pct": 0.0}, "2026-01-21": {"total": 29, "pendiente": 0, "pct": 0.0}, "2026-01-22": {"total": 41, "pendiente": 0, "pct": 0.0}, "2026-01-23": {"total": 45, "pendiente": 0, "pct": 0.0}, "2026-01-24": {"total": 47, "pendiente": 0, "pct": 0.0}, "2026-01-25": {"total": 42, "pendiente": 0, "pct": 0.0}, "2026-01-26": {"total": 30, "pendiente": 0, "pct": 0.0}, "2026-01-27": {"total": 36, "pendiente": 0, "pct": 0.0}, "2026-01-28": {"total": 34, "pendiente": 0, "pct": 0.0}, "2026-01-29": {"total": 24, "pendiente": 0, "pct": 0.0}, "2026-01-30": {"total": 11, "pendiente": 0, "pct": 0.0}, "2026-01-31": {"total": 0, "pendiente": 0, "pct": 0.0}, "2026-02-01": {"total": 0, "pendiente": 0, "pct": 0.0}, "2026-02-03": {"total": 55, "pendiente": 2, "pct": 3.6}, "2026-02-04": {"total": 56, "pendiente": 0, "pct": 0.0}, "2026-02-05": {"total": 40, "pendiente": 1, "pct": 2.5}, "2026-02-06": {"total": 107, "pendiente": 3, "pct": 2.8}, "2026-02-07": {"total": 112, "pendiente": 4, "pct": 3.6}, "2026-02-08": {"total": 190, "pendiente": 21, "pct": 11.1}, "2026-02-09": {"total": 178, "pendiente": 11, "pct": 6.2}, "2026-02-10": {"total": 180, "pendiente": 9, "pct": 5.0}, "2026-02-11": {"total": 118, "pendiente": 9, "pct": 7.6}, "2026-02-12": {"total": 146, "pendiente": 7, "pct": 4.8}, "2026-02-13": {"total": 152, "pendiente": 4, "pct": 2.6}, "2026-02-14": {"total": 51, "pendiente": 0, "pct": 0.0}, "2026-02-15": {"total": 47, "pendiente": 1, "pct": 2.1}, "2026-02-16": {"total": 34, "pendiente": 0, "pct": 0.0}, "2026-02-17": {"total": 29, "pendiente": 14, "pct": 48.3}, "2026-02-18": {"total": 108, "pendiente": 14, "pct": 13.0}, "2026-02-19": {"total": 106, "pendiente": 9, "pct": 8.5}, "2026-02-20": {"total": 134, "pendiente": 21, "pct": 15.7}, "2026-02-21": {"total": 117, "pendiente": 15, "pct": 12.8}, "2026-02-22": {"total": 0, "pendiente": 0, "pct": 0.0}, "2026-02-23": {"total": 140, "pendiente": 10, "pct": 7.1}}, "byTrans": {"ENVIA": {"total": 1625, "guias": 1512, "pendiente": 65, "pct": 4.3}, "INTERRAPIDISIMO": {"total": 895, "guias": 833, "pendiente": 60, "pct": 7.2}, "VELOCES": {"total": 626, "guias": 574, "pendiente": 21, "pct": 3.7}, "JAMV-DRIVE": {"total": 90, "guias": 81, "pendiente": 1, "pct": 1.2}, "COORDINADORA": {"total": 64, "guias": 59, "pendiente": 5, "pct": 8.5}, "TCC": {"total": 22, "guias": 17, "pendiente": 3, "pct": 17.6}}};
+const PEND_DETALLE = [{"id": "64785534", "dia": "2026-02-03", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS07 Trampa Ratón"}, {"id": "64863931", "dia": "2026-02-03", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS03 Bloqueo Antirobo Carro"}, {"id": "65006126", "dia": "2026-02-05", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS07 Trampa Ratón"}, {"id": "65179482", "dia": "2026-02-06", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65181988", "dia": "2026-02-06", "tags": ",NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "Máscara LED Facial"}, {"id": "65182929", "dia": "2026-02-06", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65253589", "dia": "2026-02-07", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65265265", "dia": "2026-02-07", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65271528", "dia": "2026-02-07", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65306715", "dia": "2026-02-07", "tags": ",NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65310163", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65312255", "dia": "2026-02-08", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65313496", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65315418", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65317700", "dia": "2026-02-08", "tags": ",NO CONTESTA-SC,venta x wpp", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65318022", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65321361", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65341923", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65348407", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65351318", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65352486", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65353308", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65359997", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65360550", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65361186", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65361222", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65364316", "dia": "2026-02-08", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65378139", "dia": "2026-02-08", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65380027", "dia": "2026-02-08", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65460098", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65533940", "dia": "2026-02-08", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65400149", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65401177", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65406649", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC", "trans": "COORDINADORA", "prod": "JS11 GiroLed Pro"}, {"id": "65408514", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65448385", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65455149", "dia": "2026-02-09", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65465841", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65471375", "dia": "2026-02-09", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65517478", "dia": "2026-02-09", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65580399", "dia": "2026-02-09", "tags": "", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65691711", "dia": "2026-02-09", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65523772", "dia": "2026-02-10", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65524099", "dia": "2026-02-10", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "Máscara LED Facial"}, {"id": "65526390", "dia": "2026-02-10", "tags": ",NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65577801", "dia": "2026-02-10", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65579214", "dia": "2026-02-10", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65594703", "dia": "2026-02-10", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "65603778", "dia": "2026-02-10", "tags": "", "trans": "VELOCES", "prod": "JS10 Extensor De Toma"}, {"id": "65613890", "dia": "2026-02-10", "tags": ",NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "65673671", "dia": "2026-02-10", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65634611", "dia": "2026-02-11", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS10 Extensor De Toma"}, {"id": "65646482", "dia": "2026-02-11", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65657979", "dia": "2026-02-11", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "65661882", "dia": "2026-02-11", "tags": ",NO ASUME EXC FLETE,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65684607", "dia": "2026-02-11", "tags": ",CANCELO ORDEN", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "65685131", "dia": "2026-02-11", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65685204", "dia": "2026-02-11", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65728577", "dia": "2026-02-11", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65729450", "dia": "2026-02-11", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65758036", "dia": "2026-02-12", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "65776940", "dia": "2026-02-12", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS05 Bloqueo Antirobo Carro"}, {"id": "65788351", "dia": "2026-02-12", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "65791165", "dia": "2026-02-12", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65793243", "dia": "2026-02-12", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65798831", "dia": "2026-02-12", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65799833", "dia": "2026-02-12", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "65861584", "dia": "2026-02-13", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "65861943", "dia": "2026-02-13", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "65862261", "dia": "2026-02-13", "tags": ",MAL HISTORIAL", "trans": "COORDINADORA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "65907379", "dia": "2026-02-13", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66091469", "dia": "2026-02-15", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66285305", "dia": "2026-02-17", "tags": "", "trans": "COORDINADORA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66285336", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66285347", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66285352", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66285359", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285367", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285378", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285397", "dia": "2026-02-17", "tags": "", "trans": "TCC", "prod": "JS11 GiroLed Pro"}, {"id": "66285470", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66285481", "dia": "2026-02-17", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285487", "dia": "2026-02-17", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285513", "dia": "2026-02-17", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66285527", "dia": "2026-02-17", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66298705", "dia": "2026-02-17", "tags": "", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66363824", "dia": "2026-02-18", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66366487", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66377683", "dia": "2026-02-18", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66379529", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66380863", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66382938", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66404333", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66404355", "dia": "2026-02-18", "tags": "", "trans": "COORDINADORA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66404497", "dia": "2026-02-18", "tags": "", "trans": "JAMV-DRIVE", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66409921", "dia": "2026-02-18", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66411500", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66411519", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66411612", "dia": "2026-02-18", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66415189", "dia": "2026-02-18", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66464347", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66464932", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66467568", "dia": "2026-02-19", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66469410", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66469517", "dia": "2026-02-19", "tags": ",NO CONTESTA-SC,MAL HISTORIAL,venta x wpp", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66471548", "dia": "2026-02-19", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66472269", "dia": "2026-02-19", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66492546", "dia": "2026-02-19", "tags": ",NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66496685", "dia": "2026-02-19", "tags": ",NO CONTESTA-SC", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66569207", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66569603", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66570528", "dia": "2026-02-20", "tags": ",venta x wpp", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66570599", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66571523", "dia": "2026-02-20", "tags": ",NO CONTESTA-SC", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66571800", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66573755", "dia": "2026-02-20", "tags": ",NO CONTESTA-SC", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66574060", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66576311", "dia": "2026-02-20", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66601093", "dia": "2026-02-20", "tags": "", "trans": "TCC", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66601397", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66603789", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66609720", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66610226", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66611141", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS12 PELOTA DE MASCOTA"}, {"id": "66611178", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66611289", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66611305", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "66611318", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "Envío Prioritario Para Despacho Rápido"}, {"id": "66620156", "dia": "2026-02-20", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66629129", "dia": "2026-02-20", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66677077", "dia": "2026-02-21", "tags": ",MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS11 GiroLed Pro"}, {"id": "66678262", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66678521", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66678606", "dia": "2026-02-21", "tags": "", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66678644", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS14 HERRAMIENTA 18 EN 1"}, {"id": "66683219", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66683283", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66683839", "dia": "2026-02-21", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66684257", "dia": "2026-02-21", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "Máscara LED Facial"}, {"id": "66685166", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66686900", "dia": "2026-02-21", "tags": "", "trans": "ENVIA", "prod": "JS11 GiroLed Pro"}, {"id": "66686990", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66690260", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66700776", "dia": "2026-02-21", "tags": "", "trans": "COORDINADORA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66701099", "dia": "2026-02-21", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66855044", "dia": "2026-02-23", "tags": "", "trans": "ENVIA", "prod": "JS10 Extensor De Toma"}, {"id": "66855743", "dia": "2026-02-23", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66856105", "dia": "2026-02-23", "tags": "", "trans": "ENVIA", "prod": "Cepillo Giratorio 360"}, {"id": "66856160", "dia": "2026-02-23", "tags": ",MAL HISTORIAL", "trans": "ENVIA", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66860312", "dia": "2026-02-23", "tags": ",MAL HISTORIAL", "trans": "VELOCES", "prod": "Máscara LED Facial"}, {"id": "66876553", "dia": "2026-02-23", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "TCC", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66878799", "dia": "2026-02-23", "tags": ",CANCELO ORDEN,MAL HISTORIAL", "trans": "VELOCES", "prod": "JS13 BLOQUEO PEDAL CARRO"}, {"id": "66879262", "dia": "2026-02-23", "tags": "", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}, {"id": "66886179", "dia": "2026-02-23", "tags": ",NO CONTESTA-SC,venta x wpp", "trans": "INTERRAPIDISIMO", "prod": "JS10 Extensor De Toma"}, {"id": "66911066", "dia": "2026-02-23", "tags": ",NO CONTESTA-SC,MAL HISTORIAL", "trans": "INTERRAPIDISIMO", "prod": "JS18 PACK TRAMPA DE RATA"}];
 const PEND_DIAS = ["2026-02-03", "2026-02-05", "2026-02-06", "2026-02-07", "2026-02-08", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-15", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-23"];
 const PEND_BTN_MAP = {"2026-02-03": "pendBtn3", "2026-02-05": "pendBtn5", "2026-02-06": "pendBtn6", "2026-02-07": "pendBtn7", "2026-02-08": "pendBtn8", "2026-02-09": "pendBtn9", "2026-02-10": "pendBtn10", "2026-02-11": "pendBtn11", "2026-02-12": "pendBtn12", "2026-02-13": "pendBtn13", "2026-02-15": "pendBtn15", "2026-02-17": "pendBtn17", "2026-02-18": "pendBtn18", "2026-02-19": "pendBtn19", "2026-02-20": "pendBtn20", "2026-02-21": "pendBtn21", "2026-02-23": "pendBtn23"};
+const INVENTARIO = [{"codigo": "JS186000", "nombre": "TRAMPAS DE RATÓN", "stock": 2113, "precio": 1778}, {"codigo": "JS151800", "nombre": "PELOTA DE MASCOTA", "stock": 1800, "precio": 3877}, {"codigo": "6995568965820", "nombre": "GEL EXTER CUCARACHA", "stock": 1631, "precio": 2884}, {"codigo": "JS121800", "nombre": "PELOTA PET", "stock": 1508, "precio": 3880}, {"codigo": "14272025", "nombre": "FORTALECEDOR DE ANTEBRAZO", "stock": 1409, "precio": 11486}, {"codigo": "JS201200", "nombre": "BOLSO PARA DAMA", "stock": 1200, "precio": 8671}, {"codigo": "JS172000", "nombre": "GUANTES PARA TRAMPAS", "stock": 1171, "precio": 161}, {"codigo": "JS191000", "nombre": "PEGAMENTO PARA RATAS", "stock": 1000, "precio": 1229}, {"codigo": "JS131200", "nombre": "BLOQUEO DE CARRO", "stock": 713, "precio": 15474}, {"codigo": "JS045002025", "nombre": "MASCARA LED", "stock": 499, "precio": 37957}, {"codigo": "JS160480", "nombre": "EXTENSOR DE TOMA", "stock": 475, "precio": 38233}, {"codigo": "JS15-01", "nombre": "CEPILLO DE MASCOTA", "stock": 460, "precio": 3950}, {"codigo": "6939247629146", "nombre": "CEPILLO DE LIMPIEZA 360", "stock": 449, "precio": 42193}, {"codigo": "04832025", "nombre": "PULL UP", "stock": 423, "precio": 38041}, {"codigo": "7709864581115", "nombre": "MASCARILLA SOUL COLLINE", "stock": 330, "precio": 13200}, {"codigo": "4182025", "nombre": "PLATO DE BEBÉ", "stock": 317, "precio": 12932}, {"codigo": "JS144001", "nombre": "HERRAMIENTA TODO EN 1", "stock": 301, "precio": 36953}, {"codigo": "JS101008", "nombre": "EXTERNSOR DE ENERGIA", "stock": 169, "precio": 30400}, {"codigo": "0003", "nombre": "MASCARA FACIAL LUZ LED", "stock": 105, "precio": 37957}, {"codigo": "01312025", "nombre": "POWER BANK", "stock": 87, "precio": 36843}, {"codigo": "JSINSU065", "nombre": "STICKERS DE GUIAS", "stock": 65, "precio": 17484}, {"codigo": "JS073400", "nombre": "PACK TRAMPA DE RATAS", "stock": 44, "precio": 612}, {"codigo": "JS110726", "nombre": "DIRECCIONAL LED PARA MOTO", "stock": 34, "precio": 19016}, {"codigo": "JS091008", "nombre": "PEGANTE DE RATAS", "stock": 18, "precio": 492}, {"codigo": "JS05292025", "nombre": "PEDAL ANTIRROBO CARRO", "stock": 4, "precio": 12400}, {"codigo": "12002025", "nombre": "PEDAL ANTIRROBO CARRO", "stock": 2, "precio": 12400}, {"codigo": "20002025", "nombre": "PELOTA PET", "stock": 2, "precio": 3856}, {"codigo": "202502488", "nombre": "CREATINA MAX WELLNESS (TARRO)", "stock": 1, "precio": 35000}, {"codigo": "0004", "nombre": "DIRECCIONAL MOTO LED", "stock": 1, "precio": 22616}, {"codigo": "00552025", "nombre": "EXTENSOR DE TOMA", "stock": 1, "precio": 34929}, {"codigo": "0006", "nombre": "CREATINA MAX WELLNESS", "stock": 0, "precio": 22000}, {"codigo": "191202510", "nombre": "CUBRE PEZÓN", "stock": 0, "precio": 3012}, {"codigo": "05732025", "nombre": "HERRAMIENTA 18 EN 1", "stock": 0, "precio": 36955}];
 
 
-// ===================== CHART INSTANCES =====================
-let _charts = {};
+// =================== COLORS ===================
+const C = ['#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6',
+           '#f97316','#ec4899','#14b8a6','#84cc16','#06b6d4','#a855f7',
+           '#22c55e','#fb923c','#f43f5e'];
 
-function destroyChart(id) {
-  if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; }
-}
-function makeChart(id, cfg) {
-  destroyChart(id);
+// =================== CHART REGISTRY ===================
+const _ch = {};
+function killChart(id){ if(_ch[id]){_ch[id].destroy();delete _ch[id];} }
+
+function mkChart(id, type, data, options){
+  killChart(id);
   const el = document.getElementById(id);
-  if (!el) return null;
-  // Set explicit dimensions if container has no computed size (hidden tab)
+  if(!el){ console.warn('Canvas not found:',id); return null; }
+  try{
+    _ch[id] = new Chart(el, {type, data, options: Object.assign({
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, datalabels:{display:false} }
+    }, options)});
+  } catch(e){ console.error('Chart error '+id, e); }
+  return _ch[id]||null;
+}
+
+// =================== UTILS ===================
+function cop(v){ return '$ '+Math.round(v||0).toLocaleString('es-CO'); }
+function M(v){ return '$'+(v/1e6).toFixed(1)+'M'; }
+function pct(v){ return (v||0).toFixed(1)+'%'; }
+function set$(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+function setH(id,v){ const e=document.getElementById(id); if(e) e.innerHTML=v; }
+
+// =================== HORIZONTAL BAR CHART (GEO) ===================
+function geoChart(id, labels, vals, fmt){
+  killChart(id);
+  const el = document.getElementById(id);
+  if(!el) return;
+  // Force height based on data rows
+  const h = Math.max(labels.length*28+50, 200);
   const wrap = el.parentElement;
-  const wh = wrap ? (parseInt(wrap.style.height) || wrap.offsetHeight || 0) : 0;
-  if (wh === 0 && wrap) {
-    const cs = window.getComputedStyle(wrap);
-    const cssH = parseInt(cs.height) || 280;
-    wrap.style.height = cssH + 'px';
-    wrap.style.position = 'relative';
-  }
-  try {
-    _charts[id] = new Chart(el, cfg);
-  } catch(e) {
-    console.error('Chart error [' + id + ']:', e);
-  }
-  return _charts[id] || null;
+  if(wrap){ wrap.style.height=h+'px'; wrap.style.position='relative'; }
+  el.style.display='block'; el.style.width='100%'; el.style.height=h+'px';
+  try{
+    _ch[id] = new Chart(el, {
+      type:'bar',
+      data:{ labels, datasets:[{data:vals, backgroundColor:C, borderRadius:4,
+             barThickness: Math.max(12, Math.min(24, Math.floor(300/labels.length))) }]},
+      options:{
+        responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{
+          legend:{display:false},
+          datalabels:{ display:true, anchor:'end', align:'right',
+            font:{size:10,weight:'600'}, color:'#374151',
+            formatter: fmt || (v=>v.toLocaleString()) }
+        },
+        scales:{
+          x:{ beginAtZero:true, grid:{color:'#f1f5f9'},
+              ticks:{color:'#6b7280',font:{size:10}} },
+          y:{ grid:{display:false}, ticks:{color:'#374151',font:{size:10}} }
+        }
+      }
+    });
+  } catch(e){ console.error('GeoChart error '+id, e); }
 }
 
-// ===================== UTILS =====================
-function fmtCOP(v) { return '$ ' + Math.round(v||0).toLocaleString('es-CO'); }
-function setEl(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
-function setHTML(id, v) { const el = document.getElementById(id); if (el) el.innerHTML = v; }
-
-const CHART_COLORS = ['#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6',
-                       '#f97316','#ec4899','#14b8a6','#84cc16','#06b6d4','#a855f7',
-                       '#22c55e','#fb923c','#f43f5e'];
-
-// ===================== TAB SWITCHER =====================
-function showTab(id) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-  const pane = document.getElementById('tab-' + id);
-  if (pane) pane.style.display = 'block';
-  const btn = document.querySelector(`[onclick="showTab('${id}')"]`);
-  if (btn) btn.classList.add('active');
-
-  // Build charts after DOM has painted with explicit layout time
-  setTimeout(() => {
-    if (id === 'pedidos')        buildPedidosCharts();
-    if (id === 'facturacion')    buildFacturacionCharts();
-    if (id === 'productos')      buildProductosCharts();
-    if (id === 'logistica')      buildLogisticaCharts();
-    if (id === 'novedades')      buildNovedadesCharts();
-    if (id === 'confirmaciones') initConfirmaciones();
-    if (id === 'inventario')     renderInventario();
-    // Resize all charts after build to fix hidden-tab dimension issues
-    setTimeout(() => Object.values(_charts).forEach(ch => { try { ch.resize(); } catch(e){} }), 50);
-  }, 80);
+// =================== TAB SWITCHER ===================
+let _tabBuilt = {};
+function showTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>{ p.style.display='none'; });
+  const pane = document.getElementById('tab-'+id);
+  if(pane) pane.style.display='block';
+  const btn = document.querySelector('[onclick="showTab(\''+id+'\')"]');
+  if(btn) btn.classList.add('active');
+  // Build after browser paints
+  setTimeout(()=>{
+    if(id==='resumen')        buildResumen();
+    if(id==='pedidos')        buildPedidos();
+    if(id==='facturacion')    buildFacturacion();
+    if(id==='productos')      buildProductos();
+    if(id==='logistica')      buildLogistica();
+    if(id==='novedades')      buildNovedades();
+    if(id==='confirmaciones') buildConfirmaciones();
+    if(id==='inventario')     buildInventario();
+    // Force resize all visible charts
+    setTimeout(()=>Object.values(_ch).forEach(c=>{ try{c.resize();}catch(e){} }), 60);
+  }, 50);
 }
 
-// resizeChartsIn handled inline in showTab
+// =================== RESUMEN ===================
+function buildResumen(){
+  if(_tabBuilt.resumen) return; _tabBuilt.resumen=true;
 
-
-// ===================== RESUMEN =====================
-function buildAll() {
   // Pedidos por mes
-  makeChart('chartPedidosMes', {
-    type: 'bar',
-    data: { labels: DATA.mesesLabel,
-      datasets: [{ label: 'Pedidos', data: Object.values(DATA.pedidosMes),
-        backgroundColor: [CHART_COLORS[0], CHART_COLORS[1]], borderRadius: 8 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b',
-          font: { weight: '700', size: 13 }, formatter: v => v.toLocaleString() }},
-      scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() }}}}
-  });
+  mkChart('chartPedidosMes','bar',
+    { labels:DATA.mesesLabel,
+      datasets:[{data:Object.values(DATA.pedidosMes), backgroundColor:[C[0],C[1]], borderRadius:8}]},
+    { plugins:{ datalabels:{display:true,anchor:'end',align:'top',font:{weight:'700',size:13},
+        formatter:v=>v.toLocaleString()} },
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}} });
 
-  // Estatus global donut
-  const ge = {};
-  Object.values(DATA.estatusTrans).forEach(t => Object.entries(t).forEach(([k,v]) => ge[k] = (ge[k]||0)+v));
-  const top8 = Object.entries(ge).sort((a,b) => b[1]-a[1]).slice(0,8);
-  const tot8 = top8.reduce((s,e) => s+e[1], 0);
-  makeChart('chartEstatusGlobal', {
-    type: 'doughnut',
-    data: { labels: top8.map(e=>e[0]), datasets: [{ data: top8.map(e=>e[1]),
-      backgroundColor: CHART_COLORS, borderWidth: 2 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'right', labels: { font: { size: 10 }}},
-        datalabels: { display: true, color: '#fff', font: { weight: '700', size: 10 },
-          formatter: (v) => { const p = Math.round(v/tot8*100); return p>3?p+'%':''; }}}}
-  });
+  // Estatus donut
+  const ge={};
+  Object.values(DATA.estatusTrans).forEach(t=>Object.entries(t).forEach(([k,v])=>ge[k]=(ge[k]||0)+v));
+  const top = Object.entries(ge).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const tot = top.reduce((s,e)=>s+e[1],0);
+  mkChart('chartEstatusGlobal','doughnut',
+    { labels:top.map(e=>e[0]),
+      datasets:[{data:top.map(e=>e[1]), backgroundColor:C, borderWidth:2}]},
+    { plugins:{ legend:{display:true,position:'right',labels:{font:{size:10}}},
+        datalabels:{display:true,color:'#fff',font:{weight:'700',size:10},
+          formatter:v=>{ const p=Math.round(v/tot*100); return p>4?p+'%':''; }} } });
 
   // Tasa despacho resumen
-  const transR = Object.keys(DATA.tasaDespacho).filter(t => t !== '99MINUTOS');
-  const avgTasa = transR.map(t => {
-    const v = Object.values(DATA.tasaDespacho[t]).filter(x => x > 0);
-    return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0;
-  });
-  makeChart('chartTasaDespachoResumen', {
-    type: 'bar',
-    data: { labels: transR, datasets: [{ data: avgTasa,
-      backgroundColor: avgTasa.map(v => v>=90?'#10b981':v>=80?'#f59e0b':'#ef4444'), borderRadius: 6 }]},
-    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b',
-          font: { weight: '700', size: 12 }, formatter: v => v.toFixed(1)+'%' }},
-      scales: { x: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%' }}}}
-  });
+  const td_trans = Object.keys(DATA.tasaDespacho);
+  const td_vals  = td_trans.map(t=>{ const v=Object.values(DATA.tasaDespacho[t]); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; });
+  mkChart('chartTasaDespachoResumen','bar',
+    { labels:td_trans,
+      datasets:[{data:td_vals, backgroundColor:td_vals.map(v=>v>=90?'#10b981':v>=80?'#f59e0b':'#ef4444'), borderRadius:6}]},
+    { indexAxis:'y',
+      plugins:{ datalabels:{display:true,anchor:'end',align:'right',font:{weight:'700',size:11},
+        formatter:v=>v.toFixed(1)+'%'} },
+      scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}} });
 
-  renderFactDia();
+  // Fact dia
+  renderFactDia('2026-02');
 
-  // Geo charts in resumen tab
-  const rDeps   = Object.keys(DATA.topDep);
-  const rCities = Object.keys(DATA.topCity);
-  const rEl1 = document.getElementById('chartGeoDep');
-  const rEl2 = document.getElementById('chartGeoCity');
-  if (rEl1) { if(rEl1.parentElement) rEl1.parentElement.style.height='420px'; }
-  if (rEl2) { if(rEl2.parentElement) rEl2.parentElement.style.height='420px'; }
-  if (rEl1) { _charts['chartGeoDep'] = new Chart(rEl1, {
-    type:'bar', data:{labels:rDeps, datasets:[{data:Object.values(DATA.topDep), backgroundColor:CHART_COLORS, borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{size:10},formatter:v=>v.toLocaleString()+' ped.'}},
-      scales:{x:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
-  }); }
-  if (rEl2) { _charts['chartGeoCity'] = new Chart(rEl2, {
-    type:'bar', data:{labels:rCities, datasets:[{data:Object.values(DATA.topCity), backgroundColor:CHART_COLORS, borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{size:10},formatter:v=>v.toLocaleString()+' ped.'}},
-      scales:{x:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
-  }); }
+  // Geo en resumen
+  switchGeoView('pedidos');
 }
 
-// ===================== FACT DIA =====================
-let factDiaMes = '2026-02';
-
-function switchFactDia(mes) {
-  factDiaMes = mes;
-  ['2026-01','2026-02'].forEach(m => {
-    const bid = m === '2026-01' ? 'btnFactDiaEne' : 'btnFactDiaFeb';
-    const el = document.getElementById(bid);
-    if (el) el.classList.toggle('active', m === mes);
+// =================== FACT DIA ===================
+let _factDiaMes='2026-02';
+function switchFactDia(mes){
+  _factDiaMes=mes;
+  ['2026-01','2026-02'].forEach(m=>{
+    const bid=m==='2026-01'?'btnFactDiaEne':'btnFactDiaFeb';
+    const el=document.getElementById(bid);
+    if(el) el.classList.toggle('active',m===mes);
   });
-  renderFactDia();
-
-  // Geo charts in resumen tab
-  const rDeps   = Object.keys(DATA.topDep);
-  const rCities = Object.keys(DATA.topCity);
-  const rEl1 = document.getElementById('chartGeoDep');
-  const rEl2 = document.getElementById('chartGeoCity');
-  if (rEl1) { if(rEl1.parentElement) rEl1.parentElement.style.height='420px'; }
-  if (rEl2) { if(rEl2.parentElement) rEl2.parentElement.style.height='420px'; }
-  if (rEl1) { _charts['chartGeoDep'] = new Chart(rEl1, {
-    type:'bar', data:{labels:rDeps, datasets:[{data:Object.values(DATA.topDep), backgroundColor:CHART_COLORS, borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{size:10},formatter:v=>v.toLocaleString()+' ped.'}},
-      scales:{x:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
-  }); }
-  if (rEl2) { _charts['chartGeoCity'] = new Chart(rEl2, {
-    type:'bar', data:{labels:rCities, datasets:[{data:Object.values(DATA.topCity), backgroundColor:CHART_COLORS, borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
-      plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{size:10},formatter:v=>v.toLocaleString()+' ped.'}},
-      scales:{x:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}}
-  }); }
+  renderFactDia(mes);
+}
+function renderFactDia(mes){
+  _factDiaMes=mes||_factDiaMes;
+  const raw=DATA.factDia[_factDiaMes]; if(!raw) return;
+  const dias=Object.keys(raw).sort();
+  const vals=dias.map(d=>raw[d]);
+  const total=vals.reduce((a,b)=>a+b,0);
+  const avg=total/vals.length;
+  const maxVal=Math.max(...vals);
+  const n=vals.length, sx=vals.reduce((s,_,i)=>s+i,0), sy=total;
+  const sxy=vals.reduce((s,v,i)=>s+i*v,0), sx2=vals.reduce((s,_,i)=>s+i*i,0);
+  const slope=(n*sxy-sx*sy)/(n*sx2-sx*sx||1);
+  const intercept=(sy-slope*sx)/n;
+  const trend=vals.map((_,i)=>Math.round(intercept+slope*i));
+  const lbs=dias.map(d=>d.split('-')[2]+'/'+d.split('-')[1]);
+  mkChart('chartFactDia','bar',
+    { labels:lbs, datasets:[
+        {label:'Facturación',data:vals,order:2,borderRadius:4,
+         backgroundColor:vals.map(v=>v===maxVal?'#10b981':'#818cf8')},
+        {label:'Tendencia',data:trend,type:'line',order:1,
+         borderColor:'#f97316',borderWidth:2,borderDash:[5,5],pointRadius:0,fill:false}]},
+    { plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+      scales:{y:{ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}} });
+  const nm=_factDiaMes==='2026-01'?'Enero':'Febrero';
+  set$('factDiaTitulo','Facturación Diaria — '+nm+' 2026');
+  const bd=dias[vals.indexOf(maxVal)];
+  setH('factDiaStats',
+    '<span>📊 Total: <strong>'+cop(total)+'</strong></span> '+
+    '<span>📈 Promedio/día: <strong>'+cop(avg)+'</strong></span> '+
+    '<span>🏆 Mejor día: <strong>'+bd+' ('+cop(maxVal)+')</strong></span>');
 }
 
-function renderFactDia() {
-  const raw = DATA.factDia[factDiaMes];
-  if (!raw) return;
-  const dias = Object.keys(raw).sort();
-  const vals = dias.map(d => raw[d]);
-  const total = vals.reduce((a,b)=>a+b,0);
-  const avg = total / vals.length;
-  const maxVal = Math.max(...vals);
+// =================== PEDIDOS ===================
+function buildPedidos(){
+  if(!_tabBuilt.pedidos){ _tabBuilt.pedidos=true;
+    mkChart('chartPedidosMes2','bar',
+      {labels:DATA.mesesLabel,datasets:[{data:Object.values(DATA.pedidosMes),backgroundColor:[C[0],C[1]],borderRadius:8}]},
+      {plugins:{datalabels:{display:true,anchor:'end',align:'top',font:{weight:'700',size:13},formatter:v=>v.toLocaleString()}},
+       scales:{y:{beginAtZero:true}}});
 
-  // Linear regression trend
-  const n = vals.length;
-  const sx = vals.reduce((s,_,i)=>s+i,0), sy = total;
-  const sxy = vals.reduce((s,v,i)=>s+i*v,0);
-  const sx2 = vals.reduce((s,_,i)=>s+i*i,0);
-  const slope = (n*sxy - sx*sy)/(n*sx2 - sx*sx);
-  const intercept = (sy - slope*sx)/n;
-  const trend = vals.map((_,i)=>Math.round(intercept + slope*i));
+    const trs=Object.keys(DATA.tasaDespacho);
+    const avgT=trs.map(t=>{ const v=Object.values(DATA.tasaDespacho[t]); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; });
+    mkChart('chartTasaDespachoBar','bar',
+      {labels:trs,datasets:[{data:avgT,backgroundColor:avgT.map(v=>v>=90?'#10b981':v>=80?'#f59e0b':'#ef4444'),borderRadius:6}]},
+      {indexAxis:'y',plugins:{datalabels:{display:true,anchor:'end',align:'right',font:{weight:'700',size:11},formatter:v=>v.toFixed(1)+'%'}},
+       scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}});
 
-  const labels = dias.map(d => d.split('-')[2]+'/'+d.split('-')[1]);
-  makeChart('chartFactDia', {
-    type: 'bar',
-    data: { labels, datasets: [
-      { label: 'Facturación', data: vals, order: 2, borderRadius: 4,
-        backgroundColor: vals.map(v => v===maxVal ? '#10b981' : '#818cf8') },
-      { label: 'Tendencia', data: trend, type: 'line', order: 1,
-        borderColor: '#f97316', borderWidth: 2, borderDash: [5,5],
-        pointRadius: 0, fill: false }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: true, position: 'top' }, datalabels: { display: false }},
-      scales: { y: { ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M' }}}}
-  });
+    const tasaE=trs.map(t=>DATA.tasaDespacho[t]['2026-01']||0);
+    const tasaF=trs.map(t=>DATA.tasaDespacho[t]['2026-02']||0);
+    mkChart('chartTasaDespachoMes','bar',
+      {labels:trs,datasets:[
+        {label:'Enero',data:tasaE,backgroundColor:C[0]+'99',borderRadius:4},
+        {label:'Febrero',data:tasaF,backgroundColor:C[1]+'99',borderRadius:4}]},
+      {plugins:{legend:{display:true,position:'top'},datalabels:{display:true,anchor:'end',align:'top',font:{size:10},formatter:v=>v?v.toFixed(0)+'%':''}},
+       scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}}});
 
-  const mes = factDiaMes === '2026-01' ? 'Enero' : 'Febrero';
-  setEl('factDiaTitulo', `Facturación Diaria — ${mes} 2026`);
-  const bestDay = dias[vals.indexOf(maxVal)];
-  setHTML('factDiaStats',
-    `<span>📊 Total: <strong>${fmtCOP(total)}</strong></span>
-     <span>📈 Promedio/día: <strong>${fmtCOP(avg)}</strong></span>
-     <span>🏆 Mejor día: <strong>${bestDay} (${fmtCOP(maxVal)})</strong></span>`);
-}
+    const allSt=[...new Set(Object.values(DATA.estatusTrans).flatMap(t=>Object.keys(t)))];
+    const tr7=Object.keys(DATA.estatusTrans);
+    mkChart('chartEstatusTransportadora','bar',
+      {labels:tr7,datasets:allSt.slice(0,8).map((st,i)=>({label:st,data:tr7.map(t=>DATA.estatusTrans[t][st]||0),backgroundColor:C[i],borderRadius:2}))},
+      {plugins:{legend:{display:true,position:'right',labels:{font:{size:10}}},datalabels:{display:false}},
+       scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
 
-// ===================== PEDIDOS =====================
-let pedidosBuilt = false;
-function buildPedidosCharts() {
-  if (!pedidosBuilt) {
-    pedidosBuilt = true;
-
-    // Pedidos por mes 2
-  makeChart('chartPedidosMes2', {
-    type: 'bar',
-    data: { labels: DATA.mesesLabel, datasets: [{ label: 'Pedidos',
-      data: Object.values(DATA.pedidosMes),
-      backgroundColor: [CHART_COLORS[0], CHART_COLORS[1]], borderRadius: 8 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b',
-          font: { weight: '700', size: 13 }, formatter: v => v.toLocaleString() }},
-      scales: { y: { beginAtZero: true }}}
-  });
-
-  // Tasa despacho bar
-  const trans = Object.keys(DATA.tasaDespacho).filter(t => t !== '99MINUTOS');
-  const avgTasa = trans.map(t => {
-    const v = Object.values(DATA.tasaDespacho[t]).filter(x=>x>0);
-    return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0;
-  });
-  makeChart('chartTasaDespachoBar', {
-    type: 'bar',
-    data: { labels: trans, datasets: [{ label: 'Tasa Despacho %', data: avgTasa,
-      backgroundColor: avgTasa.map(v => v>=90?'#10b981':v>=80?'#f59e0b':'#ef4444'), borderRadius: 6 }]},
-    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b',
-          font: { weight: '700', size: 12 }, formatter: v => v.toFixed(1)+'%' }},
-      scales: { x: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%' }}}}
-  });
-
-  // Tasa despacho por mes
-  const tasaEne = trans.map(t => DATA.tasaDespacho[t]['2026-01']||0);
-  const tasaFeb = trans.map(t => DATA.tasaDespacho[t]['2026-02']||0);
-  makeChart('chartTasaDespachoMes', {
-    type: 'bar',
-    data: { labels: trans, datasets: [
-      { label: 'Enero', data: tasaEne, backgroundColor: CHART_COLORS[0]+'99', borderRadius: 4 },
-      { label: 'Febrero', data: tasaFeb, backgroundColor: CHART_COLORS[1]+'99', borderRadius: 4 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' },
-        datalabels: { display: true, anchor: 'end', align: 'top', font: { size: 10 },
-          formatter: v => v?v.toFixed(0)+'%':'' }},
-      scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v+'%' }}}}
-  });
-
-  // Estatus por transportadora
-  const allSt = [...new Set(Object.values(DATA.estatusTrans).flatMap(t => Object.keys(t)))];
-  const trans7 = Object.keys(DATA.estatusTrans);
-  const stackDs = allSt.slice(0,8).map((st,i) => ({
-    label: st, data: trans7.map(t => DATA.estatusTrans[t][st]||0),
-    backgroundColor: CHART_COLORS[i], borderRadius: 2
-  }));
-  makeChart('chartEstatusTransportadora', {
-    type: 'bar',
-    data: { labels: trans7, datasets: stackDs },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'right', labels: { font: { size: 10 }}},
-        datalabels: { display: false }},
-      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true }}}
-  });
-
-  buildEstatusTable();
-  buildEficienciaTable();
-  buildDepMesChart();
-  } // end if(!pedidosBuilt)
+    buildEstatusTable(); buildEficienciaTable(); buildDepMesChart();
+  }
   switchPedGeo('pedidos');
 }
 
-function buildEstatusTable() {
-  const el = document.getElementById('tableEstatus'); if (!el) return;
-  const trans7 = Object.keys(DATA.estatusTrans);
-  const allSt = [...new Set(Object.values(DATA.estatusTrans).flatMap(t => Object.keys(t)))];
-  let h = '<table><thead><tr><th>Estatus</th>' + trans7.map(t=>`<th>${t}</th>`).join('') + '<th>Total</th></tr></thead><tbody>';
-  allSt.forEach(st => {
-    const vals = trans7.map(t => DATA.estatusTrans[t][st]||0);
-    const tot = vals.reduce((a,b)=>a+b,0);
-    if (!tot) return;
-    h += `<tr><td><strong>${st}</strong></td>${vals.map(v=>`<td>${v||'-'}</td>`).join('')}<td><strong>${tot}</strong></td></tr>`;
+function buildEstatusTable(){
+  const el=document.getElementById('tableEstatus'); if(!el) return;
+  const tr7=Object.keys(DATA.estatusTrans);
+  const allSt=[...new Set(Object.values(DATA.estatusTrans).flatMap(t=>Object.keys(t)))].filter(st=>tr7.some(t=>DATA.estatusTrans[t][st]));
+  let h='<table><thead><tr><th>Estatus</th>'+tr7.map(t=>'<th>'+t+'</th>').join('')+'<th>Total</th></tr></thead><tbody>';
+  allSt.forEach(st=>{
+    const vals=tr7.map(t=>DATA.estatusTrans[t][st]||0);
+    const tot=vals.reduce((a,b)=>a+b,0); if(!tot) return;
+    h+='<tr><td><strong>'+st+'</strong></td>'+vals.map(v=>'<td>'+(v||'-')+'</td>').join('')+'<td><strong>'+tot+'</strong></td></tr>';
   });
-  el.innerHTML = h + '</tbody></table>';
+  el.innerHTML=h+'</tbody></table>';
 }
 
-function buildEficienciaTable() {
-  const el = document.getElementById('tableEficiencia'); if (!el) return;
-  const trans = Object.keys(DATA.tasaDespacho).filter(t=>t!=='99MINUTOS');
-  let h = '<table><thead><tr><th>Trans.</th><th>Total</th><th>Despachados</th><th>Tasa Desp.</th><th>Entregados</th><th>Tasa Entrega</th></tr></thead><tbody>';
-  trans.forEach(t => {
-    const est = DATA.estatusTrans[t]||{};
-    const total = Object.values(est).reduce((a,b)=>a+b,0);
-    const canc = est['CANCELADO']||0;
-    const pend = est['PENDIENTE CONFIRMACION']||0;
-    const desp = total - canc - pend;
-    const ent = est['ENTREGADO']||0;
-    const td = desp > 0 ? (desp/total*100).toFixed(1) : '0.0';
-    const te = total > 0 ? (ent/total*100).toFixed(1) : '0.0';
-    h += `<tr><td><strong>${t}</strong></td><td>${total}</td><td>${desp}</td><td>${td}%</td><td>${ent}</td><td>${te}%</td></tr>`;
+function buildEficienciaTable(){
+  const el=document.getElementById('tableEficiencia'); if(!el) return;
+  let h='<table><thead><tr><th>Trans.</th><th>Total</th><th>Despachados</th><th>Tasa Desp.</th><th>Entregados</th><th>Tasa Entrega</th></tr></thead><tbody>';
+  Object.keys(DATA.estatusTrans).forEach(t=>{
+    const est=DATA.estatusTrans[t]||{};
+    const total=Object.values(est).reduce((a,b)=>a+b,0);
+    const desp=total-(est['CANCELADO']||0)-(est['PENDIENTE CONFIRMACION']||0);
+    const ent=est['ENTREGADO']||0;
+    h+='<tr><td><strong>'+t+'</strong></td><td>'+total+'</td><td>'+desp+'</td><td>'+(desp>0?(desp/total*100).toFixed(1):0)+'%</td><td>'+ent+'</td><td>'+(total>0?(ent/total*100).toFixed(1):0)+'%</td></tr>';
   });
-  el.innerHTML = h + '</tbody></table>';
+  el.innerHTML=h+'</tbody></table>';
 }
 
-// Pedidos geo
-let pedGeoMode = 'pedidos';
-function switchPedGeo(mode) {
-  pedGeoMode = mode;
-  ['pedidos','despacho','entrega'].forEach(m => {
-    const bid = m==='pedidos'?'btnPedDepPed':m==='despacho'?'btnPedDepDesp':'btnPedDepEnt';
-    const el = document.getElementById(bid);
-    if (el) el.classList.toggle('active', m===mode);
-  });
+function buildDepMesChart(){
+  const deps=Object.keys(DATA.depMes);
+  mkChart('chartDepMes','bar',
+    {labels:deps,datasets:DATA.meses.map((mes,i)=>({label:DATA.mesesLabel[i],data:deps.map(d=>(DATA.depMes[d]&&DATA.depMes[d][mes])||0),backgroundColor:C[i],borderRadius:3}))},
+    {plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+     scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}});
+}
 
-  const deps = Object.keys(DATA.depStats);
-  let depVals, cityVals, fmtFn, tickFn, title;
-
-  if (mode === 'pedidos') {
-    depVals = deps.map(d => DATA.depStats[d].pedidos);
-    const cities = Object.keys(DATA.cityStats);
-    cityVals = cities.map(c => DATA.cityStats[c].pedidos);
-    fmtFn = v => v.toLocaleString(); tickFn = v => v.toLocaleString();
-    title = 'Pedidos';
-    buildGeoChart('chartPedDep', deps, depVals, fmtFn, tickFn);
-    buildGeoChart('chartPedCity', cities, cityVals, fmtFn, tickFn);
-    setEl('pedDepTitle', 'Top Departamentos — Pedidos');
-    setEl('pedCityTitle', 'Top Ciudades — Pedidos');
-    buildPedTable('tablePedDep', deps, 'pedidos');
-    buildPedTable('tablePedCity', Object.keys(DATA.cityStats), 'pedidos');
+let _pedGeoMode='pedidos';
+function switchPedGeo(mode){
+  _pedGeoMode=mode;
+  [{m:'pedidos',b:'btnPedDepPed'},{m:'despacho',b:'btnPedDepDesp'},{m:'entrega',b:'btnPedDepEnt'}]
+    .forEach(x=>{ const el=document.getElementById(x.b); if(el) el.classList.toggle('active',x.m===mode); });
+  const deps=Object.keys(DATA.depStats);
+  const cities=Object.keys(DATA.cityStats);
+  let dv,cv,fmt;
+  if(mode==='pedidos'){
+    dv=deps.map(d=>DATA.depStats[d].pedidos); cv=cities.map(c=>DATA.cityStats[c].pedidos);
+    fmt=v=>v.toLocaleString();
+    set$('pedDepTitle','Top Departamentos — Pedidos'); set$('pedCityTitle','Top Ciudades — Pedidos');
   } else {
-    const field = mode === 'despacho' ? 'tasa_despacho' : 'tasa_entrega';
-    const label = mode === 'despacho' ? 'Tasa Despacho' : 'Tasa Entrega';
-    depVals = deps.map(d => DATA.depStats[d][field]);
-    const cities = Object.keys(DATA.cityStats);
-    cityVals = cities.map(c => DATA.cityStats[c][field]);
-    fmtFn = v => v+'%'; tickFn = v => v+'%';
-    buildGeoChart('chartPedDep', deps, depVals, fmtFn, tickFn);
-    buildGeoChart('chartPedCity', cities, cityVals, fmtFn, tickFn);
-    setEl('pedDepTitle', `Top Departamentos — ${label}`);
-    setEl('pedCityTitle', `Top Ciudades — ${label}`);
+    const f=mode==='despacho'?'tasa_despacho':'tasa_entrega';
+    const lb=mode==='despacho'?'Tasa Despacho':'Tasa Entrega';
+    dv=deps.map(d=>DATA.depStats[d][f]); cv=cities.map(c=>DATA.cityStats[c][f]);
+    fmt=v=>v+'%';
+    set$('pedDepTitle','Top Departamentos — '+lb); set$('pedCityTitle','Top Ciudades — '+lb);
   }
+  geoChart('chartPedDep',deps,dv,fmt);
+  geoChart('chartPedCity',cities,cv,fmt);
+  buildPedTable('tablePedDep',deps,'dep');
+  buildPedTable('tablePedCity',cities,'city');
 }
 
-function buildDepMesChart() {
-  const el = document.getElementById('chartDepMes');
-  if (!el) return;
-  const wrap = el.parentElement;
-  if (wrap) wrap.style.height = '420px';
-  const deps = Object.keys(DATA.depMes);
-  const datasets = DATA.meses.map((mes, i) => ({
-    label: DATA.mesesLabel[i],
-    data: deps.map(d => (DATA.depMes[d] && DATA.depMes[d][mes]) || 0),
-    backgroundColor: CHART_COLORS[i],
-    borderRadius: 4
-  }));
-  destroyChart('chartDepMes');
-  _charts['chartDepMes'] = new Chart(el, {
-    type: 'bar',
-    data: { labels: deps, datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'top' },
-        datalabels: { display: false }
-      },
-      scales: {
-        x: { stacked: true },
-        y: { stacked: true, beginAtZero: true, ticks: { callback: v => v.toLocaleString() } }
-      }
-    }
+function buildPedTable(tid,keys,type){
+  const el=document.getElementById(tid); if(!el) return;
+  const dk=type==='city'?'cityStats':'depStats';
+  const col=type==='city'?'Ciudad':'Departamento';
+  const total=keys.reduce((s,k)=>s+(DATA[dk][k]?.pedidos||0),0);
+  let h='<table><thead><tr><th>#</th><th>'+col+'</th><th>Pedidos</th><th>%</th><th>Despacho</th><th>Entrega</th><th>Facturación</th></tr></thead><tbody>';
+  keys.forEach((k,i)=>{
+    const d=DATA[dk][k]||{};
+    h+='<tr><td>'+(i+1)+'</td><td><strong>'+k+'</strong></td><td>'+(d.pedidos||0).toLocaleString()+'</td>'+
+      '<td>'+(total>0?((d.pedidos||0)/total*100).toFixed(1):0)+'%</td>'+
+      '<td>'+(d.tasa_despacho||0)+'%</td><td>'+(d.tasa_entrega||0)+'%</td>'+
+      '<td>$'+((d.facturacion||0)/1e6).toFixed(1)+'M</td></tr>';
   });
+  el.innerHTML=h+'</tbody></table>';
 }
 
-function buildGeoChart(id, labels, data, fmtFn, tickFn) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  // Force explicit pixel dimensions - bypass CSS computed height issues on hidden tabs
-  const h = Math.max(labels.length * 26 + 60, 280);
-  const wrap = el.parentElement;
-  if (wrap) { wrap.style.height = h + 'px'; wrap.style.position = 'relative'; }
-  el.width  = el.offsetWidth  || el.parentElement?.offsetWidth  || 600;
-  el.height = h;
-  destroyChart(id);
-  try {
-    _charts[id] = new Chart(el, {
-      type: 'bar', data: { labels, datasets: [{ data, backgroundColor: CHART_COLORS, borderRadius: 5 }]},
-      options: {
-        responsive: false,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        plugins: {
-          legend: { display: false },
-          datalabels: { display: true, anchor: 'end', align: 'right', font: { size: 10 }, formatter: fmtFn }
-        },
-        scales: { x: { beginAtZero: true, ticks: { callback: tickFn } } }
-      }
-    });
-  } catch(e) { console.error('GeoChart error [' + id + ']:', e); }
-  // After a tick, switch to responsive so resizing works
-  setTimeout(() => {
-    if (_charts[id]) {
-      _charts[id].options.responsive = true;
-      _charts[id].resize();
-    }
-  }, 100);
-}
-
-function buildPedTable(tableId, keys, mode) {
-  const el = document.getElementById(tableId); if (!el) return;
-  const isCity = tableId.includes('City');
-  const statsKey = isCity ? 'cityStats' : 'depStats';
-  const total = keys.reduce((s,k) => s+(DATA[statsKey][k]?.pedidos||0), 0);
-  let h = '<table><thead><tr><th>#</th><th>' + (isCity?'Ciudad':'Departamento') + '</th><th>Pedidos</th><th>%</th><th>Despacho</th><th>Entrega</th><th>Facturación</th></tr></thead><tbody>';
-  keys.forEach((k,i) => {
-    const d = DATA[statsKey][k]||{};
-    h += `<tr><td>${i+1}</td><td><strong>${k}</strong></td><td>${(d.pedidos||0).toLocaleString()}</td>
-    <td>${total>0?((d.pedidos||0)/total*100).toFixed(1):0}%</td>
-    <td>${d.tasa_despacho||0}%</td><td>${d.tasa_entrega||0}%</td>
-    <td>$${((d.facturacion||0)/1000000).toFixed(1)}M</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-// ===================== GEO VIEW SWITCH (Resumen geo tab) =====================
-function switchGeoView(mode) {
-  ['pedidos','facturacion'].forEach(m => {
-    const el = document.querySelector(`[onclick="switchGeoView('${m}')"]`);
-    if (el) el.classList.toggle('active', m === mode);
-  });
-  if (mode === 'pedidos') switchPedGeo(pedGeoMode);
-  else switchFactGeo('facturacion');
-}
-
-// ===================== FACTURACION =====================
-let factBuilt = false;
-function buildFacturacionCharts() {
-  if (!factBuilt) {
-  factBuilt = true;
-
-  makeChart('chartFacturacionMes', {
-    type: 'bar',
-    data: { labels: DATA.mesesLabel, datasets: [{ label: 'Facturación',
-      data: Object.values(DATA.facturacionMes),
-      backgroundColor: [CHART_COLORS[0], CHART_COLORS[1]], borderRadius: 8 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b',
-          font: { weight: '700', size: 12 }, formatter: v => '$'+(v/1000000).toFixed(1)+'M' }},
-      scales: { y: { ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M' }}}}
-  });
-
-  makeChart('chartFleteMes', {
-    type: 'bar',
-    data: { labels: DATA.mesesLabel, datasets: [{ label: 'Flete',
-      data: Object.values(DATA.fleteMes),
-      backgroundColor: [CHART_COLORS[3], CHART_COLORS[7]], borderRadius: 8 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b',
-          font: { weight: '700', size: 12 }, formatter: v => '$'+(v/1000000).toFixed(1)+'M' }},
-      scales: { y: { ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M' }}}}
-  });
-
-  makeChart('chartFactVsFlete', {
-    type: 'bar',
-    data: { labels: DATA.mesesLabel, datasets: [
-      { label: 'Facturación', data: Object.values(DATA.facturacionMes), backgroundColor: CHART_COLORS[0]+'99', borderRadius: 4 },
-      { label: 'Flete', data: Object.values(DATA.fleteMes), backgroundColor: CHART_COLORS[3]+'99', borderRadius: 4 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' }, datalabels: { display: false }},
-      scales: { y: { ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M' }}}}
-  });
-
-  } // end if(!built)
+// =================== FACTURACION ===================
+function buildFacturacion(){
+  if(!_tabBuilt.facturacion){ _tabBuilt.facturacion=true;
+    mkChart('chartFacturacionMes','bar',
+      {labels:DATA.mesesLabel,datasets:[{data:Object.values(DATA.facturacionMes),backgroundColor:[C[0],C[1]],borderRadius:8}]},
+      {plugins:{datalabels:{display:true,anchor:'end',align:'top',font:{weight:'700',size:12},formatter:M}},
+       scales:{y:{ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}});
+    mkChart('chartFleteMes','bar',
+      {labels:DATA.mesesLabel,datasets:[{data:Object.values(DATA.fleteMes),backgroundColor:[C[3],C[7]],borderRadius:8}]},
+      {plugins:{datalabels:{display:true,anchor:'end',align:'top',font:{weight:'700',size:12},formatter:M}},
+       scales:{y:{ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}});
+    mkChart('chartFactVsFlete','bar',
+      {labels:DATA.mesesLabel,datasets:[
+        {label:'Facturación',data:Object.values(DATA.facturacionMes),backgroundColor:C[0]+'99',borderRadius:4},
+        {label:'Flete',data:Object.values(DATA.fleteMes),backgroundColor:C[3]+'99',borderRadius:4}]},
+      {plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+       scales:{y:{ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}});
+  }
   switchFactGeo('facturacion');
 }
 
-function switchFactGeo(mode) {
-  ['facturacion','flete','ticket','pct'].forEach(m => {
-    const el = document.querySelector(`[onclick="switchFactGeo('${m}')"]`);
-    if (el) el.classList.toggle('active', m === mode);
+let _factGeoMode='facturacion';
+function switchFactGeo(mode){
+  _factGeoMode=mode;
+  ['facturacion','flete','ticket','pct'].forEach(m=>{
+    const el=document.querySelector('[onclick="switchFactGeo(\''+m+'\')"]');
+    if(el) el.classList.toggle('active',m===mode);
   });
+  const deps=Object.keys(DATA.depFact), cities=Object.keys(DATA.cityFact);
+  let dv,cv,fmt;
+  if(mode==='facturacion'){ dv=deps.map(d=>DATA.depFact[d].facturacion); cv=cities.map(c=>DATA.cityFact[c].facturacion); fmt=M; }
+  else if(mode==='flete'){ dv=deps.map(d=>DATA.depFact[d].flete); cv=cities.map(c=>DATA.cityFact[c].flete); fmt=M; }
+  else if(mode==='ticket'){ dv=deps.map(d=>DATA.depFact[d].ticket); cv=cities.map(c=>DATA.cityFact[c].ticket); fmt=v=>'$'+v.toLocaleString(); }
+  else { dv=deps.map(d=>DATA.depFact[d].pct_flete); cv=cities.map(c=>DATA.cityFact[c].pct_flete); fmt=v=>v+'%'; }
+  geoChart('chartFactDep',deps,dv,fmt);
+  geoChart('chartFactCity',cities,cv,fmt);
+  buildFactDepMesChart(); buildFactDepTable(); buildFactCityTable();
+}
 
-  const deps = Object.keys(DATA.depFact);
-  const cities = Object.keys(DATA.cityFact);
-  let depVals, cityVals, fmtFn, tickFn;
+function buildFactDepMesChart(){
+  const deps=Object.keys(DATA.depFactMes);
+  mkChart('chartFactDepMes','bar',
+    {labels:deps,datasets:DATA.meses.map((mes,i)=>({label:DATA.mesesLabel[i],data:deps.map(d=>(DATA.depFactMes[d]&&DATA.depFactMes[d][mes])||0),backgroundColor:C[i],borderRadius:3}))},
+    {plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+     scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>'$'+(v/1e6).toFixed(0)+'M'}}}});
+}
+function buildFactDepTable(){
+  const el=document.getElementById('tableFactDep'); if(!el) return;
+  let h='<table><thead><tr><th>Departamento</th><th>Facturación</th><th>Flete</th><th>% Flete</th><th>Ticket Prom.</th></tr></thead><tbody>';
+  Object.entries(DATA.depFact).forEach(([d,v])=>{ h+='<tr><td><strong>'+d+'</strong></td><td>'+cop(v.facturacion)+'</td><td>'+cop(v.flete)+'</td><td>'+v.pct_flete+'%</td><td>'+cop(v.ticket)+'</td></tr>'; });
+  el.innerHTML=h+'</tbody></table>';
+}
+function buildFactCityTable(){
+  const el=document.getElementById('tableFactCity'); if(!el) return;
+  let h='<table><thead><tr><th>Ciudad</th><th>Facturación</th><th>Flete</th><th>% Flete</th><th>Ticket Prom.</th></tr></thead><tbody>';
+  Object.entries(DATA.cityFact).forEach(([c,v])=>{ h+='<tr><td><strong>'+c+'</strong></td><td>'+cop(v.facturacion)+'</td><td>'+cop(v.flete)+'</td><td>'+v.pct_flete+'%</td><td>'+cop(v.ticket)+'</td></tr>'; });
+  el.innerHTML=h+'</tbody></table>';
+}
 
-  if (mode === 'facturacion') {
-    depVals = deps.map(d => DATA.depFact[d].facturacion);
-    cityVals = cities.map(c => DATA.cityFact[c].facturacion);
-    fmtFn = v => '$'+(v/1000000).toFixed(1)+'M'; tickFn = v => '$'+(v/1000000).toFixed(0)+'M';
-  } else if (mode === 'flete') {
-    depVals = deps.map(d => DATA.depFact[d].flete);
-    cityVals = cities.map(c => DATA.cityFact[c].flete);
-    fmtFn = v => '$'+(v/1000000).toFixed(1)+'M'; tickFn = v => '$'+(v/1000000).toFixed(0)+'M';
-  } else if (mode === 'ticket') {
-    depVals = deps.map(d => DATA.depFact[d].ticket);
-    cityVals = cities.map(c => DATA.cityFact[c].ticket);
-    fmtFn = v => '$'+v.toLocaleString(); tickFn = v => '$'+(v/1000).toFixed(0)+'K';
-  } else {
-    depVals = deps.map(d => DATA.depFact[d].pct_flete);
-    cityVals = cities.map(c => DATA.cityFact[c].pct_flete);
-    fmtFn = v => v+'%'; tickFn = v => v+'%';
+// =================== PRODUCTOS ===================
+function buildProductos(){
+  if(!_tabBuilt.productos){ _tabBuilt.productos=true;
+    const prods=Object.keys(DATA.ventasProd);
+    mkChart('chartProductos','bar',
+      {labels:prods,datasets:[{data:Object.values(DATA.ventasProd),backgroundColor:C,borderRadius:6}]},
+      {indexAxis:'y',plugins:{datalabels:{display:true,anchor:'end',align:'right',font:{weight:'700',size:11},formatter:v=>v.toLocaleString()+' u'}},
+       scales:{x:{beginAtZero:true}}});
+    const ts=Object.keys(DATA.tiendaStats);
+    const totC=ts.reduce((s,t)=>s+(DATA.tiendaStats[t]['CANTIDAD']||0),0);
+    mkChart('chartTiendaCantidad','doughnut',
+      {labels:ts,datasets:[{data:ts.map(t=>DATA.tiendaStats[t]['CANTIDAD']||0),backgroundColor:C,borderWidth:2}]},
+      {plugins:{legend:{display:true,position:'right'},datalabels:{display:true,color:'#fff',font:{weight:'700',size:11},formatter:v=>{const p=Math.round(v/totC*100);return p>4?p+'%':'';}}}});
+    const totF=ts.reduce((s,t)=>s+(DATA.tiendaStats[t]['TOTAL DE LA ORDEN']||0),0);
+    mkChart('chartTiendaFacturacion','doughnut',
+      {labels:ts,datasets:[{data:ts.map(t=>DATA.tiendaStats[t]['TOTAL DE LA ORDEN']||0),backgroundColor:C,borderWidth:2}]},
+      {plugins:{legend:{display:true,position:'right'},datalabels:{display:true,color:'#fff',font:{weight:'700',size:11},formatter:v=>{const p=Math.round(v/totF*100);return p>4?p+'%':'';}}}});
   }
-
-  buildGeoChart('chartFactDep', deps, depVals, fmtFn, tickFn);
-  buildGeoChart('chartFactCity', cities, cityVals, fmtFn, tickFn);
-  buildFactDepMesChart();
-  buildFactDepTable();
-  buildFactCityTable();
-}
-
-function buildFactDepMesChart() {
-  const deps = Object.keys(DATA.depFactMes);
-  const datasets = DATA.meses.map((mes,i) => ({
-    label: DATA.mesesLabel[i],
-    data: deps.map(d => (DATA.depFactMes[d]&&DATA.depFactMes[d][mes])||0),
-    backgroundColor: CHART_COLORS[i], borderRadius: 3
-  }));
-  makeChart('chartFactDepMes', { type: 'bar', data: { labels: deps, datasets },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' }, datalabels: { display: false }},
-      scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M' }}}}
-  });
-}
-
-function buildFactDepTable() {
-  const el = document.getElementById('tableFactDep'); if (!el) return;
-  const deps = Object.keys(DATA.depFact);
-  let h = '<table><thead><tr><th>Departamento</th><th>Facturación</th><th>Flete</th><th>% Flete</th><th>Ticket Prom.</th></tr></thead><tbody>';
-  deps.forEach(d => {
-    const v = DATA.depFact[d];
-    h += `<tr><td><strong>${d}</strong></td><td>${fmtCOP(v.facturacion)}</td><td>${fmtCOP(v.flete)}</td><td>${v.pct_flete}%</td><td>${fmtCOP(v.ticket)}</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-function buildFactCityTable() {
-  const el = document.getElementById('tableFactCity'); if (!el) return;
-  const cities = Object.keys(DATA.cityFact);
-  let h = '<table><thead><tr><th>Ciudad</th><th>Facturación</th><th>Flete</th><th>% Flete</th><th>Ticket Prom.</th></tr></thead><tbody>';
-  cities.forEach(c => {
-    const v = DATA.cityFact[c];
-    h += `<tr><td><strong>${c}</strong></td><td>${fmtCOP(v.facturacion)}</td><td>${fmtCOP(v.flete)}</td><td>${v.pct_flete}%</td><td>${fmtCOP(v.ticket)}</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-// ===================== PRODUCTOS =====================
-let prodBuilt = false;
-function buildProductosCharts() {
-  if (!prodBuilt) {
-  prodBuilt = true;
-
-  const prodNames = Object.keys(DATA.ventasProd);
-  makeChart('chartProductos', {
-    type: 'bar',
-    data: { labels: prodNames, datasets: [{ label: 'Unidades', data: Object.values(DATA.ventasProd),
-      backgroundColor: CHART_COLORS, borderRadius: 6 }]},
-    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b',
-          font: { weight: '700', size: 11 }, formatter: v => v.toLocaleString()+' u' }},
-      scales: { x: { beginAtZero: true }}}
-  });
-
-  const tiendas = Object.keys(DATA.tiendaStats);
-  const totCant = tiendas.reduce((s,t) => s+(DATA.tiendaStats[t]['CANTIDAD']||0), 0);
-  makeChart('chartTiendaCantidad', {
-    type: 'doughnut',
-    data: { labels: tiendas, datasets: [{ data: tiendas.map(t=>DATA.tiendaStats[t]['CANTIDAD']||0),
-      backgroundColor: CHART_COLORS, borderWidth: 2 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'right' },
-        datalabels: { display: true, color: '#fff', font: { weight: '700', size: 11 },
-          formatter: v => { const p=Math.round(v/totCant*100); return p>4?p+'%':''; }}}}
-  });
-
-  const totFact = tiendas.reduce((s,t) => s+(DATA.tiendaStats[t]['TOTAL DE LA ORDEN']||0), 0);
-  makeChart('chartTiendaFacturacion', {
-    type: 'doughnut',
-    data: { labels: tiendas, datasets: [{ data: tiendas.map(t=>DATA.tiendaStats[t]['TOTAL DE LA ORDEN']||0),
-      backgroundColor: CHART_COLORS, borderWidth: 2 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'right' },
-        datalabels: { display: true, color: '#fff', font: { weight: '700', size: 11 },
-          formatter: v => { const p=Math.round(v/totFact*100); return p>4?p+'%':''; }}}}
-  });
-
-  } // end if(!built)
   switchProdGeo('unidades');
 }
 
-function switchProdGeo(mode) {
-  ['unidades','facturacion','uxp'].forEach(m => {
-    const el = document.querySelector(`[onclick="switchProdGeo('${m}')"]`);
-    if (el) el.classList.toggle('active', m === mode);
+let _prodGeoMode='unidades';
+function switchProdGeo(mode){
+  _prodGeoMode=mode;
+  ['unidades','facturacion','uxp'].forEach(m=>{
+    const el=document.querySelector('[onclick="switchProdGeo(\''+m+'\')"]');
+    if(el) el.classList.toggle('active',m===mode);
   });
+  const deps=Object.keys(DATA.depProd), cities=Object.keys(DATA.cityProd);
+  let dv,cv,fmt;
+  if(mode==='unidades'){ dv=deps.map(d=>DATA.depProd[d].unidades); cv=cities.map(c=>DATA.cityProd[c].unidades); fmt=v=>v.toLocaleString()+' u'; }
+  else if(mode==='facturacion'){ dv=deps.map(d=>DATA.depProd[d].facturacion); cv=cities.map(c=>DATA.cityProd[c].facturacion); fmt=M; }
+  else { dv=deps.map(d=>DATA.depProd[d].unid_por_pedido); cv=cities.map(c=>DATA.cityProd[c].unid_por_pedido); fmt=v=>v+' u/p'; }
+  geoChart('chartProdDep',deps,dv,fmt);
+  geoChart('chartProdCity',cities,cv,fmt);
+  buildTiendaDepChart(); buildProdDepTable(); buildProdCityTable();
+}
 
-  const deps = Object.keys(DATA.depProd);
-  const cities = Object.keys(DATA.cityProd);
-  let depVals, cityVals, fmtFn, tickFn;
+function buildTiendaDepChart(){
+  const deps=Object.keys(DATA.tiendaDep);
+  const tiendas=['SHOPIFY','LUCIDBOT','CHATEA PRO'];
+  mkChart('chartTiendaDep','bar',
+    {labels:deps,datasets:tiendas.map((t,i)=>({label:t,data:deps.map(d=>(DATA.tiendaDep[d]&&DATA.tiendaDep[d][t])||0),backgroundColor:C[i],borderRadius:3}))},
+    {plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+     scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
+}
+function buildProdDepTable(){
+  const el=document.getElementById('tableProdDep'); if(!el) return;
+  let h='<table><thead><tr><th>Departamento</th><th>Unidades</th><th>Facturación</th><th>U/Pedido</th></tr></thead><tbody>';
+  Object.entries(DATA.depProd).forEach(([d,v])=>{ h+='<tr><td><strong>'+d+'</strong></td><td>'+v.unidades.toLocaleString()+'</td><td>'+cop(v.facturacion)+'</td><td>'+v.unid_por_pedido+'</td></tr>'; });
+  el.innerHTML=h+'</tbody></table>';
+}
+function buildProdCityTable(){
+  const el=document.getElementById('tableProdCity'); if(!el) return;
+  let h='<table><thead><tr><th>Ciudad</th><th>Unidades</th><th>Facturación</th><th>U/Pedido</th></tr></thead><tbody>';
+  Object.entries(DATA.cityProd).forEach(([c,v])=>{ h+='<tr><td><strong>'+c+'</strong></td><td>'+v.unidades.toLocaleString()+'</td><td>'+cop(v.facturacion)+'</td><td>'+v.unid_por_pedido+'</td></tr>'; });
+  el.innerHTML=h+'</tbody></table>';
+}
 
-  if (mode === 'unidades') {
-    depVals = deps.map(d => DATA.depProd[d].unidades);
-    cityVals = cities.map(c => DATA.cityProd[c].unidades);
-    fmtFn = v => v.toLocaleString()+' u'; tickFn = v => v.toLocaleString();
-  } else if (mode === 'facturacion') {
-    depVals = deps.map(d => DATA.depProd[d].facturacion);
-    cityVals = cities.map(c => DATA.cityProd[c].facturacion);
-    fmtFn = v => '$'+(v/1000000).toFixed(1)+'M'; tickFn = v => '$'+(v/1000000).toFixed(0)+'M';
-  } else {
-    depVals = deps.map(d => DATA.depProd[d].unid_por_pedido);
-    cityVals = cities.map(c => DATA.cityProd[c].unid_por_pedido);
-    fmtFn = v => v+' u/p'; tickFn = v => v;
+// =================== LOGISTICA ===================
+function buildLogistica(){
+  if(_tabBuilt.logistica) return; _tabBuilt.logistica=true;
+  buildEficienciaTable();
+  mkChart('chartTiempoMes','bar',
+    {labels:DATA.mesesLabel,datasets:[{data:Object.values(DATA.tiempoGuiaMes),backgroundColor:[C[0],C[1]],borderRadius:8}]},
+    {plugins:{datalabels:{display:true,anchor:'end',align:'top',font:{weight:'700',size:13},formatter:v=>v+' d'}},
+     scales:{y:{beginAtZero:true,ticks:{callback:v=>v+' d'}}}});
+  const tgs=Object.keys(DATA.tiempoGuiaTrans);
+  mkChart('chartTiempoTrans','bar',
+    {labels:tgs,datasets:[{data:Object.values(DATA.tiempoGuiaTrans),backgroundColor:C,borderRadius:6}]},
+    {indexAxis:'y',plugins:{datalabels:{display:true,anchor:'end',align:'right',font:{weight:'700',size:11},formatter:v=>v+' d'}},
+     scales:{x:{beginAtZero:true,ticks:{callback:v=>v+' d'}}}});
+}
+
+// =================== NOVEDADES ===================
+function buildNovedades(){
+  if(!_tabBuilt.novedades){ _tabBuilt.novedades=true;
+    const novTr=Object.keys(DATA.novTrans);
+    mkChart('chartNovTrans','bar',
+      {labels:novTr,datasets:[
+        {label:'Novedades',data:novTr.map(t=>DATA.novTrans[t]),backgroundColor:C[4]+'99',borderRadius:4},
+        {label:'Solucionadas',data:novTr.map(t=>DATA.novSolTrans[t]||0),backgroundColor:C[2]+'99',borderRadius:4}]},
+      {plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+       scales:{y:{beginAtZero:true}}});
+    mkChart('chartNovSolEnt','bar',
+      {labels:novTr,datasets:[{label:'Sol.+Entregados',data:novTr.map(t=>DATA.novSolEntTrans[t]||0),backgroundColor:C[2],borderRadius:4}]},
+      {plugins:{datalabels:{display:false}},scales:{y:{beginAtZero:true}}});
+    // Nov list
+    const novE=Object.entries(DATA.novTypes).slice(0,10);
+    const maxN=Math.max(...novE.map(e=>e[1]));
+    setH('novListContainer', novE.map(([k,v])=>'<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:0.82rem"><span>'+k+'</span><strong>'+v+'</strong></div><div style="background:#e2e8f0;border-radius:4px;height:8px"><div style="background:#ef4444;width:'+Math.round(v/maxN*100)+'%;height:100%;border-radius:4px"></div></div></div>').join(''));
+    // Eficiencia table
+    const el=document.getElementById('tableNovEficiencia'); if(el){
+      let h='<table><thead><tr><th>Trans.</th><th>Novedades</th><th>Solucionadas</th><th>Entregadas</th><th>Tasa Sol.</th></tr></thead><tbody>';
+      novTr.forEach(t=>{
+        const nov=DATA.novTrans[t]||0,sol=DATA.novSolTrans[t]||0,ent=DATA.novSolEntTrans[t]||0;
+        const tasa=nov>0?Math.round(sol/nov*100):0;
+        h+='<tr><td><strong>'+t+'</strong></td><td>'+nov+'</td><td>'+sol+'</td><td>'+ent+'</td><td>'+tasa+'%</td></tr>';
+      });
+      el.innerHTML=h+'</tbody></table>';
+    }
+    buildNovDepTable(); buildNovCityTable();
   }
-
-  buildGeoChart('chartProdDep', deps, depVals, fmtFn, tickFn);
-  buildGeoChart('chartProdCity', cities, cityVals, fmtFn, tickFn);
-  buildTiendaDepChart();
-  buildProdDepTable();
-  buildProdCityTable();
-}
-
-function buildTiendaDepChart() {
-  const deps = Object.keys(DATA.tiendaDep);
-  const tiendas = ['SHOPIFY','LUCIDBOT','CHATEA PRO'];
-  const datasets = tiendas.map((t,i) => ({
-    label: t, data: deps.map(d => (DATA.tiendaDep[d]&&DATA.tiendaDep[d][t])||0),
-    backgroundColor: CHART_COLORS[i], borderRadius: 3
-  }));
-  makeChart('chartTiendaDep', { type: 'bar', data: { labels: deps, datasets },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' }, datalabels: { display: false }},
-      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true }}}
-  });
-}
-
-function buildProdDepTable() {
-  const el = document.getElementById('tableProdDep'); if (!el) return;
-  const deps = Object.keys(DATA.depProd);
-  let h = '<table><thead><tr><th>Departamento</th><th>Unidades</th><th>Facturación</th><th>U/Pedido</th></tr></thead><tbody>';
-  deps.forEach(d => {
-    const v = DATA.depProd[d];
-    h += `<tr><td><strong>${d}</strong></td><td>${v.unidades.toLocaleString()}</td><td>${fmtCOP(v.facturacion)}</td><td>${v.unid_por_pedido}</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-function buildProdCityTable() {
-  const el = document.getElementById('tableProdCity'); if (!el) return;
-  const cities = Object.keys(DATA.cityProd);
-  let h = '<table><thead><tr><th>Ciudad</th><th>Unidades</th><th>Facturación</th><th>U/Pedido</th></tr></thead><tbody>';
-  cities.forEach(c => {
-    const v = DATA.cityProd[c];
-    h += `<tr><td><strong>${c}</strong></td><td>${v.unidades.toLocaleString()}</td><td>${fmtCOP(v.facturacion)}</td><td>${v.unid_por_pedido}</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-// ===================== LOGISTICA =====================
-let logBuilt = false;
-function buildLogisticaCharts() {
-  if (!logBuilt) {
-  logBuilt = true;
-
-  // Tiempo guia por mes
-  makeChart('chartTiempoMes', {
-    type: 'bar',
-    data: { labels: DATA.mesesLabel, datasets: [{ label: 'Días promedio',
-      data: Object.values(DATA.tiempoGuiaMes),
-      backgroundColor: [CHART_COLORS[0], CHART_COLORS[1]], borderRadius: 8 }]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'top', color: '#1e293b',
-          font: { weight: '700', size: 13 }, formatter: v => v+' d' }},
-      scales: { y: { beginAtZero: true, ticks: { callback: v => v+' d' }}}}
-  });
-
-  // Tiempo guia por trans
-  const tTrans = Object.keys(DATA.tiempoGuiaTrans);
-  makeChart('chartTiempoTrans', {
-    type: 'bar',
-    data: { labels: tTrans, datasets: [{ label: 'Días promedio',
-      data: Object.values(DATA.tiempoGuiaTrans),
-      backgroundColor: CHART_COLORS, borderRadius: 6 }]},
-    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-      plugins: { legend: { display: false },
-        datalabels: { display: true, anchor: 'end', align: 'right', color: '#1e293b',
-          font: { weight: '700', size: 11 }, formatter: v => v+' d' }},
-      scales: { x: { beginAtZero: true, ticks: { callback: v => v+' d' }}}}
-  });
-
-  buildNovChart();
-  } // end if(!logBuilt)
-}
-
-function buildNovChart() {
-  const novTrans = Object.keys(DATA.novTrans);
-  makeChart('chartNovTrans', {
-    type: 'bar',
-    data: { labels: novTrans, datasets: [
-      { label: 'Novedades', data: novTrans.map(t=>DATA.novTrans[t]), backgroundColor: CHART_COLORS[4]+'99', borderRadius: 4 },
-      { label: 'Solucionadas', data: novTrans.map(t=>DATA.novSolTrans[t]||0), backgroundColor: CHART_COLORS[2]+'99', borderRadius: 4 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' }, datalabels: { display: false }},
-      scales: { y: { beginAtZero: true }}}
-  });
-
-  makeChart('chartNovSolEnt', {
-    type: 'bar',
-    data: { labels: novTrans, datasets: [
-      { label: 'Sol.+Entregados', data: novTrans.map(t=>DATA.novSolEntTrans[t]||0), backgroundColor: CHART_COLORS[2], borderRadius: 4 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, datalabels: { display: false }},
-      scales: { y: { beginAtZero: true }}}
-  });
-
-  // Nov types list
-  const novEntries = Object.entries(DATA.novTypes).slice(0,10);
-  const maxN = Math.max(...novEntries.map(e=>e[1]));
-  let novHtml = '';
-  novEntries.forEach(([k,v]) => {
-    const pct = Math.round(v/maxN*100);
-    novHtml += `<div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;font-size:0.82rem"><span>${k}</span><strong>${v}</strong></div>
-      <div style="background:#e2e8f0;border-radius:4px;height:8px"><div style="background:#ef4444;width:${pct}%;height:100%;border-radius:4px"></div></div></div>`;
-  });
-  setHTML('novListContainer', novHtml);
-
-  // Nov eficiencia table
-  const el = document.getElementById('tableNovEficiencia');
-  if (el) {
-    let h = '<table><thead><tr><th>Trans.</th><th>Novedades</th><th>Solucionadas</th><th>Entregadas</th><th>Tasa Sol.</th></tr></thead><tbody>';
-    Object.keys(DATA.novTrans).forEach(t => {
-      const nov=DATA.novTrans[t]||0, sol=DATA.novSolTrans[t]||0, ent=DATA.novSolEntTrans[t]||0;
-      const tasa = nov>0?Math.round(sol/nov*100):0;
-      h += `<tr><td><strong>${t}</strong></td><td>${nov}</td><td>${sol}</td><td>${ent}</td>
-        <td><div style="display:flex;align-items:center;gap:6px">
-          <div style="width:50px;background:#e2e8f0;border-radius:4px;height:8px"><div style="background:${tasa>=80?'#10b981':'#f59e0b'};width:${tasa}%;height:100%;border-radius:4px"></div></div>${tasa}%</div></td></tr>`;
-    });
-    el.innerHTML = h + '</tbody></table>';
-  }
-}
-
-// ===================== NOVEDADES =====================
-let novBuilt = false;
-function buildNovedadesCharts() {
-  if (!novBuilt) {
-    novBuilt = true;
-    buildNovDepTable();
-    buildNovCityTable();
-    buildDepTopNov();
-  } // end if(!novBuilt)
   switchNovGeo('novedades');
 }
-
-function switchNovGeo(mode) {
-  ['novedades','tasa'].forEach(m => {
-    const el = document.querySelector(`[onclick="switchNovGeo('${m}')"]`);
-    if (el) el.classList.toggle('active', m === mode);
+let _novGeoMode='novedades';
+function switchNovGeo(mode){
+  _novGeoMode=mode;
+  ['novedades','tasa'].forEach(m=>{
+    const el=document.querySelector('[onclick="switchNovGeo(\''+m+'\')"]');
+    if(el) el.classList.toggle('active',m===mode);
   });
-  const btnCnt = document.getElementById('btnNovGeoCnt');
-  const btnTasa = document.getElementById('btnNovGeoTasa');
-  if (btnCnt) btnCnt.classList.toggle('active', mode==='novedades');
-  if (btnTasa) btnTasa.classList.toggle('active', mode==='tasa');
-
-  const deps = Object.keys(DATA.depNov);
-  const cities = Object.keys(DATA.cityNov);
-  let depVals, cityVals, fmtFn, tickFn;
-
-  if (mode === 'novedades') {
-    depVals = deps.map(d => DATA.depNov[d].novedades);
-    cityVals = cities.map(c => DATA.cityNov[c].novedades);
-    fmtFn = v => v+' nov.'; tickFn = v => v;
-  } else {
-    depVals = deps.map(d => DATA.depNov[d].tasa_nov||0);
-    cityVals = cities.map(c => DATA.cityNov[c].tasa_nov||0);
-    fmtFn = v => v+'%'; tickFn = v => v+'%';
-  }
-
-  buildGeoChart('chartNovDep', deps, depVals, fmtFn, tickFn);
-  buildGeoChart('chartNovCity', cities, cityVals, fmtFn, tickFn);
+  const btn1=document.getElementById('btnNovGeoCnt'), btn2=document.getElementById('btnNovGeoTasa');
+  if(btn1) btn1.classList.toggle('active',mode==='novedades');
+  if(btn2) btn2.classList.toggle('active',mode==='tasa');
+  const deps=Object.keys(DATA.depNov), cities=Object.keys(DATA.cityNov);
+  let dv,cv,fmt;
+  if(mode==='novedades'){ dv=deps.map(d=>DATA.depNov[d].novedades); cv=cities.map(c=>DATA.cityNov[c].novedades); fmt=v=>v+' nov.'; }
+  else { dv=deps.map(d=>DATA.depNov[d].tasa_nov||0); cv=cities.map(c=>DATA.cityNov[c].tasa_nov||0); fmt=v=>v+'%'; }
+  geoChart('chartNovDep',deps,dv,fmt);
+  geoChart('chartNovCity',cities,cv,fmt);
+}
+function buildNovDepTable(){
+  const el=document.getElementById('tableNovDep'); if(!el) return;
+  let h='<table><thead><tr><th>Departamento</th><th>Novedades</th><th>Solucionadas</th><th>Tasa Sol.</th><th>% Nov.</th></tr></thead><tbody>';
+  Object.entries(DATA.depNov).forEach(([d,v])=>{ h+='<tr><td><strong>'+d+'</strong></td><td>'+v.novedades+'</td><td>'+v.solucionadas+'</td><td>'+v.tasa_sol+'%</td><td>'+(v.tasa_nov||0)+'%</td></tr>'; });
+  el.innerHTML=h+'</tbody></table>';
+}
+function buildNovCityTable(){
+  const el=document.getElementById('tableNovCity'); if(!el) return;
+  let h='<table><thead><tr><th>Ciudad</th><th>Novedades</th><th>Solucionadas</th><th>Tasa Sol.</th></tr></thead><tbody>';
+  Object.entries(DATA.cityNov).forEach(([c,v])=>{ h+='<tr><td><strong>'+c+'</strong></td><td>'+v.novedades+'</td><td>'+v.solucionadas+'</td><td>'+v.tasa_sol+'%</td></tr>'; });
+  el.innerHTML=h+'</tbody></table>';
+}
+function buildDepTopNov(){
+  const el=document.getElementById('depTopNovContainer'); if(!el) return;
+  setH('depTopNovContainer', Object.entries(DATA.depTopNov).map(([dep,novs])=>
+    '<div style="margin-bottom:10px"><strong>'+dep+':</strong> '+
+    Object.entries(novs).map(([k,v])=>'<span style="background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:12px;font-size:0.78rem;margin:2px;display:inline-block">'+k+' ('+v+')</span>').join('')+
+    '</div>').join(''));
 }
 
-function buildNovDepTable() {
-  const el = document.getElementById('tableNovDep'); if (!el) return;
-  const deps = Object.keys(DATA.depNov);
-  let h = '<table><thead><tr><th>Departamento</th><th>Novedades</th><th>Solucionadas</th><th>Tasa Sol.</th><th>% Nov.</th></tr></thead><tbody>';
-  deps.forEach(d => {
-    const v = DATA.depNov[d];
-    h += `<tr><td><strong>${d}</strong></td><td>${v.novedades}</td><td>${v.solucionadas}</td><td>${v.tasa_sol}%</td><td>${v.tasa_nov||0}%</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-function buildNovCityTable() {
-  const el = document.getElementById('tableNovCity'); if (!el) return;
-  const cities = Object.keys(DATA.cityNov);
-  let h = '<table><thead><tr><th>Ciudad</th><th>Novedades</th><th>Solucionadas</th><th>Tasa Sol.</th></tr></thead><tbody>';
-  cities.forEach(c => {
-    const v = DATA.cityNov[c];
-    h += `<tr><td><strong>${c}</strong></td><td>${v.novedades}</td><td>${v.solucionadas}</td><td>${v.tasa_sol}%</td></tr>`;
-  });
-  el.innerHTML = h + '</tbody></table>';
-}
-
-function buildDepTopNov() {
-  const el = document.getElementById('depTopNovContainer'); if (!el) return;
-  const deps = Object.keys(DATA.depTopNov);
-  let h = '';
-  deps.forEach(dep => {
-    const novs = Object.entries(DATA.depTopNov[dep]);
-    h += `<div style="margin-bottom:10px"><strong>${dep}:</strong> `;
-    h += novs.map(([k,v]) =>
-      `<span style="background:#fee2e2;color:#ef4444;padding:2px 8px;border-radius:12px;font-size:0.78rem;margin:2px;display:inline-block">${k} (${v})</span>`
-    ).join('');
-    h += '</div>';
-  });
-  el.innerHTML = h;
-}
-
-// ===================== CONFIRMACIONES =====================
-let confBuilt = false, currentConfMes = '2026-02';
-
-function initConfirmaciones() {
-  if (confBuilt) { filterConfTable(); return; }
-  confBuilt = true;
+// =================== CONFIRMACIONES ===================
+let _confMes='2026-02';
+function buildConfirmaciones(){
+  if(_tabBuilt.conf){ filterConfTable(); return; }
+  _tabBuilt.conf=true;
   switchConfMes('2026-02');
 }
-
-function switchConfMes(mes) {
-  currentConfMes = mes;
-  ['2026-01','2026-02','todos'].forEach(m => {
-    const id = m==='2026-01'?'btnConfEne':m==='2026-02'?'btnConfFeb':'btnConfAll';
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('active', m === mes);
+function switchConfMes(mes){
+  _confMes=mes;
+  [{m:'2026-01',b:'btnConfEne'},{m:'2026-02',b:'btnConfFeb'},{m:'todos',b:'btnConfAll'}]
+    .forEach(x=>{ const el=document.getElementById(x.b); if(el) el.classList.toggle('active',x.m===mes); });
+  buildConfDiaChart(); filterConfTable();
+}
+function buildConfDiaChart(){
+  const days=Object.keys(CONF_DATA.byDayTotal).sort().filter(d=>_confMes==='todos'||d.startsWith(_confMes));
+  const lbs=days.map(d=>d.split('-')[2]+'/'+d.split('-')[1]);
+  const guias=days.map(d=>CONF_DATA.byDayTotal[d]?.total||0);
+  const pend=days.map(d=>CONF_DATA.byDayTotal[d]?.pendiente||0);
+  mkChart('chartConfDiaTotal','bar',
+    {labels:lbs,datasets:[
+      {label:'Confirmadas',data:guias.map((g,i)=>g-pend[i]),backgroundColor:'#10b98199',borderRadius:4},
+      {label:'Pendientes',data:pend,backgroundColor:'#ef444499',borderRadius:4}]},
+    {plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+     scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}});
+}
+function filterConfTable(){
+  const search=(document.getElementById('confSearch')?.value||'').toLowerCase();
+  const soloPend=document.getElementById('confSoloPend')?.checked;
+  const days=Object.keys(CONF_DATA.byDayTotal).sort().filter(d=>(_confMes==='todos'||d.startsWith(_confMes))&&(!search||d.includes(search)));
+  const body=document.getElementById('confBody'); if(!body) return;
+  let tg=0,tp=0,html='';
+  days.forEach(d=>{
+    const v=CONF_DATA.byDayTotal[d]; if(!v||!v.total) return;
+    if(soloPend&&v.pendiente===0) return;
+    tg+=v.total; tp+=v.pendiente;
+    const conf=(100-v.pct).toFixed(1);
+    const clr=v.pct>20?'#ef4444':v.pct>5?'#f59e0b':'#10b981';
+    html+='<tr><td>'+d+'</td><td style="text-align:center">'+v.total+'</td><td style="text-align:center">'+v.pendiente+'</td><td style="text-align:center;color:'+clr+';font-weight:700">'+v.pct.toFixed(1)+'%</td><td style="text-align:center">'+conf+'%</td></tr>';
   });
-  buildConfDiaChart();
-  filterConfTable();
+  body.innerHTML=html;
+  const cnt=days.filter(d=>{ const v=CONF_DATA.byDayTotal[d]; return v&&v.total; }).length;
+  set$('confTableInfo', cnt+' días');
+  set$('confFootTotal',tg); set$('confFootPend',tp);
+  set$('confFootPct', tg>0?(tp/tg*100).toFixed(1)+'%':'0%');
+  set$('confFootConf', tg>0?((1-tp/tg)*100).toFixed(1)+'%':'0%');
 }
 
-function buildConfDiaChart() {
-  const days = Object.keys(CONF_DATA.byDayTotal).sort()
-    .filter(d => currentConfMes === 'todos' || d.startsWith(currentConfMes));
-  const labels = days.map(d => d.split('-')[2]+'/'+d.split('-')[1]);
-  const guias  = days.map(d => CONF_DATA.byDayTotal[d]?.total||0);
-  const pend   = days.map(d => CONF_DATA.byDayTotal[d]?.pendiente||0);
-
-  makeChart('chartConfDiaTotal', {
-    type: 'bar',
-    data: { labels, datasets: [
-      { label: 'Confirmadas', data: guias.map((g,i)=>g-pend[i]), backgroundColor: '#10b98199', borderRadius: 4 },
-      { label: 'Pendientes',  data: pend, backgroundColor: '#ef444499', borderRadius: 4 }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' }, datalabels: { display: false }},
-      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true }}}
-  });
-}
-
-function filterConfTable() {
-  const search = (document.getElementById('confSearch')?.value||'').toLowerCase();
-  const soloPend = document.getElementById('confSoloPend')?.checked;
-  const days = Object.keys(CONF_DATA.byDayTotal).sort()
-    .filter(d => currentConfMes === 'todos' || d.startsWith(currentConfMes));
-
-  const body = document.getElementById('confBody');
-  const info = document.getElementById('confTableInfo');
-  if (!body) return;
-
-  let tg=0, tp=0, html='';
-  days.forEach(d => {
-    const v = CONF_DATA.byDayTotal[d];
-    if (!v || !v.total) return;
-    if (soloPend && v.pendiente === 0) return;
-    if (search && !d.includes(search)) return;
-    tg += v.total; tp += v.pendiente;
-    const conf = (100 - v.pct).toFixed(1);
-    const clr = v.pct>20?'#ef4444':v.pct>5?'#f59e0b':'#10b981';
-    html += `<tr>
-      <td>${d}</td><td style="text-align:center">${v.total}</td>
-      <td style="text-align:center">${v.pendiente}</td>
-      <td style="text-align:center;color:${clr};font-weight:700">${v.pct.toFixed(1)}%</td>
-      <td style="text-align:center">${conf}%</td></tr>`;
-  });
-
-  body.innerHTML = html;
-  if (info) info.textContent = `${days.filter(d=>{const v=CONF_DATA.byDayTotal[d];return v&&v.total}).length} días`;
-  setEl('confFootTotal', tg);
-  setEl('confFootPend', tp);
-  setEl('confFootPct', tg>0?(tp/tg*100).toFixed(1)+'%':'0%');
-  setEl('confFootConf', tg>0?((1-tp/tg)*100).toFixed(1)+'%':'0%');
-}
-
-// ===================== PENDING TABLE =====================
-function tagBadge(tag) {
-  if (!tag || tag === 'nan') return '';
-  return tag.split(',').map(t => t.trim()).filter(Boolean).map(t => {
-    const c = /MAL HISTORIAL|CANCELO/.test(t) ? '#fee2e2:#ef4444' :
-              /NO CONTESTA|NO ASUME/.test(t)   ? '#fef9c3:#d97706' : '#dbeafe:#3b82f6';
-    const [bg,fg] = c.split(':');
-    return `<span style="background:${bg};color:${fg};padding:2px 8px;border-radius:10px;font-size:0.75rem;margin:1px;display:inline-block">${t}</span>`;
+// =================== PENDIENTES ===================
+function tagBadge(tag){
+  if(!tag||tag==='nan') return '';
+  return tag.split(',').map(t=>t.trim()).filter(Boolean).map(t=>{
+    const [bg,fg]=/MAL HISTORIAL|CANCELO/.test(t)?['#fee2e2','#ef4444']:/NO CONTESTA|NO ASUME/.test(t)?['#fef9c3','#d97706']:['#dbeafe','#3b82f6'];
+    return '<span style="background:'+bg+';color:'+fg+';padding:2px 8px;border-radius:10px;font-size:0.75rem;margin:1px;display:inline-block">'+t+'</span>';
   }).join('');
 }
+function filterPendDia(dia){
+  document.getElementById('pendBtnTodos')?.classList.toggle('active',dia==='todos');
+  Object.entries(PEND_BTN_MAP).forEach(([d,bid])=>{ const el=document.getElementById(bid); if(el) el.classList.toggle('active',d===dia); });
+  const data=dia==='todos'?PEND_DETALLE:PEND_DETALLE.filter(r=>r.dia===dia);
+  const body=document.getElementById('pendBody'); if(!body) return;
+  body.innerHTML=data.map(r=>'<tr><td>'+r.dia+'</td><td><strong>'+r.id+'</strong></td><td>'+tagBadge(r.tags)+'</td><td>'+r.trans+'</td><td style="font-size:0.82rem">'+r.prod+'</td></tr>').join('');
+  set$('pendTableInfo','Mostrando '+data.length+' de '+PEND_DETALLE.length);
+  set$('pendFootCount',data.length+' pedidos');
+}
 
-function filterPendDia(dia) {
-  // Update buttons
-  document.getElementById('pendBtnTodos')?.classList.toggle('active', dia==='todos');
-  Object.entries(PEND_BTN_MAP).forEach(([d,bid]) => {
-    const el = document.getElementById(bid);
-    if (el) el.classList.toggle('active', d===dia);
+// =================== INVENTARIO ===================
+let _invSort='stock', _invDir=-1;
+function buildInventario(){ updateInvKpis(); _applyInvFilter(); }
+function updateInvKpis(){
+  set$('invTotalProd',INVENTARIO.length);
+  set$('invTotalStock',INVENTARIO.reduce((s,r)=>s+r.stock,0).toLocaleString());
+  set$('invTotalValor',cop(INVENTARIO.reduce((s,r)=>s+r.stock*r.precio,0)));
+  set$('invSinStock',INVENTARIO.filter(r=>r.stock===0).length);
+}
+function filterInventario(){ _applyInvFilter(); }
+function sortInventario(col){ if(_invSort===col) _invDir*=-1; else{_invSort=col;_invDir=-1;} _applyInvFilter(); }
+function setInvSort(col){ sortInventario(col); }
+function _applyInvFilter(){
+  const search=(document.getElementById('invSearch')?.value||'').toLowerCase();
+  const filtro=document.getElementById('invFiltroStock')?.value||'todos';
+  let data=INVENTARIO.filter(r=>{
+    const ms=!search||r.nombre.toLowerCase().includes(search)||r.codigo.toLowerCase().includes(search);
+    const mf=filtro==='todos'||(filtro==='ok'&&r.stock>10)||(filtro==='bajo'&&r.stock>0&&r.stock<=10)||(filtro==='agotado'&&r.stock===0);
+    return ms&&mf;
   });
-
-  const data = dia === 'todos' ? PEND_DETALLE : PEND_DETALLE.filter(r => r.dia === dia);
-  renderPendRows(data);
-}
-
-function renderPendRows(data) {
-  const body = document.getElementById('pendBody');
-  const info = document.getElementById('pendTableInfo');
-  const foot = document.getElementById('pendFootCount');
-  if (!body) return;
-
-  let h = '';
-  data.forEach(r => {
-    h += `<tr>
-      <td>${r.dia}</td>
-      <td><strong>${r.id}</strong></td>
-      <td>${tagBadge(r.tags)}</td>
-      <td>${r.trans}</td>
-      <td style="font-size:0.82rem">${r.prod}</td></tr>`;
+  data=[...data].sort((a,b)=>{
+    const av=typeof a[_invSort]==='string'?a[_invSort].toLowerCase():a[_invSort];
+    const bv=typeof b[_invSort]==='string'?b[_invSort].toLowerCase():b[_invSort];
+    return _invDir*(av>bv?1:av<bv?-1:0);
   });
-  body.innerHTML = h;
-  if (info) info.textContent = `Mostrando ${data.length} de ${PEND_DETALLE.length}`;
-  if (foot) foot.textContent = `${data.length} pedidos`;
+  const body=document.getElementById('invBody'); if(!body) return;
+  body.innerHTML=data.map(r=>{
+    const dot=r.stock===0?'🔴':r.stock<=10?'🟡':'🟢';
+    const est=r.stock===0?'Agotado':r.stock<=10?'Bajo stock':'Disponible';
+    return '<tr><td><code style="font-size:0.8rem">'+r.codigo+'</code></td><td><strong>'+r.nombre+'</strong></td><td style="text-align:center"><strong>'+r.stock.toLocaleString()+'</strong></td><td style="text-align:right">'+cop(r.precio)+'</td><td style="text-align:right">'+cop(r.stock*r.precio)+'</td><td>'+dot+' <span style="font-size:0.82rem">'+est+'</span></td></tr>';
+  }).join('');
+  set$('invContador','Mostrando '+data.length+' de '+INVENTARIO.length+' productos');
 }
 
-// ===================== INVENTARIO =====================
-let invSortCol = 'stock', invSortDir = -1;
-
-function renderInventario() {
-  updateInvKpis();
-  sortInventario(invSortCol);
-}
-
-function updateInvKpis() {
-  const totalStock = INVENTARIO.reduce((s,r) => s+r.stock, 0);
-  const totalValor = INVENTARIO.reduce((s,r) => s+r.stock*r.precio, 0);
-  const sinStock = INVENTARIO.filter(r => r.stock===0).length;
-  setEl('invTotalProd', INVENTARIO.length);
-  setEl('invTotalStock', totalStock.toLocaleString());
-  setEl('invTotalValor', fmtCOP(totalValor));
-  setEl('invSinStock', sinStock);
-}
-
-function filterInventario() {
-  const search = (document.getElementById('invSearch')?.value||'').toLowerCase();
-  const filtro = document.getElementById('invFiltroStock')?.value || 'todos';
-  let data = INVENTARIO.filter(r => {
-    const matchSearch = !search || r.nombre.toLowerCase().includes(search) || r.codigo.toLowerCase().includes(search);
-    const matchFiltro = filtro==='todos' || (filtro==='ok'&&r.stock>10) || (filtro==='bajo'&&r.stock>0&&r.stock<=10) || (filtro==='agotado'&&r.stock===0);
-    return matchSearch && matchFiltro;
+// =================== GEO VIEW SWITCH (Resumen) ===================
+function switchGeoView(mode){
+  ['pedidos','facturacion'].forEach(m=>{
+    const el=document.querySelector('[onclick="switchGeoView(\''+m+'\')"]');
+    if(el) el.classList.toggle('active',m===mode);
   });
-  renderInvRows(data);
-}
-
-function sortInventario(col) {
-  if (invSortCol === col) invSortDir *= -1;
-  else { invSortCol = col; invSortDir = -1; }
-  filterInventario();
-}
-
-// alias for setInvSort
-function setInvSort(col) { sortInventario(col); }
-
-function renderInvRows(data) {
-  const sorted = [...data].sort((a,b) => {
-    const av = typeof a[invSortCol]==='string' ? a[invSortCol].toLowerCase() : a[invSortCol];
-    const bv = typeof b[invSortCol]==='string' ? b[invSortCol].toLowerCase() : b[invSortCol];
-    return invSortDir * (av > bv ? 1 : av < bv ? -1 : 0);
-  });
-
-  const body = document.getElementById('invBody');
-  const cnt  = document.getElementById('invContador');
-  if (!body) return;
-
-  let h = '';
-  sorted.forEach(r => {
-    const dot = r.stock===0 ? '🔴' : r.stock<=10 ? '🟡' : '🟢';
-    const estado = r.stock===0 ? 'Agotado' : r.stock<=10 ? 'Bajo stock' : 'Disponible';
-    const total = r.stock * r.precio;
-    h += `<tr>
-      <td><code style="font-size:0.8rem">${r.codigo}</code></td>
-      <td><strong>${r.nombre}</strong></td>
-      <td style="text-align:center"><strong>${r.stock.toLocaleString()}</strong></td>
-      <td style="text-align:right">${fmtCOP(r.precio)}</td>
-      <td style="text-align:right">${fmtCOP(total)}</td>
-      <td>${dot} <span style="font-size:0.82rem">${estado}</span></td></tr>`;
-  });
-  body.innerHTML = h;
-  if (cnt) cnt.textContent = `Mostrando ${sorted.length} de ${INVENTARIO.length} productos`;
-}
-
-// ===================== INIT =====================
-document.addEventListener('DOMContentLoaded', () => {
-  // Register ChartDataLabels plugin globally (required for Chart.js v4)
-  if (typeof ChartDataLabels !== 'undefined') {
-    Chart.register(ChartDataLabels);
+  if(mode==='pedidos'){
+    set$('geoDepTitle','Top 15 Departamentos — Pedidos');
+    set$('geoCityTitle','Top 15 Ciudades — Pedidos');
+    geoChart('chartGeoDep',  Object.keys(DATA.topDep),  Object.values(DATA.topDep),  v=>v.toLocaleString()+' ped.');
+    geoChart('chartGeoCity', Object.keys(DATA.topCity), Object.values(DATA.topCity), v=>v.toLocaleString()+' ped.');
+  } else {
+    const deps   = Object.keys(DATA.depFact);
+    const cities = Object.keys(DATA.cityFact);
+    set$('geoDepTitle','Top 15 Departamentos — Facturación');
+    set$('geoCityTitle','Top 15 Ciudades — Facturación');
+    geoChart('chartGeoDep',  deps,   deps.map(d=>DATA.depFact[d].facturacion),     v=>'$'+(v/1e6).toFixed(1)+'M');
+    geoChart('chartGeoCity', cities, cities.map(c=>DATA.cityFact[c].facturacion),  v=>'$'+(v/1e6).toFixed(1)+'M');
   }
-  buildAll();
+}
+
+// =================== INIT ===================
+document.addEventListener('DOMContentLoaded', ()=>{
+  Chart.register(ChartDataLabels);
   showTab('resumen');
   filterPendDia('todos');
 });
