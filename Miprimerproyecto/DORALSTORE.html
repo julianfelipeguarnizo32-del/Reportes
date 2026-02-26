@@ -155,6 +155,7 @@
 <nav class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" onclick="showTab('resumen')"><span class="tab-icon">📊</span>Resumen</button>
+    <button class="tab-btn" onclick="showTab('analisis')"><span class="tab-icon">🧠</span>Análisis IA</button>
     <button class="tab-btn" onclick="showTab('inventario')"><span class="tab-icon">🏭</span>Inventario Corte</button>
     <button class="tab-btn" onclick="showTab('confirmaciones')"><span class="tab-icon">✅</span>Confirmaciones</button>
     <button class="tab-btn" onclick="showTab('pedidos')"><span class="tab-icon">📦</span>Pedidos & Despacho</button>
@@ -168,6 +169,63 @@
 <div class="main">
 
 <!-- ========= RESUMEN ========= -->
+<!-- ========= ANÁLISIS IA ========= -->
+<div id="tab-analisis" class="tab-pane">
+  <div class="section-title">🧠 Diagnóstico Experto — Análisis de Indicadores E-Commerce</div>
+
+  <!-- SCORE CARDS -->
+  <div class="stat-grid" id="analisisScores" style="margin-bottom:20px;"></div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="chart-grid" style="margin-bottom:20px;">
+    <div class="chart-card">
+      <div class="chart-title">📈 Evolución Diaria de Facturación — Febrero</div>
+      <div class="chart-subtitle">Tendencia de ventas día a día</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chartAnalisisTrend"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🎯 Embudo de Conversión</div>
+      <div class="chart-subtitle">Pedidos → Despachados → Entregados</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chartAnalisisFunnel"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="chart-grid" style="margin-bottom:20px;">
+    <div class="chart-card">
+      <div class="chart-title">🏪 Participación por Canal de Venta</div>
+      <div class="chart-subtitle">Distribución de facturación por tienda</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chartAnalisisTienda"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🚚 Rendimiento por Transportadora</div>
+      <div class="chart-subtitle">Tasa de entrega vs tasa de novedad</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="chartAnalisisTrans"></canvas></div>
+    </div>
+  </div>
+
+  <!-- IA DIAGNOSTICO -->
+  <div class="section-title">📋 Diagnóstico Detallado</div>
+  <div class="chart-card" id="analisisDiagnostico" style="padding:24px;">
+    <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+      <div style="font-size:2rem;margin-bottom:12px;">🧠</div>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:8px;">Generando diagnóstico experto...</div>
+      <div style="font-size:0.85rem;">Analizando todos los indicadores del dashboard</div>
+      <div style="margin-top:16px;display:flex;justify-content:center;gap:6px;" id="analisisLoader">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse 1s infinite 0s"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse 1s infinite 0.2s"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse 1s infinite 0.4s"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMENDACIONES IA -->
+  <br>
+  <div class="section-title">💡 Acciones Recomendadas</div>
+  <div id="analisisRecomendaciones" class="chart-card" style="padding:24px;"></div>
+
+</div>
+
 <div id="tab-resumen" class="tab-pane active">
   <div class="section-title">📊 Resumen General de KPIs</div>
 
@@ -1056,6 +1114,7 @@ function showTab(id){
   // Build after browser paints
   setTimeout(()=>{
     if(id==='resumen')        buildResumen();
+    if(id==='analisis')       buildAnalisis();
     if(id==='pedidos')        buildPedidos();
     if(id==='facturacion')    buildFacturacion();
     if(id==='productos')      buildProductos();
@@ -1066,6 +1125,191 @@ function showTab(id){
     // Force resize all visible charts
     setTimeout(()=>Object.values(_ch).forEach(c=>{ try{c.resize();}catch(e){} }), 60);
   }, 50);
+}
+
+// =================== ANÁLISIS IA ===================
+let _analisisBuilt = false;
+function buildAnalisis(){
+  if(_analisisBuilt) return; _analisisBuilt=true;
+
+  const EXCL=['CANCELADO','PENDIENTE CONFIRMACION'];
+  const TRANS=Object.keys(DATA.estatusTrans);
+
+  // ---- SCORE CARDS ----
+  const totPed  = Object.values(DATA.pedidosMes).reduce((a,b)=>a+b,0);
+  const totFact = Object.values(DATA.facturacionMes).reduce((a,b)=>a+b,0);
+  const totFlete= Object.values(DATA.fleteMes).reduce((a,b)=>a+b,0);
+  const allEst  = {};
+  TRANS.forEach(t=>Object.entries(DATA.estatusTrans[t]||{}).forEach(([k,v])=>{ allEst[k]=(allEst[k]||0)+v; }));
+  const totEnt  = allEst['ENTREGADO']||0;
+  const totCanc = allEst['CANCELADO']||0;
+  const totDesp = totPed-(allEst['CANCELADO']||0)-(allEst['PENDIENTE CONFIRMACION']||0);
+  const tasaEnt = (totEnt/totPed*100).toFixed(1);
+  const tasaDesp= (totDesp/totPed*100).toFixed(1);
+  const tasaCanc= (totCanc/totPed*100).toFixed(1);
+  const ticketP = Math.round(totFact/totPed);
+  const pctFlete= (totFlete/totFact*100).toFixed(1);
+  const crecPed = ((DATA.pedidosMes['2026-02']/DATA.pedidosMes['2026-01']-1)*100).toFixed(1);
+  const crecFact= ((DATA.facturacionMes['2026-02']/DATA.facturacionMes['2026-01']-1)*100).toFixed(1);
+
+  function scoreCard(icon,label,val,sub,color){
+    return `<div class="stat-card ${color}" style="position:relative;overflow:hidden;">
+      <div class="stat-label">${icon} ${label}</div>
+      <div class="stat-value">${val}</div>
+      <div class="stat-sub">${sub}</div>
+    </div>`;
+  }
+  const entClr = tasaEnt>=70?'green':tasaEnt>=55?'orange':'red';
+  const despClr= tasaDesp>=85?'green':tasaDesp>=70?'orange':'red';
+  const crecClr= crecPed>=50?'green':crecPed>=20?'blue':'orange';
+  setH('analisisScores',
+    scoreCard('📦','Crecimiento Pedidos (Feb vs Ene)','+'+crecPed+'%','Feb: '+DATA.pedidosMes['2026-02'].toLocaleString()+' | Ene: '+DATA.pedidosMes['2026-01'].toLocaleString(),crecClr)+
+    scoreCard('💰','Crecimiento Facturación','+'+crecFact+'%','Feb: $'+(DATA.facturacionMes['2026-02']/1e6).toFixed(1)+'M | Ene: $'+(DATA.facturacionMes['2026-01']/1e6).toFixed(1)+'M',crecClr)+
+    scoreCard('🎯','Tasa de Entrega',tasaEnt+'%',totEnt.toLocaleString()+' de '+totPed.toLocaleString()+' pedidos entregados',entClr)+
+    scoreCard('🚀','Tasa de Despacho',tasaDesp+'%',totDesp.toLocaleString()+' pedidos gestionados',despClr)+
+    scoreCard('💳','Ticket Promedio','$'+ticketP.toLocaleString(),'Facturación total: $'+(totFact/1e6).toFixed(1)+'M','blue')+
+    scoreCard('🚚','Costo Logístico',pctFlete+'%','$'+(totFlete/1e6).toFixed(1)+'M sobre $'+(totFact/1e6).toFixed(1)+'M facturado',pctFlete<=15?'green':pctFlete<=18?'orange':'red')
+  );
+
+  // ---- CHART 1: Tendencia diaria Feb ----
+  const febDias = Object.keys(DATA.factDia['2026-02']).sort();
+  const febVals = febDias.map(d=>DATA.factDia['2026-02'][d]);
+  const movAvg  = febVals.map((_,i)=>i<2?null:Math.round((febVals[i]+febVals[i-1]+febVals[i-2])/3));
+  mkChart('chartAnalisisTrend','bar',{
+    labels: febDias.map(d=>d.split('-')[2]+'/Feb'),
+    datasets:[
+      {label:'Facturación Diaria',data:febVals,backgroundColor:C[0]+'99',borderRadius:4,order:2},
+      {label:'Media Móvil (3d)',data:movAvg,type:'line',borderColor:C[3],borderWidth:2.5,pointRadius:0,fill:false,tension:0.4,order:1}
+    ]
+  },{
+    plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+    scales:{y:{beginAtZero:false,ticks:{callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}}
+  });
+
+  // ---- CHART 2: Funnel ----
+  mkChart('chartAnalisisFunnel','bar',{
+    labels:['Pedidos Totales','Despachados','Entregados'],
+    datasets:[{
+      data:[totPed,totDesp,totEnt],
+      backgroundColor:[C[0]+'cc',C[2]+'cc',C[1]+'cc'],
+      borderRadius:8
+    }]
+  },{
+    indexAxis:'y',
+    plugins:{datalabels:{display:true,anchor:'end',align:'right',font:{weight:'700',size:12},
+      formatter:(v,ctx)=>{const pct=(v/totPed*100).toFixed(1);return v.toLocaleString()+' ('+pct+'%)';}
+    }},
+    scales:{x:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()}}}
+  });
+
+  // ---- CHART 3: Canales de venta ----
+  const tiendas=Object.keys(DATA.tiendaStats);
+  mkChart('chartAnalisisTienda','doughnut',{
+    labels:tiendas,
+    datasets:[{
+      data:tiendas.map(t=>DATA.tiendaStats[t]['TOTAL DE LA ORDEN']),
+      backgroundColor:C.slice(0,tiendas.length),
+      borderWidth:2
+    }]
+  },{
+    plugins:{legend:{display:true,position:'right'},
+      datalabels:{display:true,formatter:(v,ctx)=>{
+        const total=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+        return (v/total*100).toFixed(1)+'%';
+      },font:{weight:'700',size:12}}}
+  });
+
+  // ---- CHART 4: Trans entrega vs novedad ----
+  const tKeys=TRANS.filter(t=>Object.values(DATA.estatusTrans[t]||{}).reduce((a,b)=>a+b,0)>0);
+  const tTot=tKeys.map(t=>Object.values(DATA.estatusTrans[t]||{}).reduce((a,b)=>a+b,0));
+  const tEnt=tKeys.map(t=>DATA.estatusTrans[t]['ENTREGADO']||0);
+  const tNov=tKeys.map(t=>(DATA.novTrans[t]||0));
+  mkChart('chartAnalisisTrans','bar',{
+    labels:tKeys,
+    datasets:[
+      {label:'Tasa Entrega %',data:tKeys.map((t,i)=>+(tEnt[i]/tTot[i]*100).toFixed(1)),backgroundColor:C[2]+'cc',borderRadius:6,yAxisID:'y'},
+      {label:'Novedades',data:tNov,backgroundColor:C[4]+'99',borderRadius:6,yAxisID:'y2'}
+    ]
+  },{
+    plugins:{legend:{display:true,position:'top'},datalabels:{display:false}},
+    scales:{
+      y:{beginAtZero:true,position:'left',ticks:{callback:v=>v+'%'},max:100},
+      y2:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false}}
+    }
+  });
+
+  // ---- IA DIAGNOSIS via Anthropic API ----
+  const prompt = `Eres un experto en ecommerce y logística latinoamericana. Analiza estos indicadores del dashboard DoralStore (corte 25 Feb 2026) y da un diagnóstico profesional detallado:
+
+PEDIDOS:
+- Total acumulado: ${totPed.toLocaleString()} pedidos (Ene: ${DATA.pedidosMes['2026-01'].toLocaleString()}, Feb: ${DATA.pedidosMes['2026-02'].toLocaleString()})
+- Crecimiento Ene→Feb: +${crecPed}% en pedidos, +${crecFact}% en facturación
+
+FACTURACIÓN:
+- Total: $${(totFact/1e6).toFixed(1)}M COP (Ene: $${(DATA.facturacionMes['2026-01']/1e6).toFixed(1)}M, Feb: $${(DATA.facturacionMes['2026-02']/1e6).toFixed(1)}M)
+- Ticket promedio: $${ticketP.toLocaleString()} COP
+- Costo logístico (flete/facturación): ${pctFlete}%
+
+TASAS DE ENTREGA:
+- Tasa despacho (excluyendo cancelados y pendientes): ${tasaDesp}%
+- Tasa entrega confirmada: ${tasaEnt}%
+- Tasa cancelación: ${tasaCanc}%
+
+TRANSPORTADORAS (tasa entrega):
+${tKeys.map((t,i)=>` - ${t}: ${(tEnt[i]/tTot[i]*100).toFixed(1)}% entrega sobre ${tTot[i]} pedidos, ${tNov[i]} novedades`).join('\n')}
+
+NOVEDADES:
+- Total novedades: ${Object.values(DATA.novTrans).reduce((a,b)=>a+b,0)} (${((Object.values(DATA.novTrans).reduce((a,b)=>a+b,0)/totPed)*100).toFixed(1)}% del total)
+
+CANALES:
+${tiendas.map(t=>`- ${t}: $${(DATA.tiendaStats[t]['TOTAL DE LA ORDEN']/1e6).toFixed(1)}M (${(DATA.tiendaStats[t]['TOTAL DE LA ORDEN']/totFact*100).toFixed(1)}%)`).join('\n')}
+
+TOP 3 DEPARTAMENTOS: ${Object.entries(DATA.topDep).slice(0,3).map(([k,v])=>`${k}(${v})`).join(', ')}
+
+Da un diagnóstico en HTML con:
+1. Un resumen ejecutivo de 2-3 oraciones
+2. Fortalezas identificadas (máx 4 puntos, con ícono ✅)
+3. Alertas y riesgos (máx 4 puntos, con ícono ⚠️)
+4. Oportunidades de mejora (máx 3 puntos, con ícono 🎯)
+
+Usa HTML simple con <h3>, <p>, <ul>, <li>. Sé concreto, usa los números, como consultor de ecommerce colombiano.`;
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      messages:[{role:'user',content:prompt}]
+    })
+  }).then(r=>r.json()).then(data=>{
+    const text=data.content?.map(b=>b.text||'').join('')||'No se pudo generar el diagnóstico.';
+    const el=document.getElementById('analisisDiagnostico');
+    if(el) el.innerHTML='<div style="line-height:1.7;font-size:0.92rem;">'+text+'</div>';
+  }).catch(e=>{
+    const el=document.getElementById('analisisDiagnostico');
+    if(el) el.innerHTML='<p style="color:var(--danger)">Error al generar diagnóstico: '+e.message+'</p>';
+  });
+
+  // Recomendaciones estáticas basadas en datos
+  const recs=[];
+  if(tasaEnt<65) recs.push({icon:'⚠️',color:'#fef3c7',border:'#f59e0b',title:'Tasa de entrega por debajo del estándar ('+tasaEnt+'%)',body:'El benchmark e-commerce Colombia es 70-75%. Revisar causas de devoluciones y coordinar estrategia anti-VENTA FALSA con transportadoras con menor rendimiento.'});
+  if(parseFloat(pctFlete)>16) recs.push({icon:'💸',color:'#fee2e2',border:'#ef4444',title:'Costo logístico elevado ('+pctFlete+'% sobre facturación)',body:'El estándar saludable es 12-15%. Negociar tarifas por volumen con transportadoras prioritarias o evaluar zonas con mayor costo/entrega.'});
+  if(crecPed>50) recs.push({icon:'🚀',color:'#dcfce7',border:'#22c55e',title:'Crecimiento acelerado: +'+crecPed+'% pedidos en febrero',body:'Excelente tracción. Asegurar que el inventario y la capacidad operativa escalen al mismo ritmo. Priorizar los 3 productos top para reabastecimiento.'});
+  const novTot=Object.values(DATA.novTrans).reduce((a,b)=>a+b,0);
+  if(novTot/totPed>0.12) recs.push({icon:'📋',color:'#ede9fe',border:'#8b5cf6',title:'Tasa de novedad alta ('+((novTot/totPed)*100).toFixed(1)+'%)',body:'Más del 12% de pedidos con novedad. Analizar el tipo "DESTINATARIO SE REHUSA A RECIBIR" — puede indicar problemas en validación de contacto o expectativas del cliente.'});
+  const shopifyPct=DATA.tiendaStats['SHOPIFY']?(DATA.tiendaStats['SHOPIFY']['TOTAL DE LA ORDEN']/totFact*100).toFixed(1):0;
+  if(shopifyPct>40) recs.push({icon:'🏪',color:'#e0f2fe',border:'#0891b2',title:'Shopify lidera con '+shopifyPct+'% de facturación',body:'Canal sólido. Aprovechar para implementar remarketing, upsell post-compra y recuperación de carritos abandonados para maximizar el ticket promedio.'});
+  recs.push({icon:'📍',color:'#f0fdf4',border:'#16a34a',title:'Top geografía: '+Object.keys(DATA.topDep)[0]+' y '+Object.keys(DATA.topDep)[1]+' concentran el '+((( Object.values(DATA.topDep)[0]+Object.values(DATA.topDep)[1])/totPed)*100).toFixed(0)+'%',body:'Evaluar campañas segmentadas por departamento para penetrar mercados secundarios con menor saturación y posible mayor margen.'});
+
+  setH('analisisRecomendaciones',recs.map(r=>`
+    <div style="display:flex;gap:14px;padding:14px 16px;background:${r.color};border-left:4px solid ${r.border};border-radius:8px;margin-bottom:12px;">
+      <span style="font-size:1.4rem;flex-shrink:0">${r.icon}</span>
+      <div>
+        <div style="font-weight:700;font-size:0.92rem;margin-bottom:4px">${r.title}</div>
+        <div style="font-size:0.85rem;color:var(--text-muted);line-height:1.5">${r.body}</div>
+      </div>
+    </div>`).join(''));
 }
 
 // =================== RESUMEN ===================
