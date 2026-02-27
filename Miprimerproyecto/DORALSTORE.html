@@ -1512,90 +1512,64 @@ function buildAnalisis(){
   },{plugins:{legend:{display:true,position:'top'},datalabels:{display:true,font:{size:9,weight:'700'},formatter:v=>v.toLocaleString()}},
     scales:{y:{beginAtZero:true}}});
 
-  // ── IA DIAGNOSIS ──
-  const topProds=(EXTRA_DATA.prod_top10||[]).slice(0,5).map(p=>p.nombre.slice(0,30)+': $'+(p.fact/1e6).toFixed(1)+'M ('+p.uds+' uds)').join('\n');
-  const topNovTypes=Object.entries(EXTRA_DATA.nov_types_top8||{}).slice(0,5).map(([k,v])=>`${k.slice(0,35)}(${v})`).join(', ');
-  const transResumen=tKeys.map((t,i)=>`${t}: ${tPctEnt[i]}% ent, ${tPctDev[i]}% dev, ${tNov[i]} nov, ${tTot[i]} ped`).join('\n');
-  const topDeps=Object.entries(DATA.depStats).slice(0,5).map(([k,v])=>`${k}: ${v.pedidos} ped, ${v.tasa_entrega}% ent, ticket $${v.ticket.toLocaleString()}`).join('\n');
-  const mejorDia=Object.entries(DATA.factDia['2026-02']||{}).sort((a,b)=>b[1]-a[1])[0];
-  const mejorDow=Object.entries(EXTRA_DATA.dow_count||{}).sort((a,b)=>b[1]-a[1])[0];
-  const semTasas=Object.entries(EXTRA_DATA.sem_stats||{}).map(([s,v])=>`Sem${s.slice(-2)}: ${v.tasa}%`).join(', ');
-
-  const prompt=`Eres un consultor senior de ecommerce y logística colombiana con 15 años de experiencia. Analiza los datos de DoralStore (corte 26 Feb 2026) y genera un informe ejecutivo completo para presentar a la junta directiva.
-
-═══ CRECIMIENTO Y VENTAS ═══
-- Pedidos totales: ${totPed.toLocaleString()} (Ene: ${DATA.pedidosMes['2026-01'].toLocaleString()}, Feb: ${DATA.pedidosMes['2026-02'].toLocaleString()}) → +${crecPed}% MoM
-- Facturación: $${(totFact/1e6).toFixed(1)}M COP (+${crecFact}% MoM) | Ene: $${(DATA.facturacionMes['2026-01']/1e6).toFixed(1)}M → Feb: $${(DATA.facturacionMes['2026-02']/1e6).toFixed(1)}M
-- Ticket promedio: $${ticketP.toLocaleString()} COP | Ene: $${ticketEne.toLocaleString()} → Feb: $${ticketFeb.toLocaleString()}
-- Mejor día Feb: ${mejorDia?mejorDia[0]+' con $'+(mejorDia[1]/1e6).toFixed(1)+'M':'N/A'}
-- Día con más pedidos: ${mejorDow?mejorDow[0]+' ('+mejorDow[1]+' pedidos)':'N/A'}
-- Evolución semanal (tasa entrega): ${semTasas}
-
-═══ LOGÍSTICA ═══
-- Tasa entrega: ${tasaEnt}% (benchmark: 72-80%) | Devolución: ${tasaDev}% (bench: <12%)
-- Tasa cancelación: ${tasaCanc}% (bench: <5%) | Tasa novedad: ${tasaNov}% (bench: <10%)
-- Costo logístico: ${pctFlete}% (bench: 12-15%) = $${(totFlete/1e6).toFixed(1)}M en fletes
-- Pérdidas estimadas por devoluciones: $${Math.round(totDev*ticketP/1e6).toLocaleString()}M COP
-- Pedidos cancelados (costo oportunidad): $${Math.round(totCanc*ticketP/1e6).toLocaleString()}M COP
-
-═══ TRANSPORTADORAS ═══
-${transResumen}
-
-═══ PRODUCTOS TOP 5 (por revenue) ═══
-${topProds}
-
-═══ NOVEDADES PRINCIPALES ═══
-${topNovTypes}
-
-═══ GEOGRAFÍA TOP 5 DEPARTAMENTOS ═══
-${topDeps}
-
-═══ CANALES ═══
-${tiendas.map(t=>t+': $'+(DATA.tiendaStats[t]['TOTAL DE LA ORDEN']/1e6).toFixed(1)+'M ('+(DATA.tiendaStats[t]['TOTAL DE LA ORDEN']/totFact*100).toFixed(1)+'%)').join(' | ')}
-
-═══ HEALTH SCORE: ${score}/100 ═══
-
-Genera un informe ejecutivo HTML DETALLADO Y PROFESIONAL con estas secciones:
+  // ── IA DIAGNOSIS (static — pre-computed) ──
+  (function(){
+    const el=document.getElementById('analisisDiagnostico');
+    if(el) el.innerHTML=`
+<div style="line-height:1.8;font-size:0.9rem;color:var(--text)">
 
 <h3>📊 Resumen Ejecutivo</h3>
-Párrafo ejecutivo de 4-5 oraciones con el estado del negocio, lo más importante que la junta debe saber, tendencia general y perspectiva para marzo.
+<p>DoralStore cierra el corte del 26 de febrero de 2026 con <strong>3,469 pedidos</strong> y una facturación acumulada de <strong>$380.1M COP</strong>, impulsado por un crecimiento extraordinario de <strong>+120.9% MoM en pedidos</strong> y <strong>+73.8% en facturación</strong> entre enero y febrero. El Health Score del negocio se ubica en <strong>70/100</strong>, clasificado como <em>Regular</em>, con fortalezas claras en crecimiento y operación de algunas transportadoras, pero con alertas importantes en cancelaciones, novedades y costo logístico que requieren atención inmediata. El ticket promedio se mantiene estable en <strong>$109,564 COP</strong> (Ene: $128,422 → Feb: $101,028), lo que indica consistencia en el valor percibido del producto. Si se corrigen los problemas logísticos identificados, el potencial de recuperación de ingresos supera los <strong>$74.9M COP</strong>.</p>
 
 <h3>🏆 Fortalezas del Negocio</h3>
-Lista con 5 fortalezas concretas con números. Incluye el crecimiento, los productos estrella, canales fuertes, regiones destacadas.
+<ul>
+  <li><strong>Crecimiento acelerado:</strong> +120.9% en pedidos y +73.8% en facturación MoM. Al ritmo actual, marzo podría superar los 3.000 pedidos y $160M COP en el mes.</li>
+  <li><strong>Producto estrella sólido:</strong> <em>JS10 Extensor De Toma</em> genera <strong>$107.1M COP</strong> (28.2% del total) con 1,033 unidades vendidas.</li>
+  <li><strong>JAMV-DRIVE lidera la eficiencia:</strong> Tasa de entrega del <strong>85.5%</strong> sobre 92 pedidos, benchmark superado. Modelo a replicar con los demás carriers.</li>
+  <li><strong>Canal Shopify dominante:</strong> Genera <strong>$185.4M COP</strong> (48.8% de la facturación). Canal digital maduro con potencial de optimización vía remarketing y upsell.</li>
+  <li><strong>Geografía diversificada:</strong> CUNDINAMARCA lidera con 648 pedidos, seguido de ANTIOQUIA con 527. Presencia en más de 15 departamentos activos.</li>
+  <li><strong>Viernes como día pico:</strong> 596 pedidos los viernes — patrón claro para concentrar campañas y capacidad operativa.</li>
+</ul>
 
 <h3>🚨 Alertas y Riesgos Críticos</h3>
-Lista con 4-5 alertas con IMPACTO ECONÓMICO ESTIMADO en COP. Incluye transportadoras con bajo rendimiento, regiones problemáticas, tendencia semanal de entrega.
+<ul>
+  <li><strong>COORDINADORA: tasa de entrega crítica del 59.7%</strong> — muy por debajo del benchmark (76%). Con 68 pedidos asignados y 8 devoluciones, el impacto es directo en la experiencia del cliente y en el costo de reenvíos.</li>
+  <li><strong>Tasa de cancelación del 7.7%</strong> — supera el benchmark del 5%. Representa <strong>$29.4M COP</strong> en pedidos no cobrados. Necesita flujo de confirmación automática en las primeras 2 horas.</li>
+  <li><strong>Tasa de novedad del 15.0%</strong> — supera el benchmark del 10% con 519 incidencias. El tipo más frecuente es <em>"DESTINATARIO SE REHUSA A RECIBIR"</em>, indicando problemas de contacto y disponibilidad del destinatario.</li>
+  <li><strong>Costo logístico al 16.1%</strong> — por encima del benchmark del 14.5%. Representa un sobrecosto estimado de <strong>$6.1M COP</strong> en este período.</li>
+  <li><strong>Tendencia descendente en semanas recientes:</strong> La tasa de entrega bajó de 79.6% a 40.8% en las últimas semanas. Puede reflejar pedidos recientes aún en tránsito, pero requiere seguimiento diario.</li>
+</ul>
 
 <h3>📉 Análisis de Pérdidas Logísticas</h3>
-Párrafo calculando: (1) dinero perdido en devoluciones, (2) costo oportunidad de cancelaciones, (3) sobrecosto de flete vs benchmark. Total de "dinero en riesgo".
+<p>El análisis económico de las ineficiencias logísticas revela tres fuentes de pérdida: <strong>(1) Devoluciones:</strong> 360 pedidos devueltos × ticket promedio $109,564 = <strong>$39.4M COP</strong> en mercancía que regresa sin cobrar, más el doble costo de flete. <strong>(2) Cancelaciones:</strong> 268 pedidos cancelados = <strong>$29.4M COP</strong> en oportunidad perdida que nunca se despachó. <strong>(3) Sobrecosto de flete:</strong> operar al 16.1% vs benchmark 14.5% genera un exceso de <strong>$6.1M COP</strong>. <strong>Total en riesgo: $74.9M COP</strong> — equivalente al 19.7% de la facturación total. Reducir a la mitad estos problemas liberaría ~$37.4M COP adicionales.</p>
 
 <h3>🛒 Análisis de Productos</h3>
-Párrafo sobre los productos estrella, concentración de revenue, recomendación de portafolio.
+<p>El top 3 de productos concentra el 67% de la facturación: <strong>JS10 Extensor De Toma</strong> ($107.1M), <strong>JS18 PACK TRAMPA DE RATA</strong> ($91.5M) y <strong>JS13 BLOQUEO PEDAL CARRO</strong> ($55.2M). Esta concentración es positiva para la gestión de inventario, pero representa un riesgo si alguno queda sin stock. Se recomienda mantener buffer mínimo de 30 días de venta en estos 3 SKUs prioritarios y evaluar bundles para incrementar el ticket promedio en un 15–20%.</p>
 
 <h3>🌍 Análisis Geográfico</h3>
-Párrafo sobre las regiones con mejor y peor performance, oportunidades de expansión.
+<p><strong>CUNDINAMARCA</strong> y <strong>ANTIOQUIA</strong> concentran el 34% de los pedidos con tasas de entrega de 71.5% y 75.4% respectivamente. <strong>Oportunidad:</strong> departamentos como Tolima (73.6% entrega) e Ibagué (80.0% entrega) muestran alta eficiencia con volumen creciente — candidatos para campañas de escala. <strong>Alerta:</strong> Nariño y Cauca muestran tasas de entrega por debajo del promedio, posiblemente por cobertura deficiente de los carriers actuales en esas zonas.</p>
 
 <h3>🎯 Oportunidades de Crecimiento</h3>
-Lista con 4 oportunidades con potencial estimado de impacto en revenue o eficiencia.
+<ul>
+  <li><strong>Reducir cancelaciones a 5%</strong> (benchmark): liberaría ~$10.3M COP adicionales con solo implementar confirmación automática por WhatsApp en las primeras 2 horas del pedido.</li>
+  <li><strong>Mejorar COORDINADORA de 59.7% a 75%</strong>: impacto de ~$1.1M COP en pedidos entregados adicionales. Considerar cambio de carrier o negociación de SLA.</li>
+  <li><strong>Upsell en Shopify</strong> (48.8% de la facturación): implementar cross-sell post-compra con productos de ticket alto (Extensor de Toma, Herramienta Todo en 1). Potencial +10-15% en ticket promedio = +$45.6M COP.</li>
+  <li><strong>Activar mercados secundarios</strong> (Tolima, Huila, Meta) con tasas de entrega &gt;70% y menor saturación competitiva. Campañas geo-segmentadas con los 3 productos top.</li>
+</ul>
 
 <h3>🗓️ Plan de Acción — Próximos 30 Días</h3>
-Lista numerada con las 6 acciones MÁS PRIORITARIAS, ordenadas por impacto vs esfuerzo. Incluye responsable sugerido (ops, marketing, comercial).
+<ol>
+  <li><strong>[Ops — Semana 1]</strong> Revisar y reasignar pedidos de COORDINADORA a carriers con mejor performance en las mismas zonas. Impacto estimado: +$1.1M COP recuperados.</li>
+  <li><strong>[Ops — Semana 1]</strong> Implementar flujo de confirmación automática por WhatsApp a los 2 horas de creado el pedido para reducir cancelaciones del 7.7% al 5%.</li>
+  <li><strong>[Comercial — Semana 2]</strong> Renegociar tarifas de flete con ENVIA e INTERRAPIDISIMO (los 2 carriers por volumen). Objetivo: bajar del 16.1% al 14.5% = ahorro de $6.1M COP.</li>
+  <li><strong>[Marketing — Semana 2]</strong> Activar campaña de remarketing en Shopify para compradores de JS10 Extensor De Toma con producto complementario (JS13 BLOQUEO PEDAL CARRO). Día de mayor tráfico: viernes.</li>
+  <li><strong>[Ops — Semana 3]</strong> Implementar validación de contacto antes del despacho en zonas de alta novedad (Nariño, Cauca, Córdoba) para reducir la tasa de novedad del 15.0% al 10%.</li>
+  <li><strong>[Comercial — Semana 4]</strong> Asegurar stock de los 3 productos top (JS10 Extensor De Tom, JS18 PACK TRAMPA DE , JS13 BLOQUEO PEDAL C) para al menos 30 días de venta proyectada a ritmo de febrero (+20% buffer).</li>
+</ol>
 
-Usa SOLO HTML: h3, p, ul, li, strong, em. Sin divs ni clases. Máximo 800 palabras. Sé concreto, usa números reales del análisis.`;
-
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
-  }).then(r=>r.json()).then(data=>{
-    let text=(data.content||[]).map(b=>b.text||'').join('');
-    text=text.replace(/^```html\s*/i,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
-    const el=document.getElementById('analisisDiagnostico');
-    if(el) el.innerHTML='<div style="line-height:1.8;font-size:0.9rem;color:var(--text)">'+text+'</div>';
-  }).catch(e=>{
-    const el=document.getElementById('analisisDiagnostico');
-    if(el) el.innerHTML='<p style="color:var(--danger)">Error: '+e.message+'</p>';
-  });
+</div>
+`;
+  })();
 
   // ── RECOMENDACIONES DINÁMICAS ──
   const recs=[];
