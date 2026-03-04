@@ -1,0 +1,54 @@
+Hacer un informe web responsive con el Analisis de KPIS en donde se visualice en todos los indicadores por mes cuantos pedidos se generaron de acuerdo al campo ID. Para solamente este calculo se debe quitar los ID REPETIDOS . Calcular la tasa de Despacho por transportadora x mes teniendo en cuenta pedidos despachados / pedidos generados. Sacar el estatus de los pedidos teniendo en cuenta campo ESTATUS. de acuerdo al campo TRANSPORTADORA. De acuerdo al campo TOTAL DE LA ORDEN sacar por mes la facturación. Sacar el total del campo PRECIO FLETE. De acuerdo al campo PRODUCTO definir la venta por unidades de acuerdo al campo CANTIDAD. Sacar el calculo el campo TIPO DE TIENDA cuando se vendió total en campo CANTIDAD Y TOTAL DE LA ORDEN. Medir el tiempo promedio que se genero la guia teniendo en cuenta el campo FECHA GUIA GENERADA - FECHA. Calcular las novedades de este calculo debe excluir pedidos que están no solucionados y que estan en estatus entregado. de las novedades solucionadas cuando se lograron entregar al cliente .
+
+que se visualicen los porcentajes  en las graficas
+Cambiar  Dasboard de KPIS  en DORA STORE KPIS PERFORMANCE.
+agregar Pedidos & Despachos . Indicador tasa de despacho por mes total sin discriminar por transportadora.
+quitar agregar Pedidos & Despachos . Indicador tasa de despacho por mes total sin discriminar por transportadora.
+Colocar al lado Enero — Febrero 2026 el corte de la data hasta que dia esta actualizado.
+Agregar en Resumen por DEPARTAMENTO y CIUDAD DESTINO
+Agregar en Pedidos & Despachos por DEPARTAMENTO y CIUDAD DESTINO
+Agregar en Facturación & Flete por DEPARTAMENTO y CIUDAD DESTINO
+Agregar en Productos & Tiendas por DEPARTAMENTO y CIUDAD DESTINO
+Agregar en Novedades por DEPARTAMENTO y CIUDAD DESTINO
+Agregar en una Pestaña Llamada despues de Resumen Inventario Corte en donde se va visualizar la tabla con los campos de acuerdo a la imagen CODIGO, NOMBRE, STOCK, PRECIO y una columna calculada PRECIO TOTAL que es la mutiplicacion del STOCK  x PRECIO. Al final se debe totalizar el STOCK y el PRECIO TOTAL.
+Agregar Pestaña después de Inventario Corte de Confirmaciones en donde se va visualizar por y por día el porcentaje de confirmacion teniendo en cuenta el STATUS  PENDIENTE CONFIRMACION sobre el total de los otros STATUS para sacar el porcentaje de Confirmacion.
+Para la Tasa de Entrega Efectiva por Transportadora por favor a Total Pedidos no tenga en cuenta los cancelados para sacar la tasa de entrega.
+En Confirmaciones MEDIR EL PORCENTAJE  ESTATUS PENDIENTE CONFIRMACION SOBRE EL TOTAL DE GUIAS. El porcentaje de % CONFIRMACION ES 100% - % Pendiente confirmacion.
+En Confirmaciones no mostrar por transportadora sino a nivel global. En  Detalle Diario por Transportadora que se muestren las de Enero.  Detalle Diario por Transportadora modificar a Detalle Diario Confirmacion por día.
+En Confirmaciones no mostrar por transportadora sino a nivel global. En  Detalle Diario por Transportadora que se muestren las de Febrero.  Detalle Diario por Transportadora modificar a Detalle Diario Confirmacion por día.
+Adicionar en Resumen Tasa de Despacho Enero y Febrero
+En la pestaña resumen sacar x mes la facturacion x dia  y sacar un grafico de tendencia
+En Facturacion & Flete mostrar Tasa de Despacho Global de Enero y Febrero como indicador global.
+Estos 3 indicadores Tasa de Despacho Enero ,Tasa de Despacho Febrero y Tasa de Despacho Global que no se muestren en Facturacion & Flete sino en Pedidos & Despacho.
+En la pestaña Confirmaciones Mostrar en una tabla  de lo que esta pendiente por día cuales son las ID y el contenido campo TAGS
+Cambiar la opción por filtro y que aparezca la  toda relacion de los  ID Pendientes de Confirmacion.
+Quitar en la pestaña Resumen la TABLA Resumen por Departamento, en distribucion geografica de pedidos la pestaña facturacion y en novedad top novedad por departamento
+En la Pestaña Resumen En distribucion Geografica de Pedidos agregar pestaña Facturacion con sus graficas.
+En la pestaña Novedades relacionar por dia las novedades relacionando el id y el estado
+Sacar Estadística por mes de las novedades total el porcentaje de acuerdo a estado por dia.
+Quitar Estadística Diaria de Novedades por Estado y Detalle Diario de Novedades en pestaña Resumen, Inventario Corte, Confirmaciones, Pedidos & Despacho, Facturacion & Flete, Producto & Tiendas, Logística menos en Novedades.
+Pestaña Inventario Corte  en totales no se muestra el total de STOCK y PRECIO TOTAL
+En Pestaña Logistica en Eficiencia de Entrega por Transportadora separar pestaña por mes.
+Agregar a un lado de Resumen una pestaña que diga Análisis en donde analice los indicadores y te un diagnostico como un Expero en Ecommerce con Graficas
+En Pestaña Analisis IA realizar un analisis mas detallado como si fueras un expero en ecommerce con Graficas.
+En confirmaciones  en Pendientes de Confirmacion en confirmadas deben aparecen cuantas unidades y % Conf el porcentaje
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
