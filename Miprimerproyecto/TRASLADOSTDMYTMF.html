@@ -40,7 +40,6 @@
   --violet:  #6d47c7;
   --violet-bg:#f0eaff;
   --violet-br:#c5aef5;
-
   --accent:  #1a5fd4;
   --accent-bg:#e8effc;
 }
@@ -364,10 +363,12 @@ tbody td.sep{border-right:2px solid var(--border2)}
     <div class="footer">
       <span class="footer-info" id="footerInfo">—</span>
       <div class="legend">
-        <div class="leg-item"><div class="leg-dot" style="background:var(--rose)"></div>Exceso Inv</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#15803d"></div>Venta alta</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#92400e"></div>Venta media</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#b91c1c"></div>Venta baja</div>
+        <div class="leg-item" style="margin-left:12px;border-left:1px solid var(--border);padding-left:12px"><div class="leg-dot" style="background:var(--rose)"></div>Exceso Inv</div>
         <div class="leg-item"><div class="leg-dot" style="background:var(--lime)"></div>Alta Demanda</div>
         <div class="leg-item"><div class="leg-dot" style="background:var(--cyan)"></div>Equilibrada</div>
-        <div class="leg-item"><div class="leg-dot" style="background:var(--border2)"></div>Sin Movimiento</div>
       </div>
     </div>
 
@@ -528,14 +529,13 @@ function invColor(inv){
   return              {c:'var(--cyan)', bg:'var(--cyan-bg)'};
 }
 
-function heatBg(val,max){
-  if(!val||val===0) return null;
-  const r=val/max;
-  if(r<0.2) return 'rgba(26,95,212,.05)';
-  if(r<0.4) return 'rgba(26,95,212,.1)';
-  if(r<0.6) return 'rgba(26,95,212,.17)';
-  if(r<0.8) return 'rgba(26,95,212,.25)';
-  return 'rgba(26,95,212,.35)';
+// Traffic-light: verde=vendió bien, amarillo=medio, rojo=muy poco
+function heatStyle(val, max){
+  if(!val || val===0) return { bg:'transparent', color:'var(--border2)', fw:'400' };
+  const r = val / max;
+  if(r >= 0.60) return { bg:'rgba(22,163,74,.14)',   color:'#15803d', fw:'700' }; // 🟢 Bien
+  if(r >= 0.25) return { bg:'rgba(202,138,4,.13)',   color:'#92400e', fw:'700' }; // 🟡 Medio
+  return              { bg:'rgba(220,38,38,.12)',    color:'#b91c1c', fw:'700' }; // 🔴 Poco
 }
 
 // ── Analyze ───────────────────────────────────────────
@@ -593,7 +593,16 @@ function analyze(ref){
 
   const sorted=[...rows].sort((a,b)=>b.rot-a.rot);
 
-  $('tBody').innerHTML=sorted.map((r,i)=>{
+  // ── Totals per month ─────────────────────────────────
+  const mTotals = {};
+  allMonths.forEach(m => { mTotals[m] = rows.reduce((s,r) => s + (r.months[m]||0), 0); });
+  const totVentasAll  = rows.reduce((s,r) => s + r.totalVentas, 0);
+  const totDespAll    = rows.reduce((s,r) => s + r.despacho,    0);
+  const totRotAll     = totDespAll > 0 ? (totVentasAll / totDespAll) : 0;
+  const totInvPVAll   = rows.reduce((s,r) => s + r.invPV,       0);
+  const totInvCEDIAll = rows.reduce((s,r) => s + r.invCEDI,     0);
+
+  const dataRows = sorted.map((r,i)=>{
     const cls=classify(r.rot,avgRot,r.invPV);
     const rotPct=Math.min((r.rot/(maxRot*1.05))*100,100);
     const rc=rotColor(r.rot);
@@ -602,12 +611,12 @@ function analyze(ref){
 
     const monthCells=[...months25,...months26].map((m,mi)=>{
       const v=r.months[m]||0;
-      const heat=heatBg(v,mMax[m]);
+      const hs=heatStyle(v,mMax[m]);
       const isLastOf25=mi===months25.length-1;
       const isLastOf26=mi===months25.length+months26.length-1;
       const sepCls=(isLastOf25||isLastOf26)?'sep':'';
-      return `<td class="${sepCls}" style="${heat?`background:${heat}`:''}">
-        <span class="m-val${v===0?' zero':''}">${v===0?'·':v.toLocaleString()}</span>
+      return `<td class="${sepCls}" style="background:${hs.bg}">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:${hs.fw};color:${hs.color}">${v===0?'·':v.toLocaleString()}</span>
       </td>`;
     }).join('');
 
@@ -627,6 +636,51 @@ function analyze(ref){
       <td>${statusBadge(cls,r.rot)}</td>
     </tr>`;
   }).join('');
+
+  // ── Totals row ────────────────────────────────────────
+  const totMonthCells = [...months25,...months26].map((m,mi)=>{
+    const v = mTotals[m]||0;
+    const totMax = Math.max(...allMonths.map(mo=>mTotals[mo]||0), 1);
+    const hs = heatStyle(v, totMax);
+    const isLastOf25 = mi===months25.length-1;
+    const isLastOf26 = mi===months25.length+months26.length-1;
+    const sepCls = (isLastOf25||isLastOf26)?'sep':'';
+    return `<td class="${sepCls}" style="background:${v>0?hs.bg:'var(--bg4)'}">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:${v>0?hs.color:'var(--dim)'}">${v>0?v.toLocaleString():'·'}</span>
+    </td>`;
+  }).join('');
+
+  const totRotColor = totRotAll >= 0.9 ? 'var(--lime)' : totRotAll >= 0.7 ? 'var(--amber)' : 'var(--rose)';
+
+  const totalsRow = `<tr style="border-top:2px solid var(--border2);position:sticky;bottom:0;z-index:15">
+    <td style="background:var(--bg4);position:sticky;left:0;z-index:16;border-right:2px solid var(--border2)">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text);text-transform:uppercase">TOTAL</span>
+    </td>
+    ${totMonthCells}
+    <td class="sep" style="background:var(--bg4)">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--lime)">${totVentasAll.toLocaleString()}</span>
+    </td>
+    <td style="background:var(--bg4)">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--amber)">${totDespAll.toLocaleString()}</span>
+    </td>
+    <td class="sep" style="background:var(--bg4)">
+      <div class="rot-cell">
+        <span class="rot-num" style="color:${totRotColor};font-weight:700">${(totRotAll*100).toFixed(1)}%</span>
+        <div class="rot-bar"><div class="rot-fill" style="width:${Math.min(totRotAll*100,100)}%;background:${totRotColor}"></div></div>
+      </div>
+    </td>
+    <td style="background:var(--bg4)">
+      <span class="inv-pill" style="color:var(--violet);background:var(--violet-bg);font-weight:700">${totInvPVAll.toLocaleString()}</span>
+    </td>
+    <td style="background:var(--bg4)">
+      <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--dim)">${totInvCEDIAll.toLocaleString()}</span>
+    </td>
+    <td style="background:var(--bg4)">
+      <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--fog)">${rows.length} tiendas</span>
+    </td>
+  </tr>`;
+
+  $('tBody').innerHTML = dataRows + totalsRow;
 
   $('footerInfo').textContent=`${ref} · ${rows.length} tiendas · ROT avg ${(avgRot*100).toFixed(1)}% · ${allMonths[0]||''} → ${allMonths[allMonths.length-1]||''}`;
 }
