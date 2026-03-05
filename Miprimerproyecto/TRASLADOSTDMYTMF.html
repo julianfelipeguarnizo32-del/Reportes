@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Chain · Dashboard Rotación TDM</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f4f6fb;
+  --bg2:     #ffffff;
+  --bg3:     #eef1f8;
+  --bg4:     #e4e8f3;
+  --border:  #d0d6e8;
+  --border2: #bcc4db;
+  --dim:     #8892aa;
+  --fog:     #5a6480;
+  --text:    #1e2336;
+  --text2:   #3a4260;
+  --white:   #ffffff;
+
+  --lime:    #2d9e4f;
+  --lime-bg: #e8f8ed;
+  --lime-br: #b0dfc0;
+
+  --cyan:    #0e87b5;
+  --cyan-bg: #e3f4fb;
+  --cyan-br: #9ed4ec;
+
+  --amber:   #c47c00;
+  --amber-bg:#fff4db;
+  --amber-br:#f0cc80;
+
+  --rose:    #d63353;
+  --rose-bg: #fdeef2;
+  --rose-br: #f0aab8;
+
+  --violet:  #6d47c7;
+  --violet-bg:#f0eaff;
+  --violet-br:#c5aef5;
+
+  --accent:  #1a5fd4;
+  --accent-bg:#e8effc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--text)}
+.brand-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:2px;background:var(--accent-bg);padding:2px 8px;border-radius:3px;border:1px solid rgba(26,95,212,.2)}
+.sys{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--dim)}
+.sys-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:all .3s;flex-shrink:0}
+.sys-dot.on  {background:var(--lime);box-shadow:0 0 7px rgba(45,158,79,.5)}
+.sys-dot.busy{background:var(--amber);box-shadow:0 0 7px rgba(196,124,0,.5);animation:blink .8s infinite}
+.sys-dot.err {background:var(--rose);box-shadow:0 0 7px rgba(214,51,83,.4)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:300px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;box-shadow:2px 0 8px rgba(0,0,0,.04)}
+.sb-section{padding:16px;border-bottom:1px solid var(--border)}
+
+/* Upload */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg3)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-bg)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-zone h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.upload-zone p{font-family:'DM Mono',monospace;font-size:10px;color:var(--dim);line-height:1.6}
+.prog-track{height:3px;background:var(--bg4);border-radius:2px;margin-top:12px;display:none;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0%;transition:width .3s}
+
+/* Search */
+.sb-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:7px}
+.search-wrap{position:relative}
+.search-inp{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:11px 14px 11px 38px;border-radius:8px;font-family:'DM Mono',monospace;font-size:14px;font-weight:500;letter-spacing:1px;outline:none;transition:border-color .2s,box-shadow .2s;text-transform:uppercase}
+.search-inp::placeholder{color:var(--dim);font-size:11px;letter-spacing:0;text-transform:none;font-weight:400}
+.search-inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,95,212,.1);background:var(--white)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:16px;pointer-events:none}
+.sug-box{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--white);border:1px solid var(--border);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.sug-item{display:flex;gap:8px;align-items:center;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--bg3);transition:background .12s}
+.sug-item:last-child{border-bottom:none}
+.sug-item:hover{background:var(--accent-bg)}
+.sug-ref{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--accent);min-width:80px;flex-shrink:0}
+.sug-desc{font-size:11px;color:var(--fog);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Ref card */
+.ref-card{display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px}
+.ref-code{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--accent);line-height:1}
+.ref-desc{font-size:11px;color:var(--fog);margin-top:3px;line-height:1.4}
+.ref-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:10px}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;line-height:1;color:var(--text)}
+.kpi-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:3px}
+
+/* Expert */
+.expert-box{display:none;background:linear-gradient(135deg,var(--violet-bg),var(--cyan-bg));border:1px solid var(--violet-br);border-radius:8px;padding:14px}
+.expert-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.expert-av{width:32px;height:32px;background:linear-gradient(135deg,var(--violet),var(--cyan));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.expert-name{font-size:12px;font-weight:600;color:var(--text)}
+.expert-role{font-family:'DM Mono',monospace;font-size:8px;color:var(--violet);letter-spacing:1px;text-transform:uppercase}
+.expert-msg{font-size:12px;color:var(--fog);line-height:1.7}
+.expert-msg b{color:var(--text)}
+.expert-msg .hl{font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.chip{font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border-radius:100px;border:1px solid;font-weight:500}
+.chip.send{color:var(--lime);border-color:var(--lime-br);background:var(--lime-bg)}
+.chip.warn{color:var(--amber);border-color:var(--amber-br);background:var(--amber-bg)}
+.chip.urg {color:var(--rose);border-color:var(--rose-br);background:var(--rose-bg)}
+.chip.ok  {color:var(--cyan);border-color:var(--cyan-br);background:var(--cyan-bg)}
+
+/* CONTENT */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Empty */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--dim)}
+.empty-icon{font-size:56px;opacity:.4}
+.empty h3{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--border2)}
+.empty p{font-family:'DM Mono',monospace;font-size:11px;text-align:center;max-width:280px;line-height:1.7;color:var(--dim)}
+
+/* Results */
+.results{display:none;flex-direction:column;flex:1;overflow:hidden}
+
+/* Stats strip */
+.stats-strip{display:grid;grid-template-columns:repeat(6,1fr);background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.stat-cell{padding:11px 14px;text-align:center;border-right:1px solid var(--border)}
+.stat-cell:last-child{border-right:none}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;line-height:1}
+.stat-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:3px}
+
+/* Transfer banner */
+.transfer-banner{display:none;background:var(--lime-bg);border-bottom:1px solid var(--lime-br);padding:10px 20px;flex-shrink:0}
+.tb-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--lime);margin-bottom:8px}
+.tb-list{display:flex;gap:8px;flex-wrap:wrap}
+.tb-card{display:flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--lime-br);border-radius:7px;padding:7px 11px;transition:box-shadow .2s}
+.tb-card:hover{box-shadow:0 2px 8px rgba(45,158,79,.15)}
+.tb-from{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--rose)}
+.tb-arr{color:var(--dim);font-size:13px}
+.tb-to{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--lime)}
+.tb-qty{font-family:'DM Mono',monospace;font-size:9px;color:var(--fog);background:var(--bg4);padding:1px 5px;border-radius:3px}
+.tb-prio{font-family:'DM Mono',monospace;font-size:9px;font-weight:500}
+
+/* Table */
+.table-wrap{flex:1;overflow:auto;position:relative}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead{position:sticky;top:0;z-index:20}
+thead th{background:var(--bg3);padding:9px 10px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);border-bottom:2px solid var(--border);white-space:nowrap;border-right:1px solid var(--border)}
+thead th:first-child{text-align:left;position:sticky;left:0;z-index:30;background:var(--bg3);min-width:72px}
+thead th.sep{border-right:2px solid var(--border2)}
+thead th.year25{color:var(--accent);background:var(--accent-bg)}
+thead th.year26{color:var(--cyan);background:var(--cyan-bg)}
+thead th.metric{color:var(--amber);background:var(--amber-bg)}
+
+tbody tr{border-bottom:1px solid var(--bg4);transition:background .1s}
+tbody tr:hover{background:var(--accent-bg)}
+tbody tr.tr-source{background:var(--rose-bg)}
+tbody tr.tr-source:hover{background:#fce4ea}
+tbody tr.tr-need{background:var(--lime-bg)}
+tbody tr.tr-need:hover{background:#d8f3e3}
+
+tbody td{padding:9px 10px;text-align:right;border-right:1px solid var(--bg4);white-space:nowrap}
+tbody td:first-child{text-align:left;position:sticky;left:0;background:var(--white);z-index:10;border-right:2px solid var(--border)}
+tbody tr.tr-source td:first-child{background:var(--rose-bg)}
+tbody tr.tr-need   td:first-child{background:var(--lime-bg)}
+tbody tr:hover     td:first-child{background:var(--accent-bg)}
+tbody td.sep{border-right:2px solid var(--border2)}
+
+/* Month cell heat */
+.m-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--fog)}
+.m-val.zero{color:var(--border2)}
+
+/* Store pill */
+.store-pill{display:inline-flex;align-items:center;justify-content:center;background:var(--bg4);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:var(--text2)}
+
+/* ROT */
+.rot-cell{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.rot-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;min-width:46px;text-align:right}
+.rot-bar{width:36px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;flex-shrink:0}
+.rot-fill{height:100%;border-radius:2px}
+
+/* Inv */
+.inv-pill{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;min-width:38px;padding:2px 6px;border-radius:4px}
+
+/* Status */
+.status-b{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:3px 8px;border-radius:100px;letter-spacing:.5px;text-transform:uppercase;border:1px solid}
+
+/* Footer */
+.footer{flex-shrink:0;background:var(--white);border-top:1px solid var(--border);padding:7px 20px;display:flex;align-items:center;justify-content:space-between}
+.footer-info{font-family:'DM Mono',monospace;font-size:9px;color:var(--dim)}
+.legend{display:flex;gap:14px}
+.leg-item{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--dim)}
+.leg-dot{width:6px;height:6px;border-radius:50%}
+
+/* Transfer plan cards */
+.tc-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;transition:box-shadow .2s}
+.tc-card:last-child{margin-bottom:0}
+.tc-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.tc-card.urg{border-left:3px solid var(--rose)}
+.tc-card.prio{border-left:3px solid var(--amber)}
+.tc-card.norm{border-left:3px solid var(--lime)}
+.tc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tc-route{display:flex;align-items:center;gap:6px}
+.tc-store{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;padding:2px 8px;border-radius:4px}
+.tc-store.from{background:var(--rose-bg);color:var(--rose);border:1px solid var(--rose-br)}
+.tc-store.to{background:var(--lime-bg);color:var(--lime);border:1px solid var(--lime-br)}
+.tc-arrow{color:var(--dim);font-size:14px}
+.tc-prio-badge{font-family:'DM Mono',monospace;font-size:8px;font-weight:600;padding:2px 7px;border-radius:100px;text-transform:uppercase;letter-spacing:.5px}
+.tc-body{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tc-metric{background:var(--bg3);border-radius:5px;padding:6px 8px}
+.tc-metric-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;line-height:1}
+.tc-metric-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:2px}
+.tc-units{background:var(--accent-bg);border:1px solid rgba(26,95,212,.2);border-radius:6px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between}
+.tc-units-val{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--accent);line-height:1}
+.tc-units-info{text-align:right}
+.tc-units-lbl{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+.tc-units-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--fog);margin-top:2px}
+.tc-reason{font-size:11px;color:var(--fog);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--bg4)}
+.tc-reason b{color:var(--text)}
+.tc-no-transfer{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.tc-no-transfer .icon{font-size:28px;display:block;margin-bottom:6px}
+.tc-no-transfer p{font-size:12px;color:var(--fog);line-height:1.6}
+.tc-no-transfer b{color:var(--text)}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg3)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeIn .22s ease forwards}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="brand">
+    <span class="brand-name">SUPPLY CHAIN OPS</span>
+    <span class="brand-tag">Dashboard · Rotación TDM</span>
+  </div>
+  <div class="sys">
+    <div class="sys-dot" id="sysDot"></div>
+    <span id="sysText">Sin datos — carga el archivo</span>
+  </div>
+</nav>
+
+<div class="body">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <div class="sb-section">
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".csv,.xlsx,.xls"/>
+      <h4>📂 Cargar archivo TDM</h4>
+      <p>TDM_full.csv o XLSX<br>Arrastra o haz clic</p>
+      <div class="prog-track" id="pTrack"><div class="prog-bar" id="pBar"></div></div>
+    </div>
+  </div>
+
+  <div class="sb-section" id="searchSection" style="display:none">
+    <span class="sb-label">Referencia</span>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" class="search-inp" id="refInput" placeholder="Escribe una referencia..." autocomplete="off"/>
+      <div class="sug-box" id="sugBox"></div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="ref-card" id="refCard">
+      <div class="ref-code" id="rcCode">—</div>
+      <div class="ref-desc" id="rcDesc">—</div>
+      <div class="ref-kpis">
+        <div class="kpi"><div class="kpi-val" id="rcRot" style="color:var(--cyan)">—</div><div class="kpi-lbl">ROT Prom Red</div></div>
+        <div class="kpi"><div class="kpi-val" id="rcInv" style="color:var(--violet)">—</div><div class="kpi-lbl">Inv PV Total</div></div>
+        <div class="kpi"><div class="kpi-val" id="rcVentas" style="color:var(--lime)">—</div><div class="kpi-lbl">Ventas Total</div></div>
+        <div class="kpi"><div class="kpi-val" id="rcTiendas" style="color:var(--amber)">—</div><div class="kpi-lbl">Tiendas</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="expert-box" id="expertBox">
+      <div class="expert-head">
+        <div class="expert-av">🧠</div>
+        <div>
+          <div class="expert-name">Analista Supply Chain</div>
+          <div class="expert-role">Diagnóstico · Red de tiendas</div>
+        </div>
+      </div>
+      <div class="expert-msg" id="expertMsg">—</div>
+      <div class="chips" id="expertChips"></div>
+    </div>
+  </div>
+
+  <div class="sb-section" id="transferSection" style="display:none">
+    <span class="sb-label">Plan de traslados</span>
+    <div id="transferCards"></div>
+  </div>
+
+</aside>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <div class="empty" id="emptyState">
+    <div class="empty-icon">📦</div>
+    <h3>SIN REFERENCIA</h3>
+    <p>Carga el archivo y escribe una referencia para ver ventas mensuales, rotación e inventario por tienda</p>
+  </div>
+
+  <div class="results" id="resultsArea">
+
+    <!-- Stats strip -->
+    <div class="stats-strip">
+      <div class="stat-cell">
+        <div class="stat-val" id="sTiendas" style="color:var(--text)">—</div>
+        <div class="stat-lbl">Tiendas</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sVentas" style="color:var(--lime)">—</div>
+        <div class="stat-lbl">Ventas Total</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sDesp" style="color:var(--amber)">—</div>
+        <div class="stat-lbl">Despacho Total</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sRotAvg" style="color:var(--cyan)">—</div>
+        <div class="stat-lbl">ROT Promedio</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sInvTotal" style="color:var(--violet)">—</div>
+        <div class="stat-lbl">Inv PV Total</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sDonors" style="color:var(--rose)">—</div>
+        <div class="stat-lbl">Pueden Enviar</div>
+      </div>
+    </div>
+
+    <!-- Transfer banner -->
+    <div class="transfer-banner" id="transferBanner">
+      <div class="tb-title">▸ Traslados recomendados por Supply Chain</div>
+      <div class="tb-list" id="tbList"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table id="mainTable">
+        <thead id="tHead"></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span class="footer-info" id="footerInfo">—</span>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--rose)"></div>Exceso Inv</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--lime)"></div>Alta Demanda</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--cyan)"></div>Equilibrada</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--border2)"></div>Sin Movimiento</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+let allData=[],allRefs=[],months25=[],months26=[],allMonths=[];
+const MIN_INV=5;
+const $=id=>document.getElementById(id);
+
+function setSys(t,txt){$('sysDot').className='sys-dot '+t;$('sysText').textContent=txt;}
+
+// ── File ──────────────────────────────────────────────
+const uz=$('uploadZone'),fi=$('fileInput');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('drag'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag');if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
+fi.addEventListener('change',e=>{if(e.target.files[0])load(e.target.files[0]);});
+
+function load(file){
+  setSys('busy','Cargando...');
+  $('pTrack').style.display='block';
+  $('pBar').style.width='5%';
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv') loadCSV(file); else loadXLSX(file);
+}
+
+function loadCSV(file){
+  let rows=0,temp=[];
+  Papa.parse(file,{
+    header:true,skipEmptyLines:true,dynamicTyping:true,
+    chunk(r){r.data.forEach(d=>temp.push(norm(d)));rows+=r.data.length;$('pBar').style.width=Math.min(90,rows/3200)+'%';},
+    complete(){$('pBar').style.width='100%';finalize(temp);},
+    error(){setSys('err','Error CSV');}
+  });
+}
+
+function loadXLSX(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    $('pBar').style.width='40%';
+    setTimeout(()=>{
+      const wb=XLSX.read(e.target.result,{type:'array',dense:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      $('pBar').style.width='80%';
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:null});
+      finalize(raw.map(r=>norm(r)));
+    },60);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function norm(r){
+  const row={
+    tienda:      String(r['Tienda']      ||'').trim(),
+    referencia:  String(r['Referencia']  ||'').trim(),
+    descripcion: String(r['Descripción'] ||r['Descripcion']||'').trim(),
+    totalVentas: parseFloat(r['Total Ventas']||0)||0,
+    despacho:    parseFloat(r['Despacho']    ||0)||0,
+    rot:         parseFloat(r['% ROT']       ||0)||0,
+    invPV:       parseFloat(r['Inv PV']      ||0)||0,
+    invCEDI:     parseFloat(r['Inv CEDI']    ||0)||0,
+    months:{}
+  };
+  Object.keys(r).forEach(k=>{if(/^\d{4}-\d{2}$/.test(k)) row.months[k]=parseFloat(r[k])||0;});
+  return row;
+}
+
+function finalize(temp){
+  allData=temp.filter(r=>r.tienda&&r.referencia);
+  const mSet=new Set();
+  allData.forEach(r=>Object.keys(r.months).forEach(m=>mSet.add(m)));
+  allMonths=[...mSet].sort();
+  months25=allMonths.filter(m=>m.startsWith('2025'));
+  months26=allMonths.filter(m=>m.startsWith('2026'));
+  const refMap=new Map();
+  allData.forEach(r=>{if(!refMap.has(r.referencia)) refMap.set(r.referencia,r.descripcion);});
+  allRefs=[...refMap.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  setTimeout(()=>{$('pTrack').style.display='none';$('pBar').style.width='0';},400);
+  $('searchSection').style.display='block';
+  setSys('on',`${allData.length.toLocaleString()} registros · ${allRefs.length.toLocaleString()} refs`);
+}
+
+// ── Autocomplete ──────────────────────────────────────
+const refInp=$('refInput'),sugBox=$('sugBox');
+refInp.addEventListener('input',function(){
+  const q=this.value.trim().toUpperCase();
+  if(!q||!allRefs.length){sugBox.style.display='none';return;}
+  const hits=allRefs.filter(([r,d])=>r.includes(q)||d.toUpperCase().includes(q)).slice(0,28);
+  if(!hits.length){sugBox.style.display='none';return;}
+  sugBox.innerHTML=hits.map(([ref,desc])=>
+    `<div class="sug-item" onclick="pick('${ref}')">
+      <span class="sug-ref">${ref}</span>
+      <span class="sug-desc">${desc}</span>
+    </div>`
+  ).join('');
+  sugBox.style.display='block';
+});
+refInp.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const q=refInp.value.trim().toUpperCase();const hit=allRefs.find(([r])=>r===q);if(hit)pick(hit[0]);sugBox.style.display='none';}
+});
+document.addEventListener('click',e=>{if(!refInp.contains(e.target)&&!sugBox.contains(e.target))sugBox.style.display='none';});
+function pick(ref){refInp.value=ref;sugBox.style.display='none';analyze(ref);}
+
+// ── Classify ──────────────────────────────────────────
+function classify(rot,avg,inv){
+  const p=rot*100;
+  if(rot===0&&inv===0) return 'empty';
+  if(p>=70&&inv<12) return 'need';
+  if(p<50&&inv>=MIN_INV) return 'source';
+  if(p>=70) return 'high';
+  return 'ok';
+}
+
+function statusBadge(cls,rot){
+  const rc=rotColor(rot), rb=rotBg(rot), rbr=rotBorder(rot);
+  const m={
+    source:['🔴','Exceso Inv',   'var(--rose)',  'var(--rose-bg)', 'var(--rose-br)'],
+    need:  ['🟢','Alta Demanda', 'var(--lime)',  'var(--lime-bg)', 'var(--lime-br)'],
+    high:  ['🔵','Rota Bien',    rc,             rb,               rbr],
+    ok:    ['⚪','Equilibrio',   rc,             rb,               rbr],
+    empty: ['⚫','Sin Mvto',     'var(--dim)',   'var(--bg3)',     'var(--border)'],
+  };
+  const [ico,lbl,col,bg,bdr]=m[cls]||m.ok;
+  return `<span class="status-b" style="color:${col};background:${bg};border-color:${bdr}">${ico} ${lbl}</span>`;
+}
+
+function rotColor(rot){
+  if(rot===0) return '#c8cfe0';
+  const p=rot*100;
+  if(p>=70) return 'var(--lime)';
+  if(p>=50) return 'var(--amber)';
+  return 'var(--rose)';
+}
+
+function rotBg(rot){
+  if(rot===0) return 'var(--bg4)';
+  const p=rot*100;
+  if(p>=70) return 'var(--lime-bg)';
+  if(p>=50) return 'var(--amber-bg)';
+  return 'var(--rose-bg)';
+}
+
+function rotBorder(rot){
+  if(rot===0) return 'var(--border)';
+  const p=rot*100;
+  if(p>=70) return 'var(--lime-br)';
+  if(p>=50) return 'var(--amber-br)';
+  return 'var(--rose-br)';
+}
+
+function invColor(inv){
+  if(inv===0)  return {c:'var(--rose)', bg:'var(--rose-bg)'};
+  if(inv<10)   return {c:'var(--amber)',bg:'var(--amber-bg)'};
+  if(inv<40)   return {c:'var(--lime)', bg:'var(--lime-bg)'};
+  return              {c:'var(--cyan)', bg:'var(--cyan-bg)'};
+}
+
+function heatBg(val,max){
+  if(!val||val===0) return null;
+  const r=val/max;
+  if(r<0.2) return 'rgba(26,95,212,.05)';
+  if(r<0.4) return 'rgba(26,95,212,.1)';
+  if(r<0.6) return 'rgba(26,95,212,.17)';
+  if(r<0.8) return 'rgba(26,95,212,.25)';
+  return 'rgba(26,95,212,.35)';
+}
+
+// ── Analyze ───────────────────────────────────────────
+function analyze(ref){
+  const rows=allData.filter(r=>r.referencia===ref);
+  if(!rows.length) return;
+
+  const mMax={};
+  allMonths.forEach(m=>{mMax[m]=Math.max(...rows.map(r=>r.months[m]||0),1);});
+
+  const avgRot=rows.filter(r=>r.rot>0).reduce((s,r)=>s+r.rot,0)/(rows.filter(r=>r.rot>0).length||1);
+  const maxRot=Math.max(...rows.map(r=>r.rot),0.001);
+  const totVentas=rows.reduce((s,r)=>s+r.totalVentas,0);
+  const totDesp=rows.reduce((s,r)=>s+r.despacho,0);
+  const totInv=rows.reduce((s,r)=>s+r.invPV,0);
+  const sources=rows.filter(r=>classify(r.rot,avgRot,r.invPV)==='source');
+  const needs=rows.filter(r=>classify(r.rot,avgRot,r.invPV)==='need');
+  const invDisp=sources.reduce((s,r)=>s+r.invPV,0);
+
+  // Sidebar
+  $('refCard').style.display='block';
+  $('rcCode').textContent=ref;
+  $('rcDesc').textContent=rows[0].descripcion||'—';
+  $('rcRot').textContent=(avgRot*100).toFixed(1)+'%';
+  $('rcInv').textContent=totInv.toLocaleString();
+  $('rcVentas').textContent=totVentas.toLocaleString();
+  $('rcTiendas').textContent=rows.length;
+  $('expertBox').style.display='block';
+  buildExpert(sources,needs,avgRot,totInv,invDisp,rows);
+
+  // Stats
+  $('emptyState').style.display='none';
+  $('resultsArea').style.display='flex';
+  $('sTiendas').textContent=rows.length;
+  $('sVentas').textContent=totVentas.toLocaleString();
+  $('sDesp').textContent=totDesp.toLocaleString();
+  $('sRotAvg').textContent=(avgRot*100).toFixed(1)+'%';
+  $('sInvTotal').textContent=totInv.toLocaleString();
+  $('sDonors').textContent=sources.length;
+
+  buildTransfers(sources,needs,avgRot);
+
+  // Header
+  $('tHead').innerHTML=`<tr>
+    <th style="text-align:left;position:sticky;left:0;z-index:30;background:var(--bg3)">TIENDA</th>
+    ${months25.map((m,i)=>`<th class="year25${i===months25.length-1?' sep':''}">${m.slice(5)}/25</th>`).join('')}
+    ${months26.map((m,i)=>`<th class="year26${i===months26.length-1?' sep':''}">${m.slice(5)}/26</th>`).join('')}
+    <th class="metric sep">VENTAS</th>
+    <th class="metric">DESPACHO</th>
+    <th class="metric sep">% ROT</th>
+    <th class="metric">INV PV</th>
+    <th class="metric">INV CEDI</th>
+    <th style="min-width:110px;background:var(--bg3)">ESTADO</th>
+  </tr>`;
+
+  const sorted=[...rows].sort((a,b)=>b.rot-a.rot);
+
+  $('tBody').innerHTML=sorted.map((r,i)=>{
+    const cls=classify(r.rot,avgRot,r.invPV);
+    const rotPct=Math.min((r.rot/(maxRot*1.05))*100,100);
+    const rc=rotColor(r.rot);
+    const ic=invColor(r.invPV);
+    const rowCls=cls==='source'?'tr-source':cls==='need'?'tr-need':'';
+
+    const monthCells=[...months25,...months26].map((m,mi)=>{
+      const v=r.months[m]||0;
+      const heat=heatBg(v,mMax[m]);
+      const isLastOf25=mi===months25.length-1;
+      const isLastOf26=mi===months25.length+months26.length-1;
+      const sepCls=(isLastOf25||isLastOf26)?'sep':'';
+      return `<td class="${sepCls}" style="${heat?`background:${heat}`:''}">
+        <span class="m-val${v===0?' zero':''}">${v===0?'·':v.toLocaleString()}</span>
+      </td>`;
+    }).join('');
+
+    return `<tr class="${rowCls} anim" style="animation-delay:${i*.02}s">
+      <td><span class="store-pill">${r.tienda}</span></td>
+      ${monthCells}
+      <td class="sep"><span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--text)">${r.totalVentas.toLocaleString()}</span></td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--fog)">${r.despacho.toLocaleString()}</span></td>
+      <td class="sep">
+        <div class="rot-cell">
+          <span class="rot-num" style="color:${rc}">${(r.rot*100).toFixed(1)}%</span>
+          <div class="rot-bar"><div class="rot-fill" style="width:${rotPct}%;background:${rc}"></div></div>
+        </div>
+      </td>
+      <td><span class="inv-pill" style="color:${ic.c};background:${ic.bg}">${r.invPV}</span></td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--dim)">${r.invCEDI}</span></td>
+      <td>${statusBadge(cls,r.rot)}</td>
+    </tr>`;
+  }).join('');
+
+  $('footerInfo').textContent=`${ref} · ${rows.length} tiendas · ROT avg ${(avgRot*100).toFixed(1)}% · ${allMonths[0]||''} → ${allMonths[allMonths.length-1]||''}`;
+}
+
+// ── Transfer plan banner (top of table) ──────────────
+function buildTransfers(sources,needs,avgRot){
+  const banner=$('transferBanner'),list=$('tbList');
+  if(!sources.length||!needs.length){banner.style.display='none';return;}
+  banner.style.display='block';
+  const srcSort=[...sources].sort((a,b)=>a.rot-b.rot);
+  const dstSort=[...needs].sort((a,b)=>b.rot-a.rot);
+  const cards=[];
+  srcSort.forEach(src=>{
+    dstSort.forEach(dst=>{
+      const sug=calcUnits(src,dst,avgRot);
+      const ratio=src.rot/avgRot;
+      const col=ratio<.5?'var(--rose)':'var(--amber)';
+      const lbl=ratio<.5?'🔴 URGENTE':'🟠 PRIORITARIO';
+      cards.push(`<div class="tb-card">
+        <span class="tb-from">${src.tienda}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim)">${(src.rot*100).toFixed(1)}% · ${src.invPV} uds</span>
+        <span class="tb-arr">→</span>
+        <span class="tb-to">${dst.tienda}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--dim)">ROT ${(dst.rot*100).toFixed(1)}%</span>
+        <span class="tb-qty"><b>${sug}</b> uds</span>
+        <span class="tb-prio" style="color:${col}">${lbl}</span>
+      </div>`);
+    });
+  });
+  list.innerHTML=cards.slice(0,10).join('');
+}
+
+// ── Unit calculation logic ────────────────────────────
+function calcUnits(src, dst, avgRot){
+  // How many months of demand does dst need?
+  const dstMonthlyAvg = dst.totalVentas / Math.max(countMonths(),1);
+  // Cover 2 months of demand at destination, capped at 40% of source inv
+  const byDemand = Math.round(dstMonthlyAvg * 2);
+  const byCap    = Math.floor(src.invPV * 0.4);
+  const sug      = Math.max(1, Math.min(byDemand, byCap, src.invPV - 2));
+  return sug;
+}
+
+function countMonths(){ return allMonths.length || 14; }
+
+// ── Expert advice + detailed transfer cards ───────────
+function buildExpert(sources,needs,avgRot,totInv,invDisp,rows){
+  let txt='', chips=[];
+  const srcSort=[...sources].sort((a,b)=>a.rot-b.rot);
+  const dstSort=[...needs].sort((a,b)=>b.rot-a.rot);
+
+  // ── Diagnosis text ─────────────────────────────────
+  if(sources.length>0 && needs.length>0){
+    const top=srcSort[0], dst=dstSort[0];
+    txt =`<b>Desbalance detectado en la red.</b><br>`;
+    txt+=`<span class="hl" style="color:var(--rose)">${sources.length} tienda${sources.length>1?'s':''} con exceso de inventario</span> `;
+    txt+=`y <span class="hl" style="color:var(--lime)">${needs.length} con alta demanda y stock bajo</span>.<br><br>`;
+    txt+=`El inventario disponible para redistribuir es de <span class="hl" style="color:var(--accent)">${invDisp} unidades</span>. `;
+    txt+=`Ver el plan de traslados detallado abajo.`;
+    chips=['<span class="chip send">↗ Trasladar</span>','<span class="chip urg">⚡ Acción inmediata</span>'];
+  } else if(sources.length>0){
+    txt =`<span class="hl" style="color:var(--amber)">${sources.length} tienda${sources.length>1?'s':''} con inventario represado</span>. `;
+    txt+=`No hay tiendas con déficit claro en este momento.<br><br>`;
+    txt+=`Se recomienda una <b>acción comercial o promocional</b> para rotar las <b>${invDisp} unidades</b> acumuladas.`;
+    chips=['<span class="chip warn">📌 Revisar precio</span>','<span class="chip warn">🏷 Promoción</span>'];
+  } else if(needs.length>0){
+    txt =`<span class="hl" style="color:var(--lime)">${needs.length} tienda${needs.length>1?'s':''} con alta rotación y stock bajo</span>. `;
+    txt+=`No hay fuentes internas disponibles para traslado.<br><br>`;
+    txt+=`<b>Acción urgente:</b> solicitar reabastecimiento desde CEDI. Inventario total en red: <b>${totInv} uds</b>.`;
+    chips=['<span class="chip urg">🏭 Pedir a CEDI</span>','<span class="chip ok">📊 Revisar forecast</span>'];
+  } else {
+    txt =`Red <span class="hl" style="color:var(--cyan)">bien equilibrada</span>. ROT promedio: <b>${(avgRot*100).toFixed(1)}%</b>.<br><br>`;
+    txt+=`No se requieren traslados en este momento. Monitorear semanalmente.`;
+    chips=['<span class="chip ok">✅ Equilibrada</span>','<span class="chip ok">👁 Monitorear</span>'];
+  }
+  $('expertMsg').innerHTML=txt;
+  $('expertChips').innerHTML=chips.join('');
+
+  // ── Detailed transfer cards in sidebar ─────────────
+  const tsec=$('transferSection'), tcards=$('transferCards');
+
+  if(!srcSort.length && !dstSort.length){
+    tsec.style.display='none'; return;
+  }
+
+  tsec.style.display='block';
+
+  if(!srcSort.length || !dstSort.length){
+    // No transfers possible — show advisory card
+    const icon  = !srcSort.length ? '🏭' : '🏷';
+    const msg   = !srcSort.length
+      ? `No hay tiendas con excedente. <b>Solicitar ${Math.max(10, Math.round(totInv*0.2))} uds adicionales a CEDI</b> para abastecer las tiendas de alta demanda.`
+      : `No hay destinos con alta demanda. <b>Activar promo para liquidar ${invDisp} uds represadas</b> en tiendas con baja rotación.`;
+    tcards.innerHTML=`<div class="tc-no-transfer"><span class="icon">${icon}</span><p>${msg}</p></div>`;
+    return;
+  }
+
+  // Build one card per source → best destination pair
+  const usedInv = {};
+  srcSort.forEach(src=>{ usedInv[src.tienda]=src.invPV; });
+
+  const planCards=[];
+  srcSort.forEach(src=>{
+    dstSort.forEach(dst=>{
+      const avail  = usedInv[src.tienda] || 0;
+      if(avail < 2) return;
+
+      const units  = calcUnits(src, dst, avgRot);
+      if(units < 1) return;
+      usedInv[src.tienda] = Math.max(0, avail - units);
+
+      const ratio  = src.rot / avgRot;
+      const cardCls= ratio < .5 ? 'urg' : ratio < .78 ? 'prio' : 'norm';
+      const prioCol= cardCls==='urg' ? 'var(--rose)' : cardCls==='prio' ? 'var(--amber)' : 'var(--lime)';
+      const prioLbl= cardCls==='urg' ? '🔴 URGENTE' : cardCls==='prio' ? '🟠 PRIORITARIO' : '🟢 NORMAL';
+
+      const invAfter = Math.max(0, src.invPV - units);
+      const pct      = Math.round((units / src.invPV) * 100);
+
+      // Reason text
+      let reason = `<b>${src.tienda}</b> rota al <b>${(src.rot*100).toFixed(1)}%</b> con ${src.invPV} uds en piso — `;
+      reason    += `por debajo del promedio de red (${(avgRot*100).toFixed(1)}%). `;
+      reason    += `<b>${dst.tienda}</b> rota al <b>${(dst.rot*100).toFixed(1)}%</b> y necesita reabasto.`;
+
+      planCards.push(`
+      <div class="tc-card ${cardCls}">
+        <div class="tc-header">
+          <div class="tc-route">
+            <span class="tc-store from">${src.tienda}</span>
+            <span class="tc-arrow">→</span>
+            <span class="tc-store to">${dst.tienda}</span>
+          </div>
+          <span class="tc-prio-badge" style="color:${prioCol};background:${cardCls==='urg'?'var(--rose-bg)':cardCls==='prio'?'var(--amber-bg)':'var(--lime-bg)'};border:1px solid ${cardCls==='urg'?'var(--rose-br)':cardCls==='prio'?'var(--amber-br)':'var(--lime-br)'}">${prioLbl}</span>
+        </div>
+        <div class="tc-body">
+          <div class="tc-metric">
+            <div class="tc-metric-val" style="color:var(--rose)">${(src.rot*100).toFixed(1)}%</div>
+            <div class="tc-metric-lbl">ROT origen</div>
+          </div>
+          <div class="tc-metric">
+            <div class="tc-metric-val" style="color:var(--lime)">${(dst.rot*100).toFixed(1)}%</div>
+            <div class="tc-metric-lbl">ROT destino</div>
+          </div>
+          <div class="tc-metric">
+            <div class="tc-metric-val" style="color:var(--fog)">${src.invPV}</div>
+            <div class="tc-metric-lbl">Inv PV actual</div>
+          </div>
+          <div class="tc-metric">
+            <div class="tc-metric-val" style="color:var(--dim)">${invAfter}</div>
+            <div class="tc-metric-lbl">Inv PV restante</div>
+          </div>
+        </div>
+        <div class="tc-units">
+          <div>
+            <div class="tc-units-val">${units}</div>
+            <div class="tc-units-lbl">Unidades a trasladar</div>
+          </div>
+          <div class="tc-units-info">
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);font-weight:500">${pct}% del inv. origen</div>
+            <div class="tc-units-sub">cubre ~2 meses de demanda</div>
+          </div>
+        </div>
+        <div class="tc-reason">${reason}</div>
+      </div>`);
+    });
+  });
+
+  tcards.innerHTML = planCards.length
+    ? planCards.join('')
+    : `<div class="tc-no-transfer"><span class="icon">✅</span><p>No se requieren traslados. La red está equilibrada.</p></div>`;
+}
+</script>
+</body>
+</html>
