@@ -1,0 +1,5 @@
+KOKETA-PIEL DE SEDA
+
+CONTROL SHIF X
+
+Unir las ventas por referencia  del PLANEACIONTMF2026 a PLANEACIONTMF2025. Se debe recalcular Total Ventas con la suma  de las ventas del 2026, al igual que el despacho. Las referencias nuevas que esten en PLANEACIONTMF2026 agregarlas a PLANEACIONTMF2025.  Una vez esten unidos La rotación calcular con base Total Ventas / Despacho
