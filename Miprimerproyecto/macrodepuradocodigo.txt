@@ -1,0 +1,713 @@
+===========================================================================
+' MODULO : ModDistribucionTMF
+' Version: 7.0  (2026-03-19)
+'
+' CONDICIONES DE DISTRIBUCION (en orden de prioridad):
+'   1. SUMA COLUMNA j = G4[j]  (cuota por talla, obligatorio)
+'   2. TOTAL GENERAL  = F4     (= suma G4:O4, garantizado por #1)
+'   3. TOTAL FILA i   >= 6     (minimo por tienda activa)
+'   4. TOP A/B/C ponderan el peso base de distribucion:
+'        A => MULT_A  (mayor probabilidad de venta)
+'        B => MULT_B  (media)
+'        C => MULT_C  (menor)
+'   5. CAP maximo por tienda por talla:
+'        neto(i,j) <= part(i) * quota(j) * CAP_factor(cat)
+'        A => CAP_A  (puede absorber hasta CAP_A veces su cuota base)
+'        B => CAP_B
+'        C => CAP_C
+'      Evita que una tienda absorba saldo liberado por inventario alto
+'      de otras mas alla de un limite proporcional razonable.
+'      Lo que excede el cap se redistribuye a las no-capiadas.
+'   6. Exclusion de tiendas (saldo insuficiente): C -> B -> A
+'
+' RANGOS:
+'   E9:E{n} : Categoria TOP (A / B / C)       COL_TOP   = 5
+'   F4      : Saldo total a distribuir
+'   G4:O4   : Cuota por talla (9 columnas)    COL_CURVA = 7
+'   G9:O{n} : Curva x Participacion
+'   R9:Z{n} : Distribucion x Talla            COL_TALLA = 18
+'   AB9:AJ{n}: Inventario x Talla             COL_INV   = 28
+'   AL9:AT{n}: SALIDA Ajustes                 COL_AJUSTE= 38
+'===========================================================================
+Option Explicit
+
+'--- Constantes posicionales -----------------------------------------------
+Private Const FILA_INI    As Long = 9
+Private Const FILA_CUOTA  As Long = 4
+Private Const MAX_FILAS   As Long = 80
+Private Const NUM_TALLAS  As Long = 9
+Private Const MIN_SURTIDO As Long = 6
+
+Private Const COL_TIENDA  As Long = 1
+Private Const COL_CIUDAD  As Long = 2
+Private Const COL_PART    As Long = 3
+Private Const COL_TOP     As Long = 5
+Private Const COL_CURVA   As Long = 7
+Private Const COL_TALLA   As Long = 18
+Private Const COL_INV     As Long = 28
+Private Const COL_AJUSTE  As Long = 38
+
+'===========================================================================
+' PARAMETROS AJUSTABLES
+' Modifica estos valores directamente aqui o en la celda del Excel.
+'
+' MULT_x : Ponderador de peso en la distribucion (> 1 = mas, < 1 = menos)
+'   A recibe mas que B, B mas que C, en proporcion a su participacion.
+'
+' CAP_x  : Factor maximo de absorcion sobre la cuota base proporcional.
+'   Ejemplo CAP_A=2.0: una tienda A con 10% de participacion NO puede
+'   recibir mas de 10% * quota_talla * 2.0 unidades en esa talla,
+'   aunque haya saldo liberado por inventario de otras tiendas.
+'   Ajustar a 999 para desactivar el cap en esa categoria.
+'===========================================================================
+Private Const MULT_A As Double = 1.5
+Private Const MULT_B As Double = 1#
+Private Const MULT_C As Double = 0.6
+
+Private Const CAP_A  As Double = 2#    ' A puede recibir max 2x su cuota base
+Private Const CAP_B  As Double = 1.5   ' B puede recibir max 1.5x su cuota base
+Private Const CAP_C  As Double = 1.2   ' C puede recibir max 1.2x su cuota base
+
+
+'===========================================================================
+' PUNTO DE ENTRADA
+'===========================================================================
+Sub AjusteDistribucionTallas()
+
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+
+    Dim calcPrev As XlCalculation
+    Dim evPrev   As Boolean
+    calcPrev = Application.Calculation
+    evPrev = Application.EnableEvents
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    Application.EnableEvents = False
+
+    On Error GoTo ErrHandler
+
+    '--- Cuotas por talla G4:O4 --------------------------------------------
+    Dim quota(1 To NUM_TALLAS) As Long
+    Dim j       As Long
+    Dim saldo   As Long: saldo = 0
+    For j = 1 To NUM_TALLAS
+        quota(j) = CLng(Nv(ws.Cells(FILA_CUOTA, COL_CURVA + j - 1)))
+        saldo = saldo + quota(j)
+    Next j
+
+    If saldo <= 0 Then
+        MsgBox "Las cuotas en G4:O4 suman cero. Sin cambios.", _
+               vbExclamation, "TMF - Sin cuota"
+        GoTo Cleanup
+    End If
+
+    '--- Rango de tiendas --------------------------------------------------
+    Dim filaFin As Long: filaFin = DetectarUltimaFila(ws)
+    If filaFin < FILA_INI Then
+        MsgBox "No se encontraron tiendas desde fila " & FILA_INI & ".", _
+               vbExclamation, "TMF - Sin datos"
+        GoTo Cleanup
+    End If
+    Dim numT As Long: numT = filaFin - FILA_INI + 1
+
+    '--- Leer datos --------------------------------------------------------
+    Dim part(1 To 200)     As Double
+    Dim catMult(1 To 200)  As Double
+    Dim catCap(1 To 200)   As Double
+    Dim catLetra(1 To 200) As String
+    Dim curva(1 To 200, 1 To NUM_TALLAS)   As Double
+    Dim tallaMx(1 To 200, 1 To NUM_TALLAS) As Double
+    Dim inv(1 To 200, 1 To NUM_TALLAS)     As Double
+    Dim sumCurva(1 To 200) As Double
+    Dim codT(1 To 200)     As String
+
+    Call LeerDatos(ws, numT, part, catMult, catCap, catLetra, _
+                   curva, tallaMx, inv, sumCurva, codT)
+
+    '--- Tiendas activas ---------------------------------------------------
+    Dim activa(1 To 200) As Boolean
+    Dim i As Long
+    For i = 1 To numT
+        activa(i) = (sumCurva(i) > 0)
+    Next i
+
+    Call ExcluirPorMinimo(activa, part, catLetra, numT, saldo)
+
+    '--- Distribuir columna por columna ------------------------------------
+    Dim arr(1 To 200, 1 To NUM_TALLAS) As Long
+
+    For j = 1 To NUM_TALLAS
+        If quota(j) > 0 Then
+            Call DistribuirColumna(j, quota(j), numT, activa, _
+                                   part, catMult, catCap, tallaMx, inv, curva, arr)
+        End If
+    Next j
+
+    '--- Ajustar minimo por fila -------------------------------------------
+    Call AjustarMinimosFila(numT, activa, arr, quota)
+
+    '--- Escribir resultado ------------------------------------------------
+    Dim cAct As Long: cAct = 0
+    Dim cExc As Long: cExc = 0
+    Call EscribirOutput(ws, numT, activa, arr, cAct, cExc)
+
+    '--- Resumen -----------------------------------------------------------
+    Application.ScreenUpdating = True
+    Call Resumen(ws, numT, activa, arr, quota, catLetra, saldo, cAct, cExc, filaFin)
+
+    GoTo Cleanup
+
+ErrHandler:
+    Application.ScreenUpdating = True
+    MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical, "TMF - Error"
+
+Cleanup:
+    Application.Calculation = calcPrev
+    Application.EnableEvents = evPrev
+    Application.ScreenUpdating = True
+    Set ws = Nothing
+End Sub
+
+
+'===========================================================================
+' DETECTAR ULTIMA FILA
+'===========================================================================
+Private Function DetectarUltimaFila(ws As Worksheet) As Long
+    Dim r   As Long
+    Dim cod As String
+    DetectarUltimaFila = FILA_INI - 1
+    For r = FILA_INI To MAX_FILAS
+        cod = LCase(Trim(CStr(ws.Cells(r, COL_TIENDA).Value)))
+        If cod = "" Then Exit For
+        If cod = "total" Or cod = "totales" Then Exit For
+        DetectarUltimaFila = r
+    Next r
+End Function
+
+
+'===========================================================================
+' LEER MATRICES
+'===========================================================================
+Private Sub LeerDatos(ws As Worksheet, numT As Long, _
+                       ByRef part() As Double, _
+                       ByRef catMult() As Double, _
+                       ByRef catCap() As Double, _
+                       ByRef catLetra() As String, _
+                       ByRef curva() As Double, _
+                       ByRef tallaMx() As Double, _
+                       ByRef inv() As Double, _
+                       ByRef sumCurva() As Double, _
+                       ByRef codT() As String)
+
+    Dim i    As Long
+    Dim j    As Long
+    Dim fila As Long
+    Dim sumC As Double
+    Dim sumP As Double: sumP = 0
+    Dim cat  As String
+
+    For i = 1 To numT
+        fila = FILA_INI + i - 1
+        codT(i) = Trim(CStr(ws.Cells(fila, COL_TIENDA).Value))
+        part(i) = Nv(ws.Cells(fila, COL_PART))
+        cat = UCase(Trim(CStr(ws.Cells(fila, COL_TOP).Value)))
+        catLetra(i) = cat
+
+        Select Case cat
+            Case "A": catMult(i) = MULT_A: catCap(i) = CAP_A
+            Case "B": catMult(i) = MULT_B: catCap(i) = CAP_B
+            Case "C": catMult(i) = MULT_C: catCap(i) = CAP_C
+            Case Else: catMult(i) = MULT_B: catCap(i) = CAP_B
+        End Select
+
+        sumC = 0
+        For j = 1 To NUM_TALLAS
+            curva(i, j) = Nv(ws.Cells(fila, COL_CURVA + j - 1))
+            tallaMx(i, j) = Nv(ws.Cells(fila, COL_TALLA + j - 1))
+            inv(i, j) = Nv(ws.Cells(fila, COL_INV + j - 1))
+            sumC = sumC + curva(i, j)
+        Next j
+        sumCurva(i) = sumC
+        If sumC > 0 Then sumP = sumP + part(i)
+    Next i
+
+    If sumP > 0 Then
+        For i = 1 To numT
+            part(i) = part(i) / sumP
+        Next i
+    End If
+End Sub
+
+
+'===========================================================================
+' EXCLUIR TIENDAS (C primero, luego B, luego A)
+'===========================================================================
+Private Sub ExcluirPorMinimo(ByRef activa() As Boolean, _
+                               ByRef part() As Double, _
+                               ByRef catLetra() As String, _
+                               ByVal numT As Long, _
+                               ByVal saldo As Long)
+    Dim i       As Long
+    Dim nAct    As Long: nAct = 0
+    Dim idxMin  As Long
+    Dim minPart As Double
+    Dim catBusq As String
+    Dim orden   As Integer
+
+    For i = 1 To numT
+        If activa(i) Then nAct = nAct + 1
+    Next i
+
+    Do While nAct > 0 And CLng(nAct) * MIN_SURTIDO > saldo
+        idxMin = 0
+        For orden = 1 To 3
+            Select Case orden
+                Case 1: catBusq = "C"
+                Case 2: catBusq = "B"
+                Case 3: catBusq = "A"
+            End Select
+            minPart = 2
+            For i = 1 To numT
+                If activa(i) And catLetra(i) = catBusq And part(i) < minPart Then
+                    minPart = part(i): idxMin = i
+                End If
+            Next i
+            If idxMin > 0 Then Exit For
+        Next orden
+        If idxMin = 0 Then Exit Do
+        activa(idxMin) = False
+        nAct = nAct - 1
+    Loop
+End Sub
+
+
+'===========================================================================
+' DISTRIBUIR UNA COLUMNA (TALLA j)  SUMA EXACTA = quotaCol
+'
+' FASE 1 -- Inventario: neto(i) = proporcional * quotaCol - inv(i,j)
+'           si neto < 0 => tienda abastecida, libera unidades
+'           iteracion hasta convergencia
+'
+' FASE 2 -- CAP: neto(i) <= part(i) * quotaCol * catCap(i)
+'           si neto > cap => limitar y liberar exceso al resto
+'           iteracion hasta convergencia
+'           Redistribucion del exceso: proporcional al peso (catMult)
+'           de las tiendas NO capiadas que aun tienen capacidad
+'
+' FASE 3 -- Largest Remainder para suma exacta = quotaCol
+'===========================================================================
+Private Sub DistribuirColumna(j As Long, _
+                               quotaCol As Long, _
+                               numT As Long, _
+                               activa() As Boolean, _
+                               part() As Double, _
+                               catMult() As Double, _
+                               catCap() As Double, _
+                               tallaMx() As Double, _
+                               inv() As Double, _
+                               curva() As Double, _
+                               ByRef arr() As Long)
+
+    Dim i    As Long
+    Dim iter As Long
+
+    '--- Calcular pesos ponderados por TOP ---------------------------------
+    Dim peso(1 To 200)  As Double
+    Dim sumPeso As Double: sumPeso = 0
+
+    For i = 1 To numT
+        If activa(i) Then
+            Dim base As Double
+            base = tallaMx(i, j)
+            If base <= 0 Then base = curva(i, j)
+            If base <= 0 Then base = 0
+            peso(i) = base * catMult(i)
+            sumPeso = sumPeso + peso(i)
+        End If
+    Next i
+
+    ' Fallback: sin historico => usar solo catMult
+    If sumPeso = 0 Then
+        For i = 1 To numT
+            If activa(i) Then
+                peso(i) = catMult(i)
+                sumPeso = sumPeso + catMult(i)
+            End If
+        Next i
+    End If
+
+    '--- FASE 1: necesidad neta descontando inventario --------------------
+    Dim neto(1 To 200)  As Double
+
+    For i = 1 To numT
+        If activa(i) Then
+            neto(i) = (peso(i) / sumPeso) * quotaCol - inv(i, j)
+        Else
+            neto(i) = 0
+        End If
+    Next i
+
+    ' Redistribuir cuota liberada por inventario (max 20 iter)
+    Dim libre      As Double
+    Dim sumNetoPos As Double
+
+    For iter = 1 To 20
+        libre = 0: sumNetoPos = 0
+        For i = 1 To numT
+            If activa(i) Then
+                If neto(i) < 0 Then
+                    libre = libre + (-neto(i))
+                    neto(i) = 0
+                Else
+                    sumNetoPos = sumNetoPos + neto(i)
+                End If
+            End If
+        Next i
+        If libre < 0.0001 Then Exit For
+
+        ' Redistribuir proporcional a neto actual (conserva sesgo A/B/C)
+        If sumNetoPos > 0 Then
+            For i = 1 To numT
+                If activa(i) And neto(i) > 0 Then
+                    neto(i) = neto(i) + (neto(i) / sumNetoPos) * libre
+                End If
+            Next i
+        Else
+            ' Todos en cero: usar catMult como ponderador
+            Dim sumM As Double: sumM = 0
+            For i = 1 To numT
+                If activa(i) Then sumM = sumM + catMult(i)
+            Next i
+            If sumM > 0 Then
+                For i = 1 To numT
+                    If activa(i) Then neto(i) = (catMult(i) / sumM) * libre
+                Next i
+            End If
+            Exit For
+        End If
+    Next iter
+
+    '--- FASE 2: aplicar CAP maximo por tienda ----------------------------
+    ' cap_col(i) = part(i) * quotaCol * catCap(i)
+    ' Si neto(i) > cap_col(i), se recorta y el exceso se redistribuye
+    ' a las tiendas no capiadas (con neto < su cap), ponderando por peso.
+    ' Se itera hasta convergencia.
+
+    Dim capCol(1 To 200) As Double
+    For i = 1 To numT
+        If activa(i) Then
+            capCol(i) = part(i) * quotaCol * catCap(i)
+        End If
+    Next i
+
+    Dim exceso     As Double
+    Dim capiada(1 To 200) As Boolean
+
+    For iter = 1 To 30
+        exceso = 0
+
+        ' Recortar tiendas que superan su cap
+        For i = 1 To numT
+            If activa(i) And Not capiada(i) Then
+                If neto(i) > capCol(i) Then
+                    exceso = exceso + (neto(i) - capCol(i))
+                    neto(i) = capCol(i)
+                    capiada(i) = True
+                End If
+            End If
+        Next i
+
+        If exceso < 0.0001 Then Exit For
+
+        ' Redistribuir exceso a las NO capiadas con capacidad restante
+        Dim sumPesoLib As Double: sumPesoLib = 0
+        For i = 1 To numT
+            If activa(i) And Not capiada(i) Then
+                If neto(i) < capCol(i) Then
+                    sumPesoLib = sumPesoLib + peso(i)
+                End If
+            End If
+        Next i
+
+        If sumPesoLib > 0 Then
+            For i = 1 To numT
+                If activa(i) And Not capiada(i) Then
+                    If neto(i) < capCol(i) Then
+                        neto(i) = neto(i) + (peso(i) / sumPesoLib) * exceso
+                        ' Verificar que no supere el cap tras la redistribucion
+                        If neto(i) > capCol(i) Then neto(i) = capCol(i)
+                    End If
+                End If
+            Next i
+        Else
+            ' Todas capiadas o sin capacidad: distribuir entre todas activas
+            Dim sumPesoAll As Double: sumPesoAll = 0
+            For i = 1 To numT
+                If activa(i) Then sumPesoAll = sumPesoAll + peso(i)
+            Next i
+            If sumPesoAll > 0 Then
+                For i = 1 To numT
+                    If activa(i) Then
+                        neto(i) = neto(i) + (peso(i) / sumPesoAll) * exceso
+                    End If
+                Next i
+            End If
+            Exit For
+        End If
+    Next iter
+
+    '--- FASE 3: Largest Remainder => suma exacta = quotaCol --------------
+    Dim sumFloor       As Long: sumFloor = 0
+    Dim residuo(1 To 200) As Double
+
+    For i = 1 To numT
+        If activa(i) Then
+            If neto(i) < 0 Then neto(i) = 0
+            arr(i, j) = CLng(Int(neto(i)))
+            residuo(i) = neto(i) - Int(neto(i))
+            sumFloor = sumFloor + arr(i, j)
+        End If
+    Next i
+
+    Dim falt As Long: falt = quotaCol - sumFloor
+    Dim k    As Long
+    Dim iMax As Long
+    Dim maxR As Double
+
+    For k = 1 To falt
+        iMax = 0: maxR = -1
+        For i = 1 To numT
+            If activa(i) And residuo(i) > maxR Then
+                maxR = residuo(i): iMax = i
+            End If
+        Next i
+        If iMax = 0 Then Exit For
+        arr(iMax, j) = arr(iMax, j) + 1
+        residuo(iMax) = -1
+    Next k
+
+    ' Quitar exceso (caso borde por inventarios negativos)
+    Dim chk As Long: chk = 0
+    For i = 1 To numT
+        If activa(i) Then chk = chk + arr(i, j)
+    Next i
+    Dim sobra As Long: sobra = chk - quotaCol
+    If sobra > 0 Then
+        Dim iMin As Long
+        Dim minV As Long
+        For k = 1 To sobra
+            iMin = 0: minV = 999999
+            For i = 1 To numT
+                If activa(i) And arr(i, j) > 0 And arr(i, j) < minV Then
+                    minV = arr(i, j): iMin = i
+                End If
+            Next i
+            If iMin = 0 Then Exit For
+            arr(iMin, j) = arr(iMin, j) - 1
+        Next k
+    End If
+End Sub
+
+
+'===========================================================================
+' AJUSTAR MINIMO POR FILA MEDIANTE TRANSFERENCIAS INTRA-COLUMNA
+'===========================================================================
+Private Sub AjustarMinimosFila(numT As Long, _
+                                activa() As Boolean, _
+                                ByRef arr() As Long, _
+                                quota() As Long)
+
+    Dim i       As Long
+    Dim j       As Long
+    Dim k       As Long
+    Dim maxIter As Long: maxIter = numT * NUM_TALLAS + 50
+
+    Dim rowSum(1 To 200) As Long
+    For i = 1 To numT
+        rowSum(i) = 0
+        If activa(i) Then
+            For j = 1 To NUM_TALLAS
+                rowSum(i) = rowSum(i) + arr(i, j)
+            Next j
+        End If
+    Next i
+
+    For k = 1 To maxIter
+        Dim iDef   As Long: iDef = 0
+        Dim maxDef As Long: maxDef = 0
+        For i = 1 To numT
+            If activa(i) Then
+                Dim def As Long: def = MIN_SURTIDO - rowSum(i)
+                If def > maxDef Then maxDef = def: iDef = i
+            End If
+        Next i
+        If iDef = 0 Then Exit For
+
+        Dim jBest  As Long: jBest = 0
+        Dim iBest  As Long: iBest = 0
+        Dim maxArr As Long: maxArr = 0
+
+        ' Donante preferido: rowSum > MIN_SURTIDO
+        For j = 1 To NUM_TALLAS
+            If quota(j) > 0 Then
+                For i = 1 To numT
+                    If activa(i) And i <> iDef Then
+                        If arr(i, j) > 0 And rowSum(i) > MIN_SURTIDO Then
+                            If arr(i, j) > maxArr Then
+                                maxArr = arr(i, j): jBest = j: iBest = i
+                            End If
+                        End If
+                    End If
+                Next i
+            End If
+        Next j
+
+        ' Fallback: cualquier donante con arr > 0
+        If jBest = 0 Then
+            maxArr = 0
+            For j = 1 To NUM_TALLAS
+                If quota(j) > 0 Then
+                    For i = 1 To numT
+                        If activa(i) And i <> iDef And arr(i, j) > 0 Then
+                            If arr(i, j) > maxArr Then
+                                maxArr = arr(i, j): jBest = j: iBest = i
+                            End If
+                        End If
+                    Next i
+                End If
+            Next j
+        End If
+
+        If jBest = 0 Or iBest = 0 Then Exit For
+
+        arr(iBest, jBest) = arr(iBest, jBest) - 1
+        arr(iDef, jBest) = arr(iDef, jBest) + 1
+        rowSum(iBest) = rowSum(iBest) - 1
+        rowSum(iDef) = rowSum(iDef) + 1
+    Next k
+End Sub
+
+
+'===========================================================================
+' ESCRIBIR EN AL:AT
+'===========================================================================
+Private Sub EscribirOutput(ws As Worksheet, _
+                            numT As Long, _
+                            activa() As Boolean, _
+                            arr() As Long, _
+                            ByRef cAct As Long, _
+                            ByRef cExc As Long)
+    Dim i    As Long
+    Dim j    As Long
+    Dim fila As Long
+    Dim val  As Long
+
+    For i = 1 To numT
+        fila = FILA_INI + i - 1
+        For j = 1 To NUM_TALLAS
+            val = 0
+            If activa(i) Then
+                val = arr(i, j)
+                If val < 0 Then val = 0
+            End If
+            ws.Cells(fila, COL_AJUSTE + j - 1).Value = val
+        Next j
+        If activa(i) Then cAct = cAct + 1 Else cExc = cExc + 1
+    Next i
+End Sub
+
+
+'===========================================================================
+' RESUMEN FINAL
+'===========================================================================
+Private Sub Resumen(ws As Worksheet, _
+                    numT As Long, _
+                    activa() As Boolean, _
+                    arr() As Long, _
+                    quota() As Long, _
+                    catLetra() As String, _
+                    saldo As Long, _
+                    cAct As Long, _
+                    cExc As Long, _
+                    filaFin As Long)
+
+    Dim i      As Long
+    Dim j      As Long
+    Dim sumTot As Long: sumTot = 0
+    Dim errCol As String: errCol = ""
+    Dim errFil As String: errFil = ""
+    Dim cA As Long: cA = 0
+    Dim cB As Long: cB = 0
+    Dim cC As Long: cC = 0
+    Dim uA As Long: uA = 0
+    Dim uB As Long: uB = 0
+    Dim uC As Long: uC = 0
+
+    For j = 1 To NUM_TALLAS
+        Dim sumCol As Long: sumCol = 0
+        For i = 1 To numT
+            Dim v As Long
+            v = CLng(ws.Cells(FILA_INI + i - 1, COL_AJUSTE + j - 1).Value)
+            sumCol = sumCol + v
+            sumTot = sumTot + v
+        Next i
+        If sumCol <> quota(j) Then
+            errCol = errCol & " T" & j & "(esp=" & quota(j) & " got=" & sumCol & ")"
+        End If
+    Next j
+
+    For i = 1 To numT
+        If activa(i) Then
+            Dim rS As Long: rS = 0
+            For j = 1 To NUM_TALLAS
+                rS = rS + arr(i, j)
+            Next j
+            If rS < MIN_SURTIDO Then
+                errFil = errFil & " F" & (FILA_INI + i - 1) & "(" & rS & ")"
+            End If
+            Select Case catLetra(i)
+                Case "A": cA = cA + 1: uA = uA + rS
+                Case "B": cB = cB + 1: uB = uB + rS
+                Case "C": cC = cC + 1: uC = uC + rS
+            End Select
+        End If
+    Next i
+
+    Dim sep As String: sep = String(50, "-")
+    Dim msg As String
+
+    msg = "DISTRIBUCION COMPLETADA v7  (CAP activo)" & vbCrLf & sep & vbCrLf
+    msg = msg & "Saldo total G4:O4           : " & Format(saldo, "#,##0") & " uds" & vbCrLf
+    msg = msg & "Suma ajustes escritos       : " & Format(sumTot, "#,##0") & " uds"
+    msg = msg & IIf(sumTot = saldo, "  [OK]", "  [DIF=" & (sumTot - saldo) & "]") & vbCrLf
+    msg = msg & sep & vbCrLf
+    msg = msg & "Categoria A  MULT=" & Format(MULT_A, "0.0") & "  CAP=x" & Format(CAP_A, "0.0") & _
+          "   activas=" & cA & "  uds=" & uA & vbCrLf
+    msg = msg & "Categoria B  MULT=" & Format(MULT_B, "0.0") & "  CAP=x" & Format(CAP_B, "0.0") & _
+          "   activas=" & cB & "  uds=" & uB & vbCrLf
+    msg = msg & "Categoria C  MULT=" & Format(MULT_C, "0.0") & "  CAP=x" & Format(CAP_C, "0.0") & _
+          "   activas=" & cC & "  uds=" & uC & vbCrLf
+    msg = msg & "Excluidas                   : " & cExc & vbCrLf
+    msg = msg & "Minimo por tienda           : " & MIN_SURTIDO & " uds" & vbCrLf
+    msg = msg & sep & vbCrLf
+    msg = msg & IIf(errCol = "", "Cuotas por talla (G4:O4)   : TODAS OK", _
+                                 "DIFERENCIA EN TALLAS       :" & errCol) & vbCrLf
+    msg = msg & IIf(errFil = "", "Minimo >= 6 por tienda     : TODAS OK", _
+                                 "Tiendas bajo minimo        :" & errFil) & vbCrLf
+    msg = msg & sep & vbCrLf
+    msg = msg & "Resultado escrito en AL" & FILA_INI & ":AT" & filaFin
+
+    MsgBox msg, IIf(errCol = "" And errFil = "", vbInformation, vbExclamation), _
+           "TMF - Ajuste por Talla v7"
+End Sub
+
+
+'===========================================================================
+' UTILIDAD
+'===========================================================================
+Private Function Nv(c As Range) As Double
+    On Error Resume Next
+    If IsNumeric(c.Value) Then Nv = CDbl(c.Value)
+    On Error GoTo 0
+End Function
