@@ -3,3 +3,64 @@ KOKETA-PIEL DE SEDA
 CONTROL SHIF X
 
 Unir las ventas por referencia  del PLANEACIONTMF2026 a PLANEACIONTMF2025. Se debe recalcular Total Ventas con la suma  de las ventas del 2026, al igual que el despacho. Las referencias nuevas que esten en PLANEACIONTMF2026 agregarlas a PLANEACIONTMF2025.  Una vez esten unidos La rotación calcular con base Total Ventas / Despacho
+
+547137
+
+Sub Macro1()
+'
+' Macro1 Macro
+'
+
+'
+    ActiveWindow.ScrollColumn = 12
+    ActiveWindow.ScrollColumn = 7
+    Columns("D:D").Select
+    Selection.EntireColumn.Hidden = True
+    Columns("F:AJ").Select
+    Selection.EntireColumn.Hidden = True
+    Columns("AU:AU").Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.EntireColumn.Hidden = True
+    Range("E15").Select
+End Sub
+
+Buenas noches David. A continuacion relaciono las ventas Actualizadas por TIENDA - REF - TALLA del 1 Enero del 2025 al 22 Marzo del 2026 con el Inventario Actualizado Corte 24 Marzo del 2026. para que lo actualices en la DATA  TDM
+
+Sub Macro2()
+'
+' Macro2 Macro
+'
+
+'
+    Columns("D:D").Select
+    Selection.EntireColumn.Hidden = True
+    Columns("F:AJ").Select
+    Selection.EntireColumn.Hidden = True
+    Columns("AU:AU").Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.EntireColumn.Hidden = True
+    ActiveWindow.ScrollColumn = 8
+    Range("AM9").Select
+End Sub
+
+Sub Macro2()
+'
+' Macro2 Macro
+'
+
+'
+    ActiveSheet.Shapes.Range(Array("Button 1")).Select
+    Selection.Delete
+    ActiveSheet.Shapes.Range(Array("Button 2")).Select
+    Selection.Delete
+    ActiveSheet.Shapes.Range(Array("Button 3")).Select
+    Selection.Delete
+    Columns("D:D").Select
+    Selection.EntireColumn.Hidden = True
+    Columns("F:AJ").Select
+    Selection.EntireColumn.Hidden = True
+    Columns("AU:AU").Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.EntireColumn.Hidden = True
+    Range("E11").Select
+End Sub

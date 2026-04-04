@@ -926,3 +926,19 @@ Sub Macro2()
     Range("B2").Select
 End Sub
 
+
+Sub Macro1()
+'
+' Macro1 Macro
+'
+
+'
+    ActiveCell.Offset(0, -33).Columns("A:A").EntireColumn.Select
+    Selection.EntireColumn.Hidden = True
+    ActiveCell.Offset(0, 2).Columns("A:AE").EntireColumn.Select
+    Selection.EntireColumn.Hidden = True
+    ActiveCell.Offset(0, 41).Columns("A:A").EntireColumn.Select
+    Range(Selection, Selection.End(xlToRight)).Select
+    Selection.EntireColumn.Hidden = True
+  
+End Sub
