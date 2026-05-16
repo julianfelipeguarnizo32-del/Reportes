@@ -3303,7 +3303,7 @@ function filterConfTable(){
     const ppill=pp>10?'pill-red':pp>0?'pill-yellow':'pill-green';
     const uds=r.uds_conf||r.conf;
     const udsPct=r.total>0?((uds/r.total)*100).toFixed(1):0;
-    return `<tr><td>${r.fecha}</td><td style="text-align:center">${fmtN(r.total)}</td><td style="text-align:center"><span class="pill pill-red">${r.pend}</span></td><td style="text-align:center"><span class="pill ${ppill}">${r.pct_pend}%</span></td><td style="text-align:center">${fmtN(r.conf)}</td><td style="text-align:center"><span class="pill pill-green">${r.pct_conf}%</span></td><td style="text-align:center">${fmtN(uds)}</td><td style="text-align:center"><span class="pill pill-blue">${udsPct}%</span></td></tr>`;
+    return `<tr><td>${r.fecha}</td><td style="text-align:center">${fmtN(r.total)}</td><td style="text-align:center"><span class="pill pill-red">${r.pend}</span></td><td style="text-align:center"><span class="pill ${ppill}">${(+r.pct_pend).toFixed(1)}%</span></td><td style="text-align:center">${fmtN(r.conf)}</td><td style="text-align:center"><span class="pill pill-green">${(+r.pct_conf).toFixed(1)}%</span></td><td style="text-align:center">${fmtN(uds)}</td><td style="text-align:center"><span class="pill pill-blue">${udsPct}%</span></td></tr>`;
   }).join('');
   document.getElementById('confFootTotal').textContent=fmtN(totalT);
   document.getElementById('confFootPend').textContent=fmtN(totalP);
