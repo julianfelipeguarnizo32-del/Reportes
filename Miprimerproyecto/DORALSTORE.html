@@ -143,8 +143,8 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
     </div>
     <div class="stat-card sky">
       <div class="stat-label">Tasa Entrega Global</div>
-      <div class="stat-value">72.2%</div>
-      <div class="stat-sub">Ene: 74.1% · Feb: 72.6% · Mar: 76.6% · Abr: 75.9% · <strong style="color:#f59e0b">May: 54.7%*</strong> <span style="font-size:0.7rem;color:#f59e0b">(15/05)</span></div>
+      <div class="stat-value">80.6%</div>
+      <div class="stat-sub">Ene: 82.6% · Feb: 81.7% · Mar: 83.6% · Abr: 84.2% · <strong style="color:#f59e0b">May: 63.8%*</strong> <span style="font-size:0.7rem;color:#f59e0b">(15/05)</span></div>
     </div>
     <div class="stat-card orange">
       <div class="stat-label">Tasa Despacho Global</div>
@@ -233,34 +233,35 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
 
   <!-- ===== TASA ENTREGA POR MES ===== -->
   <div class="section-title">📬 Tasa de Entrega por Mes</div>
+  <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:8px 14px;margin:-6px 0 10px;font-size:0.77rem;color:var(--text-muted);line-height:1.5"><strong style="color:#10b981">📐 Fórmula:</strong> Entregados (ESTATUS = ENTREGADO) ÷ Pedidos activos (Total − Rechazados − Cancelados − Pendientes de Confirmación) × 100</div>
   <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
     <div class="stat-card green">
       <div class="stat-label">Tasa Entrega Enero</div>
-      <div class="stat-value">74.1%</div>
-      <div class="stat-sub">801 entregados / 1,081 pedidos</div>
+      <div class="stat-value">82.6%</div>
+      <div class="stat-sub">801 entregados / 970 pedidos activos</div>
     </div>
     <div class="stat-card orange">
       <div class="stat-label">Tasa Entrega Febrero</div>
-      <div class="stat-value">72.2%</div>
-      <div class="stat-sub">1,834 entregados / 2,526 pedidos</div>
+      <div class="stat-value">81.7%</div>
+      <div class="stat-sub">1,834 entregados / 2,246 pedidos activos</div>
     </div>
     <div class="stat-card sky">
       <div class="stat-label">Tasa Entrega Marzo</div>
-      <div class="stat-value">76.6%</div>
-      <div class="stat-sub">1,509 entregados / 1,970 pedidos · Cierre mes</div>
+      <div class="stat-value">83.6%</div>
+      <div class="stat-sub">1,510 entregados / 1,807 pedidos activos · Cierre mes</div>
     </div>
     <div class="stat-card purple">
       <div class="stat-label">Tasa Entrega Abril</div>
-      <div class="stat-value">75.9%</div>
-      <div class="stat-sub">1,609 entregados / 2,120 pedidos · Cierre mes</div>
+      <div class="stat-value">84.2%</div>
+      <div class="stat-sub">1,610 entregados / 1,912 pedidos activos · Cierre mes</div>
     </div>
     <div class="stat-card" style="border-color:#f59e0b;background:rgba(245,158,11,0.08)">
       <div class="stat-label">Tasa Entrega Mayo</div>
-      <div class="stat-value" style="color:#f59e0b">54.7%*</div>
-      <div class="stat-sub" style="color:#f59e0b">616 entregados / 1,127 pedidos · Corte 15/05</div>
+      <div class="stat-value" style="color:#f59e0b">63.8%*</div>
+      <div class="stat-sub" style="color:#f59e0b">616 entregados / 966 pedidos activos · Corte 15/05</div>
     </div>
   </div>
-  <div style="font-size:0.75rem;color:#f59e0b;margin:-12px 0 16px 4px">* Mayo: tasa baja porque la mayoría de pedidos están aún en tránsito al corte 15/05/2026 (12 días con data) · Abril cerrado</div>
+  <div style="font-size:0.75rem;color:var(--text-muted);margin:-12px 0 16px 4px">Fórmula: Ent / (Ped − Rech − Canc − Pend.Confirm.) · Global: 6,371 / 7,901 (80.6%) · * Mayo: tasa baja porque la mayoría de pedidos están aún en tránsito al corte 15/05/2026 (12 días con data) · Abril cerrado</div>
 
   <!-- ===== PRESUPUESTO ===== -->
   <div class="section-title">🎯 Cumplimiento de Presupuesto Mensual</div>
@@ -559,7 +560,7 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
     <p>DORAL STORE muestra un <strong>crecimiento explosivo Feb vs Ene (+133.7%)</strong>: de 1,081 a 2,526 pedidos ($138.8M → $257.1M). Marzo cerró con <strong>1,970 pedidos</strong> ($204.9M), Abril con <strong>2,120 pedidos</strong> ($208.6M · 70.7 ped/día). <strong>Mayo al corte 15/05 (12 días activos): 1,127 pedidos · $117.0M</strong> (93.9 ped/día) — proyecta cierre a ~2,911 ped / $302.3M. <strong>Acumulado Ene–May al 15/05: 8,824 pedidos · $926.5M</strong>.</p>
     <ul>
       <li>✅ <strong>Tasa de Despacho acumulada 92.6%</strong> — Por encima del benchmark LATAM (85%). Tendencia: Ene 90.3% · Feb 89.6% · Mar 95.9% · Abr 92.0% · <strong>May 97.2%</strong> (parcial 12d, mejor mes).</li>
-      <li>⚠️ <strong>Tasa de Entrega Global 72.2%</strong>: Ene 74.1% · Feb 72.6% · Mar 76.6% · Abr 75.9% · <strong>May 54.7%*</strong> (parcial, pedidos aún en tránsito). Problema recurrente: "Destinatario se rehúsa a recibir" (310 casos, 21.9% de novedades).</li>
+      <li>⚠️ <strong>Tasa de Entrega Global 80.6%</strong>: Ene 82.6% · Feb 81.7% · Mar 83.6% · Abr 84.2% · <strong>May 63.8%*</strong> (parcial, pedidos aún en tránsito). Problema recurrente: "Destinatario se rehúsa a recibir" (310 casos, 21.9% de novedades).</li>
       <li>📦 <strong>Devoluciones acumuladas: $123.0M</strong> (1,182 devol., tasa 15.0%). Por mes: Ene 17.4% · Feb 18.3% · Mar 16.4% · Abr 14.4% · May 3.1%* (parcial). <strong>$102.6M en riesgo</strong> (1,005 pendientes retorno).</li>
       <li>🏆 <strong>JAMV-DRIVE</strong>: sólo 95 pedidos acumulados (1.1%). Reactivar participación estratégica.</li>
       <li>📉 <strong>Ticket promedio mostró recuperación parcial</strong>: $128.4K (Ene) → $101.8K (Feb) → $104.0K (Mar) → $98.4K (Abr) → <strong>$103.8K (May)</strong>. Dependencia creciente de productos de bajo ticket (JS18, JS21).</li>
@@ -609,7 +610,7 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
           <tr><td>📦 Pedidos generados</td><td style="text-align:center;font-weight:700">1,081</td><td style="text-align:center;font-weight:700">2,526</td><td style="text-align:center;font-weight:700">1,970</td><td style="text-align:center;font-weight:700">2,120</td><td style="text-align:center;font-weight:700;color:#ec4899">1,127*</td><td style="text-align:center">📈 May proy. ~2,911</td></tr>
           <tr><td>💰 Facturación</td><td style="text-align:center">$138.8M</td><td style="text-align:center">$257.1M</td><td style="text-align:center">$204.9M</td><td style="text-align:center">$208.6M</td><td style="text-align:center;color:#ec4899">$117.0M*</td><td style="text-align:center">Total: $926.5M</td></tr>
           <tr><td>🚚 Tasa Despacho</td><td style="text-align:center">90.3%</td><td style="text-align:center">89.6%</td><td style="text-align:center"><span class="pill pill-green">95.9%</span></td><td style="text-align:center">92.0%</td><td style="text-align:center"><span class="pill pill-green">97.2%*</span></td><td style="text-align:center">✅ May mejor mes</td></tr>
-          <tr><td>✅ Tasa Entrega</td><td style="text-align:center">74.1%</td><td style="text-align:center">72.6%</td><td style="text-align:center">76.6%</td><td style="text-align:center">75.9%</td><td style="text-align:center"><span class="pill pill-red">54.7%*</span></td><td style="text-align:center">⚠️ May en tránsito</td></tr>
+          <tr><td>✅ Tasa Entrega</td><td style="text-align:center">82.6%</td><td style="text-align:center">81.7%</td><td style="text-align:center">83.6%</td><td style="text-align:center">84.2%</td><td style="text-align:center"><span class="pill pill-red">63.8%*</span></td><td style="text-align:center">⚠️ May en tránsito</td></tr>
           <tr><td>⏱️ Tiempo Guía Prom.</td><td style="text-align:center">0.89d</td><td style="text-align:center">0.52d</td><td style="text-align:center"><span class="pill pill-green">0.09d</span></td><td style="text-align:center"><span class="pill pill-green">~0.1d</span></td><td style="text-align:center"><span class="pill pill-green">~0.1d</span></td><td style="text-align:center">📉 Elite sostenido</td></tr>
           <tr><td>🏷️ Ticket Promedio</td><td style="text-align:center">$128.4K</td><td style="text-align:center">$101.8K</td><td style="text-align:center">$104.0K</td><td style="text-align:center;color:#ef4444">$98.4K</td><td style="text-align:center;color:#10b981">$103.8K*</td><td style="text-align:center">↗️ Repunte en May</td></tr>
           <tr><td>🚛 Flete / Facturación</td><td style="text-align:center"><span class="pill pill-green">14.0%</span></td><td style="text-align:center"><span class="pill pill-red">17.2%</span></td><td style="text-align:center"><span class="pill pill-red">17.5%</span></td><td style="text-align:center"><span class="pill pill-red">18.2%</span></td><td style="text-align:center"><span class="pill pill-red">18.2%*</span></td><td style="text-align:center">🚨 En alza (+4.2pp)</td></tr>
@@ -1975,14 +1976,14 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:22px">
 
   <!-- 1. Tasa de entrega -->
-  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;border-left:4px solid #ef4444">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;border-left:4px solid #f59e0b">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
       <div>
         <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em">📦 Tasa de Entrega Total</div>
-        <div style="font-size:0.72rem;color:#ef4444;font-weight:600;margin-top:2px">🔴 POR DEBAJO DEL MERCADO</div>
+        <div style="font-size:0.72rem;color:#f59e0b;font-weight:600;margin-top:2px">🟡 CERCA DEL BENCHMARK</div>
       </div>
       <div style="text-align:right">
-        <div style="font-size:2rem;font-weight:900;color:#ef4444;line-height:1">72.2%</div>
+        <div style="font-size:2rem;font-weight:900;color:#f59e0b;line-height:1">80.6%</div>
         <div style="font-size:0.68rem;color:var(--text-muted)">Doral actual (Ene–May)</div>
       </div>
     </div>
@@ -1992,13 +1993,13 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
       </div>
       <div style="height:10px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;position:relative">
         <div style="width:85%;height:100%;background:rgba(245,158,11,0.25);border-radius:8px"></div>
-        <div style="position:absolute;top:0;left:0;width:72.2%;height:100%;background:linear-gradient(90deg,#ef4444,#f87171);border-radius:8px"></div>
+        <div style="position:absolute;top:0;left:0;width:80.6%;height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:8px"></div>
         <div style="position:absolute;top:-3px;left:85%;width:2px;height:16px;background:#f59e0b;border-radius:2px"></div>
         <div style="position:absolute;top:-3px;left:92%;width:2px;height:16px;background:#10b981;border-radius:2px"></div>
       </div>
     </div>
     <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:8px">
-      <strong style="color:#ef4444">-12.8 pp</strong> vs benchmark · Por mes: Ene 74.1% · Feb 72.6% · Mar 76.6% · Abr 75.9% · <strong>May 54.7%*</strong> (parcial, aún en tránsito). Causas: devoluciones (15.0%) + cancelaciones (7.4%). Líderes Colombia D2C superan 88%.
+      <strong style="color:#f59e0b">-4.4 pp</strong> vs benchmark · Por mes: Ene 82.6% · Feb 81.7% · Mar 83.6% · Abr 84.2% · <strong>May 63.8%*</strong> (parcial, aún en tránsito). Fórmula: Ent / (Ped − Rech − Canc − Pend). Líderes Colombia D2C superan 88%.
     </div>
     <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
       <span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:2px 8px;border-radius:6px;font-size:0.69rem;font-weight:600">Meta 30d: 78%</span>
@@ -2091,11 +2092,11 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
       </div>
     </div>
     <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.5;border-top:1px solid var(--border);padding-top:8px">
-      <strong style="color:#f59e0b">6,371 de 7,553</strong> entregados sin devolución · Por mes: Ene 74.1% · Feb 72.6% · Mar 76.6% · Abr 75.9% · May 54.7%*. <strong>Foco:</strong> reducir devoluciones (15.0% global) y mejorar gestión de novedades en Febrero (404) y Abril (367).
+      <strong style="color:#f59e0b">6,371 de 7,553</strong> entregados (vs Ent+Dev) · Por mes: Ene 82.6% · Feb 81.7% · Mar 83.6% · Abr 84.2% · May 63.8%*. <strong>Foco:</strong> reducir devoluciones (15.0% global) y mejorar gestión de novedades en Febrero (404) y Abril (367).
     </div>
     <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
       <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:2px 8px;border-radius:6px;font-size:0.69rem;font-weight:600">Meta 30d: 94%</span>
-      <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:2px 8px;border-radius:6px;font-size:0.69rem;font-weight:600">Mar: 76.6%</span>
+      <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:2px 8px;border-radius:6px;font-size:0.69rem;font-weight:600">Mar: 83.6%</span>
     </div>
   </div>
 
@@ -2247,11 +2248,11 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
     <tbody>
       <tr style="border-top:1px solid var(--border)">
         <td style="padding:10px 16px;font-weight:600">📦 Tasa de Entrega</td>
-        <td style="padding:10px 12px;text-align:center;color:#ef4444;font-weight:700">72.2%</td>
+        <td style="padding:10px 12px;text-align:center;color:#f59e0b;font-weight:700">80.6%</td>
         <td style="padding:10px 12px;text-align:center;color:#f59e0b">85%</td>
         <td style="padding:10px 12px;text-align:center;color:#10b981">92%</td>
-        <td style="padding:10px 12px;text-align:center"><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:600">BAJO</span></td>
-        <td style="padding:10px 16px"><div style="display:flex;gap:2px"><span style="width:16px;height:8px;background:#ef4444;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#ef4444;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#ef4444;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="margin-left:6px;font-size:0.72rem;color:var(--text-muted)">3/10</span></div></td>
+        <td style="padding:10px 12px;text-align:center"><span style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.72rem;font-weight:600">BUENO</span></td>
+        <td style="padding:10px 16px"><div style="display:flex;gap:2px"><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:#f59e0b;border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="width:16px;height:8px;background:rgba(255,255,255,0.1);border-radius:2px;display:inline-block"></span><span style="margin-left:6px;font-size:0.72rem;color:var(--text-muted)">7/10</span></div></td>
       </tr>
       <tr style="border-top:1px solid var(--border);background:rgba(255,255,255,0.02)">
         <td style="padding:10px 16px;font-weight:600">🚫 Tasa Cancelación</td>
@@ -4898,9 +4899,9 @@ function initInteligenciaExpert() {
   // ── 2. Radar Benchmarks ──
   destroyChart('chartIntelRadar');
   makeChart('chartIntelRadar',{type:'radar',data:{
-    labels:['Entrega\n(72.2%→85%)','1ª Entrega\n(84.4%→95%)','Margen\n(59.6%→70%)','TG Guía\n(0.50d→0.25d)','Costo Flete\n(inv 17.1%→8%)','Recompra\n(4.9%→20%)','Cancelación\n(inv 7.4%→3%)','Devolución\n(inv 15.0%→8%)'],
+    labels:['Entrega\n(80.6%→85%)','1ª Entrega\n(84.4%→95%)','Margen\n(59.6%→70%)','TG Guía\n(0.50d→0.25d)','Costo Flete\n(inv 17.1%→8%)','Recompra\n(4.9%→20%)','Cancelación\n(inv 7.4%→3%)','Devolución\n(inv 15.0%→8%)'],
     datasets:[
-      {label:'Doral Actual',data:[72.2, 84.4, 59.6, 60, 14.5, 14.0, 11.0, 25.0],
+      {label:'Doral Actual',data:[80.6, 84.4, 59.6, 60, 14.5, 14.0, 11.0, 25.0],
         backgroundColor:'rgba(99,102,241,0.15)',borderColor:'#6366f1',borderWidth:2,pointBackgroundColor:'#6366f1',pointRadius:4},
       {label:'Benchmark',data:[85,85,55,50,40,57,62.5,55],
         backgroundColor:'rgba(245,158,11,0.08)',borderColor:'#f59e0b',borderWidth:1.5,pointBackgroundColor:'#f59e0b',pointRadius:3,borderDash:[4,4]},
@@ -4936,7 +4937,7 @@ function initInteligenciaExpert() {
   makeChart('chartIntelEvol',{type:'line',data:{
     labels:['Enero','Febrero','Marzo','Abril','Mayo*'],
     datasets:[
-      {label:'Entrega Total',data:[74.1, 72.6, 76.6, 75.9, 54.7],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',borderWidth:2.5,pointRadius:5,fill:true,tension:0.3},
+      {label:'Entrega Total',data:[82.6, 81.7, 83.6, 84.2, 63.8],borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',borderWidth:2.5,pointRadius:5,fill:true,tension:0.3},
       {label:'1ª Entrega',data:[82.6, 81.7, 83.6, 85.4, 95.4],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.05)',borderWidth:2,pointRadius:4,fill:false,tension:0.3},
       {label:'Cancelación',data:[9.7, 10.4, 4.1, 8.0, 2.8],borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.05)',borderWidth:2,pointRadius:4,fill:false,tension:0.3,borderDash:[4,3]},
       {label:'Devolución',data:[17.4, 18.3, 16.4, 14.4, 3.1],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.05)',borderWidth:2,pointRadius:4,fill:false,tension:0.3,borderDash:[4,3]}
