@@ -283,6 +283,16 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
       <div class="stat-value">93.9%</div>
       <div class="stat-sub">1,991 despachados / 2,120 generados · Cierre mes</div>
     </div>
+    <div class="stat-card" style="border-color:#f59e0b;background:rgba(245,158,11,0.08)">
+      <div class="stat-label">Tasa Despacho Mayo</div>
+      <div class="stat-value" style="color:#f59e0b">97.2%*</div>
+      <div class="stat-sub" style="color:#f59e0b">2,225 despachados / 2,288 generados · Corte 05/06</div>
+    </div>
+    <div class="stat-card" style="border-color:#0ea5e9;background:rgba(14,165,233,0.08)">
+      <div class="stat-label">Tasa Despacho Junio</div>
+      <div class="stat-value" style="color:#0ea5e9">98.8%*</div>
+      <div class="stat-sub" style="color:#0ea5e9">493 despachados / 499 generados · Jun en curso (5d)</div>
+    </div>
     <div class="stat-card purple">
       <div class="stat-label">Flete Total Acumulado</div>
       <div class="stat-value">$180.2M</div>
@@ -372,6 +382,68 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
   </div>
   <div style="font-size:0.75rem;color:var(--text-muted);margin:-12px 0 16px 4px">Fórmula: Ent / (Ped − Rech − Canc − Pend.Confirm.) · Global: 7,586 / 9,373 (80.9%) · * Mayo cerrado: tasa 81.9% tras resolverse pedidos en tránsito · Jun recién inicia (1 día) · Abr–May cerrados</div>
 
+  <div class="section-title">🎯 Resultado Final de Novedades por Mes</div>
+  <div style="font-size:0.75rem;color:var(--text-muted);margin:-12px 0 14px 4px">De las novedades de cada mes: cuántas terminaron <strong style="color:#10b981">Entregadas</strong> al cliente, cuántas se <strong style="color:#ef4444">Devolvieron</strong>, y cuántas siguen <strong style="color:#f59e0b">En Novedad</strong> (en proceso, sin destino final).</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:8px">
+    <div class="stat-card" style="border-color:#10b981;background:var(--card-bg)">
+      <div class="stat-label">Novedades Enero</div>
+      <div class="stat-value" style="color:#10b981;font-size:1.5rem">160</div>
+      <div class="stat-sub" style="line-height:1.5">
+        <span style="color:#10b981;font-weight:700">✅ 63 entregadas</span> (39.4%)<br>
+        <span style="color:#ef4444;font-weight:700">↩️ 97 devueltas</span> (60.6%)<br>
+        <span style="color:#f59e0b;font-weight:700">⏳ 0 en novedad</span> (0.0%)
+      </div>
+    </div>
+    <div class="stat-card" style="border-color:#10b981;background:var(--card-bg)">
+      <div class="stat-label">Novedades Febrero</div>
+      <div class="stat-value" style="color:#10b981;font-size:1.5rem">404</div>
+      <div class="stat-sub" style="line-height:1.5">
+        <span style="color:#10b981;font-weight:700">✅ 145 entregadas</span> (35.9%)<br>
+        <span style="color:#ef4444;font-weight:700">↩️ 258 devueltas</span> (63.9%)<br>
+        <span style="color:#f59e0b;font-weight:700">⏳ 1 en novedad</span> (0.2%)
+      </div>
+    </div>
+    <div class="stat-card" style="border-color:#10b981;background:var(--card-bg)">
+      <div class="stat-label">Novedades Marzo</div>
+      <div class="stat-value" style="color:#10b981;font-size:1.5rem">347</div>
+      <div class="stat-sub" style="line-height:1.5">
+        <span style="color:#10b981;font-weight:700">✅ 123 entregadas</span> (35.4%)<br>
+        <span style="color:#ef4444;font-weight:700">↩️ 224 devueltas</span> (64.6%)<br>
+        <span style="color:#f59e0b;font-weight:700">⏳ 0 en novedad</span> (0.0%)
+      </div>
+    </div>
+    <div class="stat-card" style="border-color:#10b981;background:var(--card-bg)">
+      <div class="stat-label">Novedades Abril</div>
+      <div class="stat-value" style="color:#10b981;font-size:1.5rem">368</div>
+      <div class="stat-sub" style="line-height:1.5">
+        <span style="color:#10b981;font-weight:700">✅ 172 entregadas</span> (46.7%)<br>
+        <span style="color:#ef4444;font-weight:700">↩️ 195 devueltas</span> (53.0%)<br>
+        <span style="color:#f59e0b;font-weight:700">⏳ 1 en novedad</span> (0.3%)
+      </div>
+    </div>
+    <div class="stat-card" style="border-color:#f59e0b;background:rgba(245,158,11,0.08)">
+      <div class="stat-label">Novedades Mayo</div>
+      <div class="stat-value" style="color:#f59e0b;font-size:1.5rem">401*</div>
+      <div class="stat-sub" style="line-height:1.5">
+        <span style="color:#10b981;font-weight:700">✅ 166 entregadas</span> (41.4%)<br>
+        <span style="color:#ef4444;font-weight:700">↩️ 173 devueltas</span> (43.1%)<br>
+        <span style="color:#f59e0b;font-weight:700">⏳ 62 en novedad</span> (15.5%) · Corte 05/06
+      </div>
+    </div>
+    <div class="stat-card" style="border-color:#0ea5e9;background:rgba(14,165,233,0.08)">
+      <div class="stat-label">Novedades Junio</div>
+      <div class="stat-value" style="color:#0ea5e9;font-size:1.5rem">45*</div>
+      <div class="stat-sub" style="line-height:1.5">
+        <span style="color:#10b981;font-weight:700">✅ 6 entregadas</span> (13.3%)<br>
+        <span style="color:#ef4444;font-weight:700">↩️ 0 devueltas</span> (0.0%)<br>
+        <span style="color:#f59e0b;font-weight:700">⏳ 39 en novedad</span> (86.7%) · Jun en curso
+      </div>
+    </div>
+  </div>
+  <div style="font-size:0.75rem;color:var(--text-muted);margin:0 0 20px 4px">Acumulado (todos los meses): <strong style="color:var(--text)">1725</strong> novedades · <span style="color:#10b981;font-weight:700">675 entregadas (39.1%)</span> · <span style="color:#ef4444;font-weight:700">947 devueltas (54.9%)</span> · <span style="color:#f59e0b;font-weight:700">103 en novedad (6.0%)</span> · * meses en curso/parcial</div>
+
+  
+
   <!-- ===== PRESUPUESTO ===== -->
   <div class="section-title">🎯 Cumplimiento de Presupuesto Mensual</div>
   <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:9px 14px;margin-bottom:14px;font-size:0.77rem;color:var(--text-muted);display:flex;gap:20px;flex-wrap:wrap;align-items:center">
@@ -459,10 +531,29 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
       </div>
     </div>
 
-    <!-- MAYO -->
-    <div style="background:var(--card-bg);border:1px solid rgba(249,115,22,0.4);border-radius:14px;padding:16px;position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;right:0;width:70px;height:70px;border-radius:0 14px 0 100%;background:rgba(249,115,22,0.12)"></div>
-      <div style="font-size:0.69rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">📅 Mayo 2026 <span style="color:#f97316;font-weight:600">· 1–30 Jun (5d transcurridos)</span></div>
+    <!-- MAYO (cerrado) -->
+    <div style="background:var(--card-bg);border:1px solid rgba(245,158,11,0.4);border-radius:14px;padding:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:70px;height:70px;border-radius:0 14px 0 100%;background:rgba(245,158,11,0.12)"></div>
+      <div style="font-size:0.69rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">📅 Mayo 2026 <span style="color:#f59e0b;font-weight:600">· cerrado</span></div>
+      <div style="font-size:0.71rem;color:#f97316;font-weight:600;margin-bottom:10px">🟠 Regular</div>
+      <div style="font-size:2.2rem;font-weight:900;color:#f97316;line-height:1;margin-bottom:2px">47.4%</div>
+      <div style="font-size:0.71rem;color:var(--text-muted);margin-bottom:6px">cumplimiento ppto</div>
+      <div style="height:8px;background:rgba(255,255,255,0.07);border-radius:8px;overflow:hidden;margin:6px 0"><div style="width:47.4%;height:100%;background:#f97316;border-radius:8px"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-top:6px">
+        <span style="color:var(--text-muted)">Facturado</span><span style="font-weight:700">$237.2M</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-top:3px">
+        <span style="color:var(--text-muted)">Presupuesto</span><span style="font-weight:600;color:var(--text-muted)">$500M</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;margin-top:3px">
+        <span style="color:var(--text-muted)">Brecha</span><span style="font-weight:700;color:#f97316">$-262.8M</span>
+      </div>
+    </div>
+
+    <!-- JUNIO (en curso) -->
+    <div style="background:var(--card-bg);border:1px solid rgba(14,165,233,0.4);border-radius:14px;padding:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:70px;height:70px;border-radius:0 14px 0 100%;background:rgba(14,165,233,0.12)"></div>
+      <div style="font-size:0.69rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">📅 Junio 2026 <span style="color:#0ea5e9;font-weight:600">· 1–30 Jun (5d transcurridos)</span></div>
       <div style="font-size:0.71rem;color:#f97316;font-weight:600;margin-bottom:10px">🟠 Regular (período)</div>
       <div style="font-size:2.2rem;font-weight:900;color:#f97316;line-height:1;margin-bottom:2px">60.2%</div>
       <div style="font-size:0.71rem;color:var(--text-muted);margin-bottom:6px">cumplimiento ppto pro-rata 5d (Jun)</div>
@@ -547,7 +638,7 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
         <table style="font-size:0.8rem;width:100%">
           <thead>
             <tr>
-              <th style="text-align:center">Día</th>
+              <th style="text-align:center">📅 Fecha</th>
               <th style="text-align:right">💰 Ppto Día</th>
               <th style="text-align:right">📊 Facturado</th>
               <th style="text-align:center">% Cumpl.</th>
@@ -2018,6 +2109,19 @@ select{padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-si
       </table>
     </div>
   </div>
+  <div class="section-title">🎯 Resultado Final de Novedades por Mes</div>
+  <div style="font-size:0.75rem;color:var(--text-muted);margin:-12px 0 14px 4px">De las novedades generadas cada mes: cuántas terminaron <strong style="color:#10b981">Entregadas</strong> al cliente, cuántas se <strong style="color:#ef4444">Devolvieron</strong>, y cuántas siguen <strong style="color:#f59e0b">En Novedad</strong> (en proceso, sin destino final).</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="novResBtns">
+    <button class="month-btn" id="btnNovRes_ene" onclick="switchNovRes('ene')">Enero</button>
+    <button class="month-btn" id="btnNovRes_feb" onclick="switchNovRes('feb')">Febrero</button>
+    <button class="month-btn" id="btnNovRes_mar" onclick="switchNovRes('mar')">Marzo</button>
+    <button class="month-btn" id="btnNovRes_abr" onclick="switchNovRes('abr')">Abril</button>
+    <button class="month-btn" id="btnNovRes_may" onclick="switchNovRes('may')">Mayo</button>
+    <button class="month-btn" id="btnNovRes_jun" onclick="switchNovRes('jun')">Junio</button>
+    <button class="month-btn active" id="btnNovRes_total" onclick="switchNovRes('total')">Acumulado</button>
+  </div>
+  <div id="novResContent" style="margin-bottom:22px"></div>
+
   <div class="section-title">📊 Estadística Mensual de Novedades</div>
   <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
     <button class="month-btn active" id="btnNovMesEne" onclick="switchNovMes('1')">Enero 2026</button>
@@ -4052,6 +4156,7 @@ function initNovedades(){
   makeChart('chartNovDep',{type:'bar',data:{labels:Object.keys(NOV_DEP),datasets:[{data:Object.values(NOV_DEP),backgroundColor:C,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{color:'#fff',font:{size:9,weight:'bold'},formatter:v=>fmtN(v)}}}});
   switchNovInc('total');
   switchNovMes('1');
+  switchNovRes('total');
 
   // === Estatus vs Solucionada charts ===
   const evs = EST_VS_SOL;
@@ -4206,6 +4311,7 @@ function switchMatriz(key){
 }
 
 let novIncMesFil='total';
+const NOV_RESULTADO = {"ene": {"total": 160, "ent": 63, "dev": 97, "nov": 0, "ent_pct": 39.4, "dev_pct": 60.6, "nov_pct": 0.0}, "feb": {"total": 404, "ent": 145, "dev": 258, "nov": 1, "ent_pct": 35.9, "dev_pct": 63.9, "nov_pct": 0.2}, "mar": {"total": 347, "ent": 123, "dev": 224, "nov": 0, "ent_pct": 35.4, "dev_pct": 64.6, "nov_pct": 0.0}, "abr": {"total": 368, "ent": 172, "dev": 195, "nov": 1, "ent_pct": 46.7, "dev_pct": 53.0, "nov_pct": 0.3}, "may": {"total": 401, "ent": 166, "dev": 173, "nov": 62, "ent_pct": 41.4, "dev_pct": 43.1, "nov_pct": 15.5}, "jun": {"total": 45, "ent": 6, "dev": 0, "nov": 39, "ent_pct": 13.3, "dev_pct": 0.0, "nov_pct": 86.7}, "total": {"total": 1725, "ent": 675, "dev": 947, "nov": 103, "ent_pct": 39.1, "dev_pct": 54.9, "nov_pct": 6.0}};
 const NOV_INC_KPIS={
   ene:{total:161,sol:137,nosol:24,sol_pct:85.1,ent:0,ent_pct:0},
   feb:{total:409,sol:355,nosol:54,sol_pct:86.8,ent:0,ent_pct:0},
@@ -4299,6 +4405,48 @@ function switchEstSolMes(key){
   switchMatriz(key==='total'?'total':key);
 }
 
+function switchNovRes(mes){
+  ['ene','feb','mar','abr','may','jun','total'].forEach(k=>{
+    const b=document.getElementById('btnNovRes_'+k);
+    if(b) b.classList.toggle('active', k===mes);
+  });
+  renderNovRes(mes);
+}
+function renderNovRes(mes){
+  mes = mes || 'total';
+  const d = NOV_RESULTADO[mes];
+  const el = document.getElementById('novResContent');
+  if(!el) return;
+  if(!d){ el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:20px;text-align:center">Sin novedades registradas en este mes.</div>'; return; }
+  const nom = {ene:'Enero',feb:'Febrero',mar:'Marzo',abr:'Abril',may:'Mayo',jun:'Junio',total:'Acumulado (todos los meses)'}[mes];
+  const cards = [
+    {lbl:'✅ Entregadas al cliente', n:d.ent, pct:d.ent_pct, col:'#10b981', bg:'16,185,129', sub:'Novedad resuelta, pedido entregado'},
+    {lbl:'↩️ Devueltas', n:d.dev, pct:d.dev_pct, col:'#ef4444', bg:'239,68,68', sub:'Novedad terminó en devolución'},
+    {lbl:'⏳ En Novedad', n:d.nov, pct:d.nov_pct, col:'#f59e0b', bg:'245,158,11', sub:'En proceso, sin destino final'}
+  ];
+  const cardHtml = cards.map(c=>`
+    <div style="flex:1;min-width:190px;background:var(--card-bg);border:1px solid rgba(${c.bg},0.4);border-radius:14px;padding:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:70px;height:70px;border-radius:0 14px 0 100%;background:rgba(${c.bg},0.12)"></div>
+      <div style="font-size:0.72rem;color:var(--text-muted);font-weight:700;margin-bottom:8px">${c.lbl}</div>
+      <div style="font-size:2.1rem;font-weight:900;color:${c.col};line-height:1">${c.n}</div>
+      <div style="font-size:0.95rem;font-weight:700;color:${c.col};margin-bottom:6px">${c.pct}%</div>
+      <div style="height:7px;background:rgba(255,255,255,0.07);border-radius:7px;overflow:hidden;margin:6px 0"><div style="width:${c.pct}%;height:100%;background:${c.col};border-radius:7px"></div></div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-top:4px">${c.sub}</div>
+    </div>`).join('');
+  // stacked bar
+  const seg = (n,pct,col)=> pct>0?`<div style="width:${pct}%;background:${col};display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:700" title="${n}">${pct>=8?n:''}</div>`:'';
+  el.innerHTML = `
+    <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px"><strong style="color:var(--text)">${d.total}</strong> novedades en ${nom}</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">${cardHtml}</div>
+    <div style="display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+      ${seg(d.ent,d.ent_pct,'#10b981')}${seg(d.dev,d.dev_pct,'#ef4444')}${seg(d.nov,d.nov_pct,'#f59e0b')}
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:0.72rem;color:var(--text-muted)">
+      <span><span style="display:inline-block;width:10px;height:10px;background:#10b981;border-radius:2px;margin-right:4px"></span>Entregadas ${d.ent} (${d.ent_pct}%)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:2px;margin-right:4px"></span>Devueltas ${d.dev} (${d.dev_pct}%)</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#f59e0b;border-radius:2px;margin-right:4px"></span>En Novedad ${d.nov} (${d.nov_pct}%)</span>
+    </div>`;
+}
 
 function switchNovMes(mes){
   novMesFil=mes;
@@ -5256,6 +5404,15 @@ function switchPptoDia(mes) {
 
 function renderPptoDia() {
   const d = PPTO_DIA_DATA[pptoDiaMes];
+  const _MESCORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const _MNUM = {ene:0,feb:1,mar:2,abr:3,may:4,jun:5};
+  function fechaLabel(lbl){
+    if(pptoDiaMes==='acum'){
+      const base=new Date(2026,0,1); base.setDate(base.getDate()+(lbl-1));
+      return base.getDate()+' '+_MESCORTO[base.getMonth()];
+    }
+    return lbl+' '+_MESCORTO[_MNUM[pptoDiaMes]];
+  }
   const mesNom = {ene:'Enero',feb:'Febrero',mar:'Marzo',abr:'Abril',may:'Mayo',jun:'Junio',acum:'Acumulado 1 Ene → 5 Jun'}[pptoDiaMes];
   const corte = pptoDiaMes==='jun' ? ' · Jun en curso (5d) · Corte 05/06' : pptoDiaMes==='may' ? ' · Mayo cerrado' : pptoDiaMes==='abr' ? ' · Cierre Abr' : pptoDiaMes==='mar' ? ' · Cierre Mar' : pptoDiaMes==='acum' ? ' · 156 días' : '';
 
@@ -5445,7 +5602,7 @@ function renderPptoDia() {
       `<span style="color:#10b981;font-weight:700">+$${Math.abs(diffVal)}M</span>`:
       `<span style="color:#ef4444;font-weight:600">−$${diffVal}M</span>`;
     return `<tr>
-      <td style="text-align:center;font-weight:700;color:#6366f1">Día ${lbl}</td>
+      <td style="text-align:center;font-weight:700;color:#6366f1">${fechaLabel(lbl)}</td>
       <td style="text-align:right;color:var(--text-muted)">$${ppto_d}M</td>
       <td style="text-align:right;font-weight:700">$${fac}M</td>
       <td style="text-align:center"><span style="color:${col};font-weight:800;font-size:0.88rem">${pct}%</span></td>
