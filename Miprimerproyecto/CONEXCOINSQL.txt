@@ -1,0 +1,8 @@
+
+postgresql://postgres:julian@db.wmggpgghhvbhfgslabra.supabase.co:5432/postgres
+
+aZN9qga7v2tCA0tj
+
+
+
+postgresql://postgres:aZN9qga7v2tCA0tj@db.wmggpgghhvbhfgslabra.supabase.co:5432/postgres
