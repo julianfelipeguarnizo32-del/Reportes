@@ -2722,7 +2722,7 @@ function buildPptoSpeech(){
 // ---- Estado del reproductor con posición (seek), salto y velocidad ----
 let _pptoFullText="", _pptoSegStarts=[0], _pptoBaseChar=0, _pptoCharIndex=0;
 let _pptoPlaying=false, _pptoPaused=false, _pptoRate=1;
-let _pptoTimer=null, _pptoAnchorTime=0, _pptoAnchorChar=0, _pptoLastMarkStart=-1;
+let _pptoTimer=null, _pptoAnchorTime=0, _pptoAnchorChar=0, _pptoLastMarkStart=-1, _pptoKA=0;
 const _PPTO_CPS=14;  // caracteres/seg estimados a velocidad 1 (auto-corrige con onboundary)
 
 function _pptoStatus(t){ const st=document.getElementById("pptoAudioStatus"); if(st) st.textContent=t; }
@@ -2759,6 +2759,8 @@ function _pptoCurrentSegText(){
 function _pptoTick(){
     if(!_pptoPlaying){ return; }
     if(_pptoPaused){ _pptoAnchorTime=performance.now(); _pptoAnchorChar=_pptoCharIndex; return; }
+    // keepalive móvil (Android corta la voz ~15s): resume periódico
+    if(typeof speechSynthesis!=="undefined" && (performance.now()-_pptoKA>9000)){ try{ speechSynthesis.resume(); }catch(e){} _pptoKA=performance.now(); }
     const len=_pptoLen();
     const elapsed=performance.now()-_pptoAnchorTime;            // ms desde el último ancla
     const est=_pptoAnchorChar + (elapsed/1000)*_PPTO_CPS*_pptoRate;
@@ -2860,8 +2862,10 @@ function _pptoSpeakFrom(pos){
     // Reasignar ANTES de cancelar: así el onend de la locución previa queda anulado por el guard
     _pptoUtter=u;
     _pptoPlaying=true; _pptoPaused=false;
+    const _wasSpeaking=(typeof speechSynthesis!=="undefined")&&(speechSynthesis.speaking||speechSynthesis.pending);
     try{ speechSynthesis.cancel(); }catch(e){}
-    setTimeout(()=>{ if(_pptoUtter===u){ try{ speechSynthesis.speak(u); }catch(e){} } }, 70);
+    const _go=()=>{ if(_pptoUtter===u){ try{ speechSynthesis.resume(); }catch(e){} try{ speechSynthesis.speak(u); }catch(e){} } };
+    if(_wasSpeaking){ setTimeout(_go,70); } else { _go(); }   // móvil: hablar dentro del gesto del usuario
     _pptoStartTimer();
     _setPptoBtns(true,false);
     _pptoStatus("Leyendo: "+_pptoCurrentSegText());
@@ -2918,7 +2922,7 @@ function pptoRateChange(v){
 /* ===================== AUDIO · ANÁLISIS POR TIENDA (ta) ===================== */
 let _taFullText="", _taSegStarts=[0], _taSegTargets=[], _taBaseChar=0, _taCharIndex=0;
 let _taPlaying=false, _taPaused=false, _taRate=1;
-let _taTimer=null, _taAnchorTime=0, _taAnchorChar=0, _taUtter=null, _taLastTargetKey=null;
+let _taTimer=null, _taAnchorTime=0, _taAnchorChar=0, _taUtter=null, _taLastTargetKey=null, _taKA=0;
 const _TA_CPS=14;
 
 function _taPct(part,total){ return total>0 ? part/total : 0; }
@@ -3045,6 +3049,7 @@ function _taFollow(){
 function _taTick(){
     if(!_taPlaying){ return; }
     if(_taPaused){ _taAnchorTime=performance.now(); _taAnchorChar=_taCharIndex; return; }
+    if(typeof speechSynthesis!=="undefined" && (performance.now()-_taKA>9000)){ try{ speechSynthesis.resume(); }catch(e){} _taKA=performance.now(); }
     const len=_taLen();
     const elapsed=performance.now()-_taAnchorTime;
     const est=_taAnchorChar+(elapsed/1000)*_TA_CPS*_taRate;
@@ -3074,8 +3079,10 @@ function _taSpeakFrom(pos){
     u.onend=()=>{ if(_taUtter!==u) return; _taStopTimer(); _taPlaying=false; _taPaused=false; _taCharIndex=_taLen(); _taUpdateSlider(); _setTaBtns(false,false); _taStatus("Lectura finalizada"); };
     u.onerror=()=>{ if(_taUtter!==u) return; _taStopTimer(); _taPlaying=false; _taPaused=false; _setTaBtns(false,false); };
     _taUtter=u; _taPlaying=true; _taPaused=false;
+    const _wasSpeaking=(typeof speechSynthesis!=="undefined")&&(speechSynthesis.speaking||speechSynthesis.pending);
     try{ speechSynthesis.cancel(); }catch(e){}
-    setTimeout(()=>{ if(_taUtter===u){ try{ speechSynthesis.speak(u); }catch(e){} } },70);
+    const _go=()=>{ if(_taUtter===u){ try{ speechSynthesis.resume(); }catch(e){} try{ speechSynthesis.speak(u); }catch(e){} } };
+    if(_wasSpeaking){ setTimeout(_go,70); } else { _go(); }   // móvil: hablar dentro del gesto del usuario
     _taStartTimer(); _setTaBtns(true,false); _taStatus("Leyendo: "+_taCurrentSegText());
 }
 function taPlay(){
