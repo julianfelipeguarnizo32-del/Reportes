@@ -2722,7 +2722,7 @@ function buildPptoSpeech(){
 // ---- Estado del reproductor con posición (seek), salto y velocidad ----
 let _pptoFullText="", _pptoSegStarts=[0], _pptoBaseChar=0, _pptoCharIndex=0;
 let _pptoPlaying=false, _pptoPaused=false, _pptoRate=1;
-let _pptoTimer=null, _pptoAnchorTime=0, _pptoAnchorChar=0, _pptoLastMarkStart=-1, _pptoKA=0;
+let _pptoTimer=null, _pptoAnchorTime=0, _pptoAnchorChar=0, _pptoLastMarkStart=-1, _pptoKA=0, _pptoSegIndex=0;
 const _PPTO_CPS=14;  // caracteres/seg estimados a velocidad 1 (auto-corrige con onboundary)
 
 function _pptoStatus(t){ const st=document.getElementById("pptoAudioStatus"); if(st) st.textContent=t; }
@@ -2759,13 +2759,14 @@ function _pptoCurrentSegText(){
 function _pptoTick(){
     if(!_pptoPlaying){ return; }
     if(_pptoPaused){ _pptoAnchorTime=performance.now(); _pptoAnchorChar=_pptoCharIndex; return; }
-    // keepalive móvil (Android corta la voz ~15s): resume periódico
     if(typeof speechSynthesis!=="undefined" && (performance.now()-_pptoKA>9000)){ try{ speechSynthesis.resume(); }catch(e){} _pptoKA=performance.now(); }
     const len=_pptoLen();
+    const segEnd=(_pptoSegStarts[_pptoSegIndex+1]!=null)?_pptoSegStarts[_pptoSegIndex+1]:len;
     const elapsed=performance.now()-_pptoAnchorTime;            // ms desde el último ancla
     const est=_pptoAnchorChar + (elapsed/1000)*_PPTO_CPS*_pptoRate;
-    // avanza de forma monótona; onboundary (si existe) reancla con valor exacto
-    _pptoCharIndex=Math.min(len, Math.max(_pptoCharIndex, est));
+    // avanza dentro del segmento actual; el salto al siguiente lo hace onend
+    _pptoCharIndex=Math.min(Math.max(0,segEnd-1), Math.max(_pptoCharIndex, est));
+    if(_pptoCharIndex<_pptoSegStarts[_pptoSegIndex]) _pptoCharIndex=_pptoSegStarts[_pptoSegIndex];
     _pptoUpdateSlider();
     _pptoFollow();
     _pptoStatus("Leyendo: "+_pptoCurrentSegText());
@@ -2845,30 +2846,38 @@ function _setPptoBtns(playing, paused){
     document.getElementById("pptoBackBtn").disabled = !_pptoFullText;
     document.getElementById("pptoFwdBtn").disabled = !_pptoFullText;
 }
+function _pptoSpeakSeg(i){
+    const len=_pptoLen();
+    if(i>=_pptoSegStarts.length){
+        _pptoStopTimer(); _pptoPlaying=false; _pptoPaused=false; _pptoCharIndex=len; _pptoUpdateSlider(); _setPptoBtns(false,false); _pptoStatus("Lectura finalizada"); return;
+    }
+    _pptoSegIndex=i;
+    const start=_pptoSegStarts[i];
+    const end=(_pptoSegStarts[i+1]!=null)?_pptoSegStarts[i+1]:len;
+    _pptoCharIndex=start; _pptoAnchorTime=performance.now(); _pptoAnchorChar=start;
+    _pptoUpdateSlider(); _pptoFollow(); _pptoStatus("Leyendo: "+_pptoCurrentSegText());
+    const u=new SpeechSynthesisUtterance(_pptoFullText.slice(start,end));
+    u.lang="es-CO"; const v=(typeof _pickEsVoice==="function")?_pickEsVoice():null; if(v){ u.voice=v; u.lang=v.lang; }
+    u.rate=_pptoRate;
+    u.onend=()=>{ if(_pptoUtter!==u) return; if(!_pptoPlaying||_pptoPaused) return; _pptoSpeakSeg(i+1); };
+    u.onerror=()=>{ if(_pptoUtter!==u) return; if(!_pptoPlaying||_pptoPaused) return; setTimeout(()=>{ if(_pptoUtter===u && _pptoPlaying && !_pptoPaused) _pptoSpeakSeg(i+1); },120); };
+    _pptoUtter=u;
+    try{ speechSynthesis.speak(u); }catch(e){}
+}
 function _pptoSpeakFrom(pos){
     if(typeof speechSynthesis==="undefined"){ _pptoStatus("Audio no soportado en este navegador"); return; }
     if(!_pptoFullText && !_pptoBuild()){ _pptoStatus("No hay datos para leer"); return; }
     const len=_pptoLen();
     pos=Math.min(Math.max(0,pos), Math.max(0,len-1));
-    _pptoBaseChar=_snapSeg(pos);
-    _pptoCharIndex=_pptoBaseChar;
-    const u=new SpeechSynthesisUtterance(_pptoFullText.slice(_pptoBaseChar));
-    u.lang="es-CO";
-    const v=(typeof _pickEsVoice==="function")?_pickEsVoice():null; if(v){ u.voice=v; u.lang=v.lang; }
-    u.rate=_pptoRate;
-    u.onboundary=(e)=>{ if(_pptoUtter!==u) return; if(typeof e.charIndex==="number"){ _pptoCharIndex=_pptoBaseChar+e.charIndex; _pptoAnchorTime=performance.now(); _pptoAnchorChar=_pptoCharIndex; _pptoUpdateSlider(); } };
-    u.onend=()=>{ if(_pptoUtter!==u) return; _pptoStopTimer(); _pptoPlaying=false; _pptoPaused=false; _pptoCharIndex=_pptoLen(); _pptoUpdateSlider(); _setPptoBtns(false,false); _pptoStatus("Lectura finalizada"); };
-    u.onerror=()=>{ if(_pptoUtter!==u) return; _pptoStopTimer(); _pptoPlaying=false; _pptoPaused=false; _setPptoBtns(false,false); };
-    // Reasignar ANTES de cancelar: así el onend de la locución previa queda anulado por el guard
-    _pptoUtter=u;
+    let idx=0; for(let k=0;k<_pptoSegStarts.length;k++){ if(_pptoSegStarts[k]<=pos) idx=k; else break; }
     _pptoPlaying=true; _pptoPaused=false;
-    const _wasSpeaking=(typeof speechSynthesis!=="undefined")&&(speechSynthesis.speaking||speechSynthesis.pending);
-    try{ speechSynthesis.cancel(); }catch(e){}
-    const _go=()=>{ if(_pptoUtter===u){ try{ speechSynthesis.resume(); }catch(e){} try{ speechSynthesis.speak(u); }catch(e){} } };
-    if(_wasSpeaking){ setTimeout(_go,70); } else { _go(); }   // móvil: hablar dentro del gesto del usuario
-    _pptoStartTimer();
-    _setPptoBtns(true,false);
-    _pptoStatus("Leyendo: "+_pptoCurrentSegText());
+    const _wasSpeaking=(speechSynthesis.speaking||speechSynthesis.pending);
+    _pptoUtter=null;                       // anula callbacks de locuciones previas
+    try{ if(_wasSpeaking) speechSynthesis.cancel(); }catch(e){}
+    _pptoStartTimer(); _setPptoBtns(true,false);
+    // primer arranque dentro del gesto (móvil): hablar de inmediato; si veníamos hablando, breve respiro tras cancel()
+    if(_wasSpeaking){ setTimeout(()=>{ if(_pptoPlaying) _pptoSpeakSeg(idx); },90); }
+    else { _pptoSpeakSeg(idx); }
 }
 function pptoPlay(){
     if(typeof speechSynthesis==="undefined"){ _pptoStatus("Audio no soportado en este navegador"); return; }
@@ -2922,7 +2931,7 @@ function pptoRateChange(v){
 /* ===================== AUDIO · ANÁLISIS POR TIENDA (ta) ===================== */
 let _taFullText="", _taSegStarts=[0], _taSegTargets=[], _taBaseChar=0, _taCharIndex=0;
 let _taPlaying=false, _taPaused=false, _taRate=1;
-let _taTimer=null, _taAnchorTime=0, _taAnchorChar=0, _taUtter=null, _taLastTargetKey=null, _taKA=0;
+let _taTimer=null, _taAnchorTime=0, _taAnchorChar=0, _taUtter=null, _taLastTargetKey=null, _taKA=0, _taSegIndex=0;
 const _TA_CPS=14;
 
 function _taPct(part,total){ return total>0 ? part/total : 0; }
@@ -3051,9 +3060,11 @@ function _taTick(){
     if(_taPaused){ _taAnchorTime=performance.now(); _taAnchorChar=_taCharIndex; return; }
     if(typeof speechSynthesis!=="undefined" && (performance.now()-_taKA>9000)){ try{ speechSynthesis.resume(); }catch(e){} _taKA=performance.now(); }
     const len=_taLen();
+    const segEnd=(_taSegStarts[_taSegIndex+1]!=null)?_taSegStarts[_taSegIndex+1]:len;
     const elapsed=performance.now()-_taAnchorTime;
     const est=_taAnchorChar+(elapsed/1000)*_TA_CPS*_taRate;
-    _taCharIndex=Math.min(len, Math.max(_taCharIndex, est));
+    _taCharIndex=Math.min(Math.max(0,segEnd-1), Math.max(_taCharIndex, est));
+    if(_taCharIndex<_taSegStarts[_taSegIndex]) _taCharIndex=_taSegStarts[_taSegIndex];
     _taUpdateSlider(); _taFollow();
     _taStatus("Leyendo: "+_taCurrentSegText());
 }
@@ -3067,23 +3078,36 @@ function _setTaBtns(playing,paused){
     document.getElementById("taBackBtn").disabled=!_taFullText;
     document.getElementById("taFwdBtn").disabled=!_taFullText;
 }
+function _taSpeakSeg(i){
+    const len=_taLen();
+    if(i>=_taSegStarts.length){
+        _taStopTimer(); _taPlaying=false; _taPaused=false; _taCharIndex=len; _taUpdateSlider(); _setTaBtns(false,false); _taStatus("Lectura finalizada"); return;
+    }
+    _taSegIndex=i;
+    const start=_taSegStarts[i];
+    const end=(_taSegStarts[i+1]!=null)?_taSegStarts[i+1]:len;
+    _taCharIndex=start; _taAnchorTime=performance.now(); _taAnchorChar=start;
+    _taUpdateSlider(); _taFollow(); _taStatus("Leyendo: "+_taCurrentSegText());
+    const u=new SpeechSynthesisUtterance(_taFullText.slice(start,end));
+    u.lang="es-CO"; const v=(typeof _pickEsVoice==="function")?_pickEsVoice():null; if(v){ u.voice=v; u.lang=v.lang; }
+    u.rate=_taRate;
+    u.onend=()=>{ if(_taUtter!==u) return; if(!_taPlaying||_taPaused) return; _taSpeakSeg(i+1); };
+    u.onerror=()=>{ if(_taUtter!==u) return; if(!_taPlaying||_taPaused) return; setTimeout(()=>{ if(_taUtter===u && _taPlaying && !_taPaused) _taSpeakSeg(i+1); },120); };
+    _taUtter=u;
+    try{ speechSynthesis.speak(u); }catch(e){}
+}
 function _taSpeakFrom(pos){
     if(typeof speechSynthesis==="undefined"){ _taStatus("Audio no soportado en este navegador"); return; }
     if(!_taFullText && !_taBuild()){ _taStatus("No hay datos para leer"); return; }
     const len=_taLen(); pos=Math.min(Math.max(0,pos),Math.max(0,len-1));
-    _taBaseChar=_taSnapSeg(pos); _taCharIndex=_taBaseChar;
-    const u=new SpeechSynthesisUtterance(_taFullText.slice(_taBaseChar));
-    u.lang="es-CO"; const v=(typeof _pickEsVoice==="function")?_pickEsVoice():null; if(v){ u.voice=v; u.lang=v.lang; }
-    u.rate=_taRate;
-    u.onboundary=(e)=>{ if(_taUtter!==u) return; if(typeof e.charIndex==="number"){ _taCharIndex=_taBaseChar+e.charIndex; _taAnchorTime=performance.now(); _taAnchorChar=_taCharIndex; _taUpdateSlider(); } };
-    u.onend=()=>{ if(_taUtter!==u) return; _taStopTimer(); _taPlaying=false; _taPaused=false; _taCharIndex=_taLen(); _taUpdateSlider(); _setTaBtns(false,false); _taStatus("Lectura finalizada"); };
-    u.onerror=()=>{ if(_taUtter!==u) return; _taStopTimer(); _taPlaying=false; _taPaused=false; _setTaBtns(false,false); };
-    _taUtter=u; _taPlaying=true; _taPaused=false;
-    const _wasSpeaking=(typeof speechSynthesis!=="undefined")&&(speechSynthesis.speaking||speechSynthesis.pending);
-    try{ speechSynthesis.cancel(); }catch(e){}
-    const _go=()=>{ if(_taUtter===u){ try{ speechSynthesis.resume(); }catch(e){} try{ speechSynthesis.speak(u); }catch(e){} } };
-    if(_wasSpeaking){ setTimeout(_go,70); } else { _go(); }   // móvil: hablar dentro del gesto del usuario
-    _taStartTimer(); _setTaBtns(true,false); _taStatus("Leyendo: "+_taCurrentSegText());
+    let idx=0; for(let k=0;k<_taSegStarts.length;k++){ if(_taSegStarts[k]<=pos) idx=k; else break; }
+    _taPlaying=true; _taPaused=false;
+    const _wasSpeaking=(speechSynthesis.speaking||speechSynthesis.pending);
+    _taUtter=null;
+    try{ if(_wasSpeaking) speechSynthesis.cancel(); }catch(e){}
+    _taStartTimer(); _setTaBtns(true,false);
+    if(_wasSpeaking){ setTimeout(()=>{ if(_taPlaying) _taSpeakSeg(idx); },90); }
+    else { _taSpeakSeg(idx); }
 }
 function taPlay(){
     if(typeof speechSynthesis==="undefined"){ _taStatus("Audio no soportado en este navegador"); return; }
@@ -3125,6 +3149,11 @@ function taRateChange(v){
     if(_taPlaying && !_taPaused) _taSpeakFrom(_taCharIndex);
 }
 /* =================== FIN AUDIO · ANÁLISIS POR TIENDA =================== */
+// Precarga de voces (móvil): algunas plataformas cargan las voces de forma asíncrona
+if(typeof speechSynthesis!=="undefined"){
+    try{ speechSynthesis.getVoices(); }catch(e){}
+    try{ speechSynthesis.onvoiceschanged=function(){ try{ speechSynthesis.getVoices(); }catch(e){} }; }catch(e){}
+}
 
 function renderTable(){
     const v=VIEWS[currentView],cols=v.cols;
