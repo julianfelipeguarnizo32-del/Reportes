@@ -1674,7 +1674,7 @@ body.locked{ overflow:hidden; }
             <div class="filter-label">Acciones</div>
             <button id="exportCsv" class="btn-export">⤓ EXPORTAR XLSX</button>
         </div>
-        <div class="filter-card" style="min-width:320px">
+        <div class="filter-card" id="audioCifrasCard" style="min-width:320px">
             <div class="filter-label">🔊 Audio de cifras</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 <button type="button" id="pptoPlayBtn" onclick="pptoPlay()" style="cursor:pointer;border:0;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;background:#2E75B6;color:#fff">▶ Leer cifras</button>
@@ -1949,27 +1949,39 @@ body.locked{ overflow:hidden; }
             <div class="recom-body" id="recomBody"></div>
         </div>
 
-        <!-- Análisis Narrado · Texto + Audio -->
-        <div class="analytics-card" id="anaNarrativaCard">
+        <!-- Diagnóstico Experto · Retail & Abastecimiento -->
+        <div class="analytics-card" id="dxCard">
             <div class="analytics-card-head">
-                <span>🔊 Análisis Narrado · 38 Variables vs Compañía</span>
-                <span class="insight-sub">Lectura ejecutiva por categoría · texto y audio</span>
+                <span>🩺 Diagnóstico Experto · Retail &amp; Abastecimiento</span>
+                <span class="insight-sub">Voz + escrito · cruza Ppto vs Ejecución y Análisis por Tienda</span>
             </div>
-            <div style="padding:14px 16px;border-bottom:1px solid #eef0f3;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fafbfc">
-                <button type="button" id="anaPlayBtn" onclick="narrPlay()" style="cursor:pointer;border:0;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;background:#2E75B6;color:#fff">▶ Reproducir audio</button>
-                <button type="button" id="anaPauseBtn" onclick="narrPause()" disabled style="cursor:pointer;border:1px solid #d0d5dd;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;background:#fff;color:#344054">⏸ Pausar</button>
-                <button type="button" id="anaStopBtn" onclick="narrStop()" disabled style="cursor:pointer;border:1px solid #d0d5dd;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;background:#fff;color:#344054">⏹ Detener</button>
-                <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475467;margin-left:4px">Velocidad
-                    <select id="anaRate" onchange="narrRateChange()" style="border:1px solid #d0d5dd;border-radius:6px;padding:5px 8px;font-size:12px">
-                        <option value="0.85">0,85×</option>
-                        <option value="1" selected>1×</option>
-                        <option value="1.15">1,15×</option>
-                        <option value="1.3">1,3×</option>
-                    </select>
-                </label>
-                <span id="anaNarrStatus" style="margin-left:auto;font-size:12px;color:#667085"></span>
+            <div style="padding:12px 16px;border-bottom:1px solid #eef0f3;display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fafbfc">
+                <div style="display:inline-flex;border:1px solid #d0d5dd;border-radius:8px;overflow:hidden">
+                    <button type="button" id="dxScopeEmpresa" onclick="dxSetScope('company')" style="cursor:pointer;border:0;padding:8px 14px;font-size:13px;font-weight:600;background:#2E75B6;color:#fff">Empresa</button>
+                    <button type="button" id="dxScopeTienda" onclick="dxSetScope('store')" style="cursor:pointer;border:0;border-left:1px solid #d0d5dd;padding:8px 14px;font-size:13px;font-weight:600;background:#fff;color:#344054">Tienda</button>
+                </div>
+                <span id="dxScopeHint" style="font-size:12px;color:#667085">Diagnóstico de la compañía. Para una tienda, elige “Tienda” y selecciónala arriba.</span>
             </div>
-            <div class="recom-body" id="anaNarrativaText" style="font-size:13px;line-height:1.65"></div>
+            <div style="padding:12px 16px;border-bottom:1px solid #eef0f3;background:#fff">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                    <button type="button" id="dxPlayBtn" onclick="dxPlay()" style="cursor:pointer;border:0;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;background:#2E75B6;color:#fff">▶ Reproducir diagnóstico</button>
+                    <button type="button" id="dxBackBtn" onclick="dxSkip(-1)" title="Retroceder" disabled style="cursor:pointer;border:1px solid #d0d5dd;border-radius:8px;padding:9px 11px;font-size:13px;font-weight:600;background:#fff;color:#344054">⏪</button>
+                    <button type="button" id="dxPauseBtn" onclick="dxPause()" disabled style="cursor:pointer;border:1px solid #d0d5dd;border-radius:8px;padding:9px 11px;font-size:13px;font-weight:600;background:#fff;color:#344054">⏸</button>
+                    <button type="button" id="dxFwdBtn" onclick="dxSkip(1)" title="Adelantar" disabled style="cursor:pointer;border:1px solid #d0d5dd;border-radius:8px;padding:9px 11px;font-size:13px;font-weight:600;background:#fff;color:#344054">⏩</button>
+                    <button type="button" id="dxStopBtn" onclick="dxStop()" disabled style="cursor:pointer;border:1px solid #d0d5dd;border-radius:8px;padding:9px 11px;font-size:13px;font-weight:600;background:#fff;color:#344054">⏹</button>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+                        <input type="range" id="dxSeek" min="0" max="1000" value="0" step="1" oninput="dxSeekInput(this.value)" onchange="dxSeekCommit(this.value)" style="flex:1;cursor:pointer;accent-color:#2E75B6">
+                        <span id="dxSeekPct" style="font-size:11px;color:#667085;min-width:34px;text-align:right">0%</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span style="font-size:11px;color:#475467">Velocidad</span>
+                        <input type="range" id="dxRate" min="0.5" max="2" step="0.05" value="1" oninput="dxRateChange(this.value)" style="width:110px;cursor:pointer;accent-color:#2E75B6">
+                        <span id="dxRateLbl" style="font-size:11px;color:#344054;font-weight:600;min-width:34px;text-align:right">1,0×</span>
+                    </div>
+                </div>
+                <div id="dxStatus" style="font-size:11px;color:#667085;margin-top:6px"></div>
+            </div>
+            <div class="recom-body" id="dxText" style="font-size:13.5px;line-height:1.7"></div>
         </div>
 
         <!-- Tabla de los 38 KPIs -->
@@ -3246,15 +3258,31 @@ document.getElementById("searchTienda").addEventListener("input",e=>{
 document.getElementById("filterTienda").addEventListener("change",e=>{
     if(typeof pptoReset==="function") pptoReset();
     if(typeof taReset==="function") taReset();
+    if(typeof dxReset==="function") dxReset();
     tiendaFilter=e.target.value;
     buildKPIs();
-    if(activeSection==="analysis")renderAnalysis();else renderTable();
+    // Sincronizar "Tienda a analizar" (Analítica) con la tienda elegida arriba
+    if(tiendaFilter && tiendaFilter!=="all"){
+        analyticsTienda = tiendaFilter;
+        if(typeof populateAnalyticsPicker==="function") populateAnalyticsPicker(true);
+        const sel=document.getElementById("analyticsTiendaSel");
+        if(sel){
+            if(Array.from(sel.options).some(o=>o.value===tiendaFilter)){ sel.value=tiendaFilter; _dxScope="store"; }
+            else { analyticsTienda = sel.value||analyticsTienda; }
+        }
+    } else {
+        _dxScope="company";
+    }
+    if(activeSection==="analysis")renderAnalysis();
+    else if(activeSection==="analytics")renderAnalytics();
+    else renderTable();
 });
 
 document.querySelectorAll(".tab").forEach(t=>{t.addEventListener("click",()=>{
     if(typeof narrStop==="function") narrStop();
     if(typeof pptoStop==="function") pptoStop();
     if(typeof taStop==="function") taStop();
+    if(typeof dxStop==="function") dxStop();
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
     t.classList.add("active");
     const sec=t.dataset.section;
@@ -3274,6 +3302,7 @@ document.querySelectorAll('input[name="empresa"]').forEach(r=>{
     r.addEventListener("change",e=>{
         if(typeof pptoReset==="function") pptoReset();
         if(typeof taReset==="function") taReset();
+        if(typeof dxReset==="function") dxReset();
         currentCompany=e.target.value;
         rebuildTiendaSelect();
         buildKPIs();
@@ -3755,6 +3784,9 @@ function setSection(name){
     const anaSec=document.getElementById("analysisSection");
     const aSec=document.getElementById("analyticsSection");
     const iaSec=document.getElementById("iaSection");
+    // El "Audio de cifras" (lee Ppto vs Ejecución) solo aplica a esa pestaña
+    const audioCard=document.getElementById("audioCifrasCard");
+    if(audioCard) audioCard.style.display = (name==="table") ? "" : "none";
     // Reset
     tableSec.style.display="none";
     anaSec.classList.remove("show");
@@ -4050,6 +4082,7 @@ function populateAnalyticsPicker(force){
 document.addEventListener("change", (e)=>{
     if(e.target && e.target.id === "analyticsTiendaSel"){
         analyticsTienda = e.target.value;
+        if(typeof _dxScope!=="undefined") _dxScope="store";
         renderAnalytics();
     }
 });
@@ -4240,8 +4273,8 @@ function renderAnalytics(){
     }
     tb.innerHTML = html;
 
-    // === Análisis narrado (texto) + audio ===
-    renderNarrative(devs);
+    // === Diagnóstico Experto · Retail & Abastecimiento (texto + voz) ===
+    renderDiagnosis();
 }
 
 // ===================== ANÁLISIS NARRADO + AUDIO =====================
@@ -4427,6 +4460,348 @@ function narrRateChange(){
 }
 // Cargar voces (algunas plataformas las entregan async)
 if(typeof speechSynthesis!=="undefined"){ try{ speechSynthesis.onvoiceschanged = ()=>{ _pickEsVoice(); }; }catch(e){} }
+
+/* ===================== DIAGNÓSTICO EXPERTO · RETAIL & ABASTECIMIENTO (dx) ===================== */
+let _dxScope="company";
+let _dxFullText="", _dxSegStarts=[0], _dxSegTargets=[], _dxSegIndex=0, _dxCharIndex=0;
+let _dxPlaying=false, _dxPaused=false, _dxRate=1, _dxTimer=null, _dxAnchorTime=0, _dxAnchorChar=0, _dxUtter=null, _dxKA=0, _dxLastKey=null;
+const _DX_CPS=14;
+
+function _vtaSeriesFor(scope){
+    const base = currentCompany==="TMF"?VTA_TMF:VTA_TDM;
+    if(scope==="all"||!scope) return base;
+    const xt = currentCompany==="TMF"?VTA_X_TIENDA_TMF:VTA_X_TIENDA_TDM;
+    if(xt && xt[scope] && xt[scope].length>0) return xt[scope];
+    return base.map(r=>({d:r.d,p:0,e:0,c:0,v:0}));
+}
+function _dxEnsureStyle(){
+    if(document.getElementById("dxStyle")) return;
+    const s=document.createElement("style"); s.id="dxStyle";
+    s.textContent=".dx-intro{padding:12px 16px;background:#f6f9fc;border-left:4px solid #2E75B6;border-radius:8px;margin:14px 16px 6px;color:#1A1A1F}"
+      +".dx-h{font-weight:700;color:#2E75B6;border-top:1px solid #eef0f3;margin:14px 16px 4px;padding:10px 0 2px;font-size:14px}"
+      +".dx-l{margin:4px 16px;padding:4px 0}"
+      +".dx-l.active,.dx-intro.active{background:#fff7e6;outline:2px solid #E89B0E;outline-offset:2px;border-radius:6px}"
+      +".dx-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}"
+      +".dx-dot.g{background:#3FA34D}.dx-dot.y{background:#E89B0E}.dx-dot.r{background:#C0392B}"
+      +".dx-rec{margin:5px 16px;padding:8px 12px;background:#fafbfc;border:1px solid #eef0f3;border-left:4px solid #2E75B6;border-radius:8px}";
+    document.head.appendChild(s);
+}
+
+function buildDiagnosisUnits(){
+    const scope = (_dxScope==="store" && analyticsTienda) ? analyticsTienda : "company";
+    const totalName = currentCompany==="TMF"?"COMPAÑÍA":"TOTAL";
+    const rowName = scope==="company"?totalName:scope;
+    const row = getDATA().find(r=>r.Tienda===rowName)||{};
+    const compRow = getDATA().find(r=>r.Tienda===totalName)||{};
+    const aggScope = scope==="company"?"all":scope;
+    const gen=aggregateGraficas(aggScope), inv=aggregateDataset(getInvData(),aggScope), mca=aggregateDataset(getMcaData(),aggScope), pre=aggregateDataset(getPreData(),aggScope);
+    const vta=_vtaSeriesFor(aggScope);
+    const snap=(typeof SNAPSHOTS!=="undefined"&&SNAPSHOTS[currentMonthKey])?SNAPSHOTS[currentMonthKey]:{}; const periodo=snap.period_label||"";
+    const label = scope==="company" ? ("la compañía "+currentCompany) : ("la tienda "+scope);
+
+    const num=k=>{ const x=Number(row[k]); return isFinite(x)?x:null; };
+    const cnum=k=>{ const x=Number(compRow[k]); return isFinite(x)?x:null; };
+    const W=(v,f)=>fmtKPI(v,f);
+    const S=(v,f)=>_speechNum(v,f);
+    const pf=v=> v==null?"—":((v*100).toFixed(1).replace(".",",")+" %");
+    const ps=v=> v==null?"sin dato":S(v,"pct");
+    const U=[];
+    const head=t=>U.push({html:`<div class="dx-h">${t}</div>`, speech:t+". "});
+    const line=(h,s)=>U.push({html:`<div class="dx-l">${h}</div>`, speech:s});
+    const rec=(h,s)=>U.push({html:`<div class="dx-rec">${h}</div>`, speech:s});
+    const dot=c=>`<span class="dx-dot ${c}"></span>`;
+
+    U.push({html:`<div class="dx-intro"><strong>Diagnóstico de ${label}</strong>${periodo?` · ${periodo}`:""}. Lectura de experto en retail y abastecimiento, cruzando Presupuesto vs Ejecución con el Análisis por Tienda.</div>`,
+            speech:`Diagnóstico de ${label}${periodo?`, periodo ${periodo}`:""}. Lectura de experto en retail y abastecimiento, cruzando presupuesto contra ejecución con el análisis por tienda. `});
+
+    // Métricas base
+    const cump=num("Cump (%)"), ejec=num("Ejecutado ($)"), pptoMes=num("Ppto Mes ($)"), dif=num("Diferencia ($)");
+    const varVta=num("Var Vta ($)"), varUnds=num("% Var Vta (Unds)"), varUtil=num("Var Utilidad (%)");
+    const rent26=num("Rentabilidad 2026 (%)"), rent25=num("Rentabilidad 2025 (%)");
+    const efe=num("Efectividad (%)"), varCli=num("Var Clientes (%)");
+    const ticket=num("Prom Compra por Cliente 2026"), varTicket=num("Var Prom Compra Cliente (%)");
+    const undsCli=num("Unds por Cliente 2026"), pvp=num("PVP"), pvpInv=num("PVP_Inventario");
+    const vtaM2=num("Vta x M2 2026"), prendasM2=num("Prendas Vendidas x M2");
+
+    // Tendencia diaria
+    const dias=vta.filter(r=>Number(r.e)>0);
+    let cumpPond=null,growthAA=null,arriba=0,abajo=0,tendWord="estable",volWord="baja",best=null,worst=null,projCump=null,projMes=null;
+    if(dias.length>=1){
+        const E=dias.map(r=>Number(r.e)),P=dias.map(r=>Number(r.p)||0),V=dias.map(r=>Number(r.v)||0);
+        const sE=E.reduce((a,b)=>a+b,0),sP=P.reduce((a,b)=>a+b,0),sV=V.reduce((a,b)=>a+b,0);
+        cumpPond=sP>0?sE/sP:null; growthAA=sV>0?(sE-sV)/sV:null;
+        for(const r of dias){ if(Number(r.e)>=Number(r.p)) arriba++; else abajo++; }
+        best=dias[0]; worst=dias[0]; for(const r of dias){ if(Number(r.e)>Number(best.e))best=r; if(Number(r.e)<Number(worst.e))worst=r; }
+        if(dias.length>=2){ const n=E.length,my=sE/n,mx=(n-1)/2; let nu=0,de=0; for(let i=0;i<n;i++){nu+=(i-mx)*(E[i]-my);de+=(i-mx)*(i-mx);} const slope=de>0?nu/de:0; const sp=my>0?slope/my:0; tendWord=sp>0.01?"creciente":(sp<-0.01?"decreciente":"estable"); const va=E.reduce((a,b)=>a+(b-my)*(b-my),0)/n; const cv=my>0?Math.sqrt(va)/my:0; volWord=cv<0.2?"baja":(cv<0.45?"moderada":"alta"); }
+        if(cumpPond!=null && pptoMes && pptoMes>0){ projCump=cumpPond; projMes=pptoMes*cumpPond; }
+    }
+
+    // ---------- 1) RESUMEN EJECUTIVO ----------
+    head("1. Resumen ejecutivo");
+    const semCump = cump==null?"y":(cump>=1?"g":(cump>=0.9?"y":"r"));
+    line(`${dot(semCump)}<strong>Cumplimiento al corte:</strong> ${pf(cump)} (ejecutado ${W(ejec,"currency")} sobre presupuesto del corte).`,
+         `Cumplimiento al corte ${ps(cump)}. `);
+    const semG = growthAA==null?"y":(growthAA>=0.05?"g":(growthAA>=0?"y":"r"));
+    line(`${dot(semG)}<strong>Crecimiento vs año anterior:</strong> ${pf(growthAA)} en ventas ejecutadas; unidades ${pf(varUnds)}.`,
+         `Crecimiento frente al año anterior ${ps(growthAA)} en ventas, con unidades ${ps(varUnds)}. `);
+    const semR = (rent26==null||rent25==null)?"y":(rent26>=rent25?"g":"r");
+    line(`${dot(semR)}<strong>Rentabilidad 2026:</strong> ${pf(rent26)} (2025: ${pf(rent25)}; variación de utilidad ${pf(varUtil)}).`,
+         `Rentabilidad de ${ps(rent26)}, frente a ${ps(rent25)} del año anterior. `);
+    const semE = efe==null?"y":(efe>=0.5?"g":(efe>=0.35?"y":"r"));
+    line(`${dot(semE)}<strong>Efectividad (clientes que compran / tráfico):</strong> ${pf(efe)}.`,
+         `Efectividad de conversión ${ps(efe)}. `);
+
+    // ---------- 2) PRESUPUESTO Y EJECUCIÓN ----------
+    head("2. Presupuesto y ejecución");
+    line(`<strong>Diferencia frente al presupuesto del corte:</strong> ${W(dif,"currency")}.`,
+         `La diferencia frente al presupuesto del corte es ${S(dif,"currency")}. `);
+    if(dias.length>=1){
+        line(`<strong>Tendencia diaria:</strong> ${arriba} día(s) cumpliendo o superando el presupuesto y ${abajo} por debajo; comportamiento <strong>${tendWord}</strong> y volatilidad <strong>${volWord}</strong>.`,
+             `En la tendencia diaria, ${S(arriba,"int")} días cumplen o superan el presupuesto y ${S(abajo,"int")} quedan por debajo; el comportamiento es ${tendWord} y la volatilidad ${volWord}. `);
+        if(best&&worst) line(`<strong>Mejor día:</strong> ${best.d} (${W(best.e,"currency")}); <strong>día más bajo:</strong> ${worst.d} (${W(worst.e,"currency")}).`,
+             `El mejor día fue el ${best.d}; y el más bajo, el ${worst.d}. `);
+        if(projCump!=null){
+            const semP = projCump>=1?"g":(projCump>=0.9?"y":"r");
+            line(`${dot(semP)}<strong>Proyección a fin de mes:</strong> ~${W(projMes,"currency")} (${pf(projCump)} del presupuesto del mes) si se mantiene el cumplimiento del corte.`,
+                 `Proyección a fin de mes cercana al ${ps(projCump)} del presupuesto del mes si se mantiene el cumplimiento del corte. `);
+        }
+    }
+
+    // ---------- 3) COMERCIAL Y CLIENTES ----------
+    head("3. Comercial y clientes");
+    line(`<strong>Ticket promedio:</strong> ${W(ticket,"currency")} (${varTicket==null?"—":pf(varTicket)+" vs 2025"}); <strong>unidades por cliente:</strong> ${W(undsCli,"dec")}.`,
+         `El ticket promedio es ${S(ticket,"currency")}${varTicket==null?"":`, con variación de ${ps(varTicket)} frente al año anterior`}; las unidades por cliente son ${S(undsCli,"dec")}. `);
+    line(`<strong>PVP de venta:</strong> ${W(pvp,"currency")}; <strong>clientes:</strong> ${varCli==null?"—":pf(varCli)+" vs 2025"}.`,
+         `El precio promedio de venta es ${S(pvp,"currency")}${varCli==null?"":`, y los clientes varían ${ps(varCli)} frente al año anterior`}. `);
+    if(vtaM2!=null||prendasM2!=null) line(`<strong>Productividad de sala:</strong> venta por m² ${W(vtaM2,"currency")}; prendas vendidas por m² ${W(prendasM2,"dec")}.`,
+         `La venta por metro cuadrado es ${S(vtaM2,"currency")} y las prendas vendidas por metro cuadrado ${S(prendasM2,"dec")}. `);
+
+    // ---------- 4) INVENTARIO Y ABASTECIMIENTO ----------
+    head("4. Inventario y abastecimiento");
+    // género
+    let gU=0,gI=0,gD=0; for(const v of Object.values(gen)){gU+=v.u;gI+=v.i;gD+=v.d;}
+    const gp=(o,t)=>t>0?o/t:0;
+    const generos=[["DAMA","dama"],["HOMBRE","hombre"],["NINA","niña"],["NINO","niño"]];
+    let genTxtH="", genTxtS="";
+    for(const [k,say] of generos){ const v=gen[k]||{u:0,i:0,d:0}; genTxtH+=`${say} inv ${pf(gp(v.i,gI))} / vta ${pf(gp(v.u,gU))} / desp ${pf(gp(v.d,gD))}; `; genTxtS+=`${say}, inventario ${ps(gp(v.i,gI))}, venta ${ps(gp(v.u,gU))}, despacho ${ps(gp(v.d,gD))}; `; }
+    line(`<strong>Composición por género (inv/vta/desp):</strong> ${genTxtH}`, `Composición por género. ${genTxtS} `);
+    // tipo inventario
+    let iU=0,iI=0; for(const v of Object.values(inv)){iU+=v.u;iI+=v.i;}
+    let invTxtH="", invTxtS="";
+    for(const k of ["Línea","Pronta Moda","Moda","N/A"]){ if(!inv[k])continue; const v=inv[k]; invTxtH+=`${k} inv ${pf(gp(v.i,iI))} / vta ${pf(gp(v.u,iU))}; `; invTxtS+=`${k}, inventario ${ps(gp(v.i,iI))} y venta ${ps(gp(v.u,iU))}; `; }
+    line(`<strong>Tipo de inventario (inv vs vta):</strong> ${invTxtH}`, `Tipo de inventario. ${invTxtS} `);
+    // marca
+    let mU=0,mI=0; for(const v of Object.values(mca)){mU+=v.u;mI+=v.i;}
+    let mcaTxtH="", mcaTxtS="";
+    for(const k of ["MARCA PROPIA","PN","N/A"]){ if(!mca[k])continue; const v=mca[k]; const say=k==="MARCA PROPIA"?"marca propia":(k==="PN"?"proveedor nacional":k); mcaTxtH+=`${say} inv ${pf(gp(v.i,mI))} / vta ${pf(gp(v.u,mU))}; `; mcaTxtS+=`${say}, inventario ${ps(gp(v.i,mI))} y venta ${ps(gp(v.u,mU))}; `; }
+    line(`<strong>Marca (inv vs vta):</strong> ${mcaTxtH}`, `Marca. ${mcaTxtS} `);
+    // precio
+    let pU=0; for(const k of ["Full Price","Con Descuento","N/A"]){ if(pre[k])pU+=pre[k].u; }
+    const fullP=pre["Full Price"]?gp(pre["Full Price"].u,pU):null, descP=pre["Con Descuento"]?gp(pre["Con Descuento"].u,pU):null;
+    line(`<strong>Tipo de precio:</strong> Full Price ${pf(fullP)} · Con Descuento ${pf(descP)} (PVP inventario ${W(pvpInv,"currency")}).`,
+         `En tipo de precio, full price ${ps(fullP)} y con descuento ${ps(descP)}. `);
+    // rotación / cobertura
+    if(prendasM2!=null && vtaM2!=null) line(`<strong>Rotación de sala:</strong> la productividad por m² indica el ritmo de venta del surtido instalado.`, `La productividad por metro cuadrado refleja el ritmo de rotación del surtido instalado. `);
+
+    // ---------- 5) HALLAZGOS Y RECOMENDACIONES ----------
+    head("5. Diagnóstico de experto · Retail Colombia & Abastecimiento");
+    const sub=(t)=>U.push({html:`<div class="dx-l" style="font-weight:700;color:#344054;margin-top:10px;border-bottom:1px dashed #e3e7ec;padding-bottom:3px">${t}</div>`, speech:t+". "});
+    const diasCorte=dias.length||1;
+    const [yy2,mm2]=currentMonthKey.split("-").map(Number); const diasMesR=new Date(yy2,mm2,0).getDate();
+    const undsInv=num("Unds Inv"), unds26=num("Unds 2026");
+    let cobSem=null; if(undsInv!=null && unds26!=null && unds26>0){ const undsDia=unds26/diasCorte; cobSem= undsDia>0 ? undsInv/(undsDia*7) : null; }
+    const cobTxt = cobSem==null?"—":(cobSem.toFixed(1).replace(".",",")+" semanas");
+    const flags=[];
+
+    // ---- 5.1 Abastecimiento e inventario ----
+    sub("Abastecimiento e inventario");
+    if(cobSem!=null){
+        if(cobSem<3){ flags.push("quiebre");
+            rec(`<strong>Cobertura baja (~${cobTxt}):</strong> riesgo de quiebre. <em>Estrategia:</em> priorizar reposición desde el CEDI, transferir desde tiendas de baja rotación, y proteger la <strong>curva de tallas</strong> con mínimos por talla (la “curva de 6”). Evitar agotados en tallas medias, que concentran la venta.`,
+                `Cobertura baja, alrededor de ${cobTxt}; hay riesgo de quiebre. Priorizar reposición desde el cedi, transferir desde tiendas de baja rotación y proteger la curva de tallas. `);
+        } else if(cobSem>10){ flags.push("sobrestock");
+            rec(`<strong>Cobertura alta (~${cobTxt}):</strong> exceso de inventario inmoviliza caja. <em>Estrategia:</em> rebaja selectiva por antigüedad, combos/paquetes, congelar el <strong>OTB</strong> (open-to-buy) hasta normalizar, y transferir a tiendas con demanda. Liberar espacio para producto que sí rota.`,
+                `Cobertura alta, alrededor de ${cobTxt}; el exceso inmoviliza caja. Rebaja selectiva por antigüedad, combos, congelar la compra y transferir a tiendas con demanda. `);
+        } else {
+            rec(`<strong>Cobertura saludable (~${cobTxt}):</strong> mantener reposición continua y vigilar la curva de tallas en los referentes de mayor venta.`,
+                `Cobertura saludable, alrededor de ${cobTxt}; mantener reposición continua. `);
+        }
+    }
+    for(const k of ["Línea","Pronta Moda","Moda"]){ if(!inv[k])continue; const pi=gp(inv[k].i,iI), pu=gp(inv[k].u,iU); if(pi>0 && pu>0){ const ratio=pu/pi;
+        if(ratio<0.7){ flags.push("sobrestock");
+            rec(`<strong>Sobrestock en ${k}:</strong> pesa ${pf(pi)} del inventario pero solo ${pf(pu)} de la venta. <em>Estrategia:</em> frenar reposición de ${k}, marcar rebaja escalonada (no transversal), destacar en vitrina y caja, y redistribuir a tiendas donde ${k} rote mejor.`,
+                `Sobrestock en ${k}: pesa más en inventario que en venta. Frenar reposición, rebaja escalonada y redistribuir. `);
+        } else if(ratio>1.3){ flags.push("quiebre");
+            rec(`<strong>Alta rotación / riesgo de quiebre en ${k}:</strong> vende ${pf(pu)} con solo ${pf(pi)} de inventario. <em>Estrategia:</em> aumentar el cupo de reposición de ${k} desde el CEDI y asegurar profundidad en tallas/colores líderes.`,
+                `Alta rotación en ${k}, con riesgo de quiebre. Aumentar reposición desde el cedi y asegurar profundidad de tallas. `);
+        } } }
+    // despacho (flujo CEDI→tienda) vs venta, por género
+    for(const [k,say] of generos){ const v=gen[k]||{u:0,i:0,d:0}; const pv=gp(v.u,gU), pd=gp(v.d,gD); if(gD>0 && Math.abs(pd-pv)>=0.08){
+        if(pd>pv){ rec(`<strong>${say.charAt(0).toUpperCase()+say.slice(1)}: despacho por encima de la venta</strong> (despacho ${pf(pd)} vs venta ${pf(pv)}). Se está empujando mercancía que no sale aquí. <em>Estrategia:</em> revisar la asignación del CEDI por tienda, reforzar visual/look del género y, si no reacciona, transferir a tiendas con esa demanda.`,
+            `En ${say}, el despacho supera a la venta; se empuja mercancía que no sale aquí. Revisar la asignación del cedi y reforzar el visual, o transferir. `);
+        } else { rec(`<strong>${say.charAt(0).toUpperCase()+say.slice(1)}: la venta supera al despacho</strong> (venta ${pf(pv)} vs despacho ${pf(pd)}). La tienda tracciona más de lo que recibe. <em>Estrategia:</em> subir la asignación/reposición de ${say} para no quedar corto.`,
+            `En ${say}, la venta supera al despacho; la tienda tracciona más de lo que recibe. Subir la reposición de ${say}. `);
+        } } }
+    if(mca["PN"]){ const pi=gp(mca["PN"].i,mI), pu=gp(mca["PN"].u,mU); if(pi>0 && pu/pi<0.7){ flags.push("sobrestock");
+        rec(`<strong>Proveedor nacional con baja rotación:</strong> ${pf(pi)} del inventario y ${pf(pu)} de la venta. <em>Estrategia:</em> renegociar con el proveedor (consignación, devolución de lento movimiento, mejores plazos), depurar referencias de baja salida y dar prioridad de exhibición a marca propia, que rota mejor.`,
+            `El proveedor nacional rota lento frente a su peso en inventario. Renegociar condiciones, depurar referencias lentas y priorizar marca propia. `); } }
+
+    // ---- 5.2 Comercial, precio y margen ----
+    sub("Comercial, precio y margen");
+    if(cump!=null && cump<0.95){ flags.push("cump");
+        rec(`<strong>Cumplimiento ${pf(cump)} (bajo presupuesto):</strong> <em>Estrategia:</em> plan de tráfico (vitrina potente, fachada, WhatsApp/redes a base de datos), foco de conversión en horas pico y disponibilidad de tallas en los más vendidos.`,
+            `Cumplimiento por debajo del presupuesto. Plan de tráfico, foco de conversión en horas pico y disponibilidad de tallas. `); }
+    if(projCump!=null && projCump<1){
+        rec(`<strong>Proyección a fin de mes ${pf(projCump)}:</strong> cerraría bajo presupuesto si se mantiene el ritmo. <em>Estrategia:</em> concentrar esfuerzo comercial en los días de pago (quincenas) y en la ventana de mayor tráfico del mes, con reposición ágil.`,
+            `La proyección cerraría bajo presupuesto. Concentrar el esfuerzo en quincenas y en la ventana de mayor tráfico, con reposición ágil. `); }
+    if(descP!=null && descP>0.25){ flags.push("margen");
+        rec(`<strong>Profundidad de descuento alta (${pf(descP)} con descuento):</strong> presiona el margen. <em>Estrategia:</em> segmentar el descuento por antigüedad del inventario (no transversal), usar precios psicológicos y apalancar crédito en punto (Addi/Sistecrédito) para sostener el ticket sin sacrificar margen.`,
+            `La profundidad de descuento es alta y presiona el margen. Segmentar descuentos por antigüedad y apalancar crédito en punto. `); }
+    if(rent26!=null && rent25!=null && rent26<rent25){
+        rec(`<strong>Rentabilidad por debajo de 2025 (${pf(rent26)} vs ${pf(rent25)}):</strong> <em>Estrategia:</em> mejorar la mezcla hacia Full Price y categorías de mayor margen, y controlar la marcación de descuento.`,
+            `La rentabilidad cae frente al año anterior. Mejorar la mezcla hacia full price y controlar descuentos. `); }
+    if(ticket!=null){
+        rec(`<strong>Ticket ${W(ticket,"currency")} · ${W(undsCli,"dec")} unds/cliente:</strong> <em>Estrategia:</em> venta cruzada (armar outfits completos), sugerir 2ª y 3ª prenda, complementos y accesorios cerca de caja para subir unidades por transacción.`,
+            `Para subir el ticket, impulsar venta cruzada, outfits completos y accesorios en caja. `); }
+    if(efe!=null && efe<0.5){ flags.push("conversion");
+        rec(`<strong>Efectividad de conversión ${pf(efe)}:</strong> <em>Estrategia:</em> atención proactiva, probadores ágiles, asegurar tallas, y medir tasa de cierre por vendedor con metas e incentivos.`,
+            `La conversión es mejorable. Atención proactiva, probadores ágiles y medir cierre por vendedor. `); }
+    if(varCli!=null && varCli<0){ flags.push("trafico");
+        rec(`<strong>Clientes ${pf(varCli)} vs 2025:</strong> cae el tráfico. <em>Estrategia:</em> reactivar clientes inactivos (base de datos, WhatsApp), fidelización, alianzas locales y mejorar vitrina/fachada para capturar flujo peatonal.`,
+            `El tráfico de clientes cae frente al año anterior. Reactivar base de datos, fidelización y mejorar vitrina. `); }
+    if(varUnds!=null && varVta!=null && varUnds<0 && varVta>0){
+        rec(`<strong>Unidades a la baja con venta $ al alza:</strong> el crecimiento se apoya en precio/ticket. <em>Estrategia:</em> vigilar la elasticidad para no perder volumen ni tráfico; equilibrar subida de precio con propuestas de valor (combos).`,
+            `El crecimiento se apoya en precio, no en volumen. Vigilar la elasticidad y equilibrar con combos. `); }
+
+    // ---- 5.3 Calendario comercial Colombia ----
+    const SEAS={1:["Temporada escolar y liquidación de inicio de año","planificar básicos y liquidar temporada anterior para liberar caja y espacio"],2:["Reactivación post-temporada","San Valentín y arranque de colección; depurar saldos"],3:["Cierre del primer trimestre","reforzar básicos y novedades; corregir quiebres de enero–febrero"],4:["Antesala del Día de la Madre","armar inventario y vitrinas para mayo y asegurar la curva de tallas"],5:["Día de la Madre (pico)","máxima ocupación: inventario, personal y combos de regalo"],6:["Prima de mitad de año y Día del Padre","el poder de compra sube al cierre del mes (15–30 de junio) y el 3er domingo; vitrinas de regalo para él, combos y refuerzo de medios de pago/crédito"],7:["Mitad de año y vacaciones","aprovechar vacaciones y mitad de temporada; gestionar rebajas de saldos"],8:["Arranque de campañas de Amor y Amistad","preparar inventario y dinámicas; básicos y novedades"],9:["Amor y Amistad (pico)","gran ocasión de regalo: inventario, combos y experiencias en punto"],10:["Halloween y antesala de fin de año","temáticos y preparación de Black Friday"],11:["Black Friday / Cyber","picos de tráfico: ofertas por antigüedad de inventario, no transversales"],12:["Navidad y primas (pico máximo)","asegurar inventario, personal y logística; velitas el 7 de diciembre"]};
+    if(SEAS[mm2]){ sub("Calendario comercial Colombia");
+        rec(`<strong>${SEAS[mm2][0]}:</strong> ${SEAS[mm2][1]}.`, `${SEAS[mm2][0]}: ${SEAS[mm2][1]}. `); }
+
+    // ---- 5.4 Plan de acción priorizado ----
+    sub("Plan de acción priorizado");
+    const plan=[];
+    if(flags.includes("quiebre")) plan.push("Asegurar reposición y curva de tallas en lo que rota (evitar agotados).");
+    if(flags.includes("sobrestock")) plan.push("Rebaja escalonada + transferencias para liberar el inventario lento.");
+    if(flags.includes("margen")) plan.push("Descuento segmentado por antigüedad para proteger margen.");
+    if(flags.includes("conversion")) plan.push("Subir conversión: atención, probadores y tallas disponibles.");
+    if(flags.includes("trafico")) plan.push("Plan de tráfico: base de datos, WhatsApp, vitrina y fidelización.");
+    if(flags.includes("cump")) plan.push("Concentrar fuerza comercial en quincenas y horas pico.");
+    if(!plan.length) plan.push("Sostener el ritmo: reposición continua, curva de tallas y propuesta comercial.");
+    const planH = plan.slice(0,5).map((p,i)=>`${i+1}. ${p}`).join("<br>");
+    const planS = "Plan de acción priorizado: "+plan.slice(0,5).map((p,i)=>`${i+1}, ${p}`).join(" ")+" ";
+    rec(`<strong>Acciones inmediatas:</strong><br>${planH}`, planS);
+
+    return U;
+}
+
+function renderDiagnosis(){
+    _dxEnsureStyle();
+    if(typeof dxStop==="function") dxStop();
+    // estado de botones de scope
+    const a=document.getElementById("dxScopeEmpresa"), b=document.getElementById("dxScopeTienda");
+    if(a&&b){ a.style.background=_dxScope==="company"?"#2E75B6":"#fff"; a.style.color=_dxScope==="company"?"#fff":"#344054"; b.style.background=_dxScope==="store"?"#2E75B6":"#fff"; b.style.color=_dxScope==="store"?"#fff":"#344054"; }
+    const hint=document.getElementById("dxScopeHint");
+    if(hint) hint.textContent=_dxScope==="company" ? `Diagnóstico de la compañía ${currentCompany}.` : `Diagnóstico de la tienda ${analyticsTienda||"—"} (cámbiala en el selector de arriba).`;
+    const sec=document.getElementById("dxText"); if(!sec) return;
+    const units=buildDiagnosisUnits();
+    sec.innerHTML = units.map((u,i)=> u.html.replace("<div ", `<div id="dxu${i}" `)).join("");
+    _dxFullText = units.map(u=>u.speech).join("");
+    _dxSegStarts=[]; _dxSegTargets=[]; let pos=0;
+    units.forEach((u,i)=>{ _dxSegStarts.push(pos); _dxSegTargets.push("dxu"+i); pos+=u.speech.length; });
+    if(!_dxSegStarts.length) _dxSegStarts=[0];
+    _dxSegIndex=0; _dxCharIndex=0; _dxLastKey=null; _dxUpdateSlider(); _setDxBtns(false,false);
+    const st=document.getElementById("dxStatus"); if(st) st.textContent=(typeof speechSynthesis==="undefined")?"Audio no soportado en este navegador":"Listo para reproducir";
+}
+function dxSetScope(s){ _dxScope=s; renderDiagnosis(); }
+
+function _dxStatus(t){ const s=document.getElementById("dxStatus"); if(s) s.textContent=t; }
+function _dxLen(){ return _dxFullText.length; }
+function _dxSnapSeg(pos){ let best=0; for(const s of _dxSegStarts){ if(s<=pos) best=s; else break; } return best; }
+function _dxSegIndexFor(ci){ let idx=0; for(let i=0;i<_dxSegStarts.length;i++){ if(_dxSegStarts[i]<=ci) idx=i; else break; } return idx; }
+function _dxUpdateSlider(){ const len=_dxLen()||1; const frac=Math.min(1,Math.max(0,_dxCharIndex/len)); const sk=document.getElementById("dxSeek"); if(sk&&!sk._dragging) sk.value=Math.round(frac*1000); const pc=document.getElementById("dxSeekPct"); if(pc) pc.textContent=Math.round(frac*100)+"%"; }
+function _dxCurrentSegText(){ let best=0; for(const s of _dxSegStarts){ if(s<=_dxCharIndex) best=s; else break; } let end=_dxFullText.indexOf(". ",best); if(end<0) end=_dxFullText.length; let t=_dxFullText.slice(best,end).trim(); return t.length>70?t.slice(0,70)+"…":t; }
+function _dxClearHL(){ document.querySelectorAll("#dxText .active").forEach(e=>e.classList.remove("active")); }
+function _dxFollow(){
+    if(typeof activeSection!=="undefined" && activeSection!=="analytics") return;
+    const si=_dxSegIndexFor(_dxCharIndex); const key=_dxSegTargets[si]||"none";
+    if(key===_dxLastKey) return; _dxLastKey=key; _dxClearHL();
+    const el=document.getElementById(key); if(!el) return; el.classList.add("active");
+    try{ el.scrollIntoView({behavior:"smooth",block:"center"}); }catch(e){}
+}
+function _dxTick(){
+    if(!_dxPlaying) return;
+    if(_dxPaused){ _dxAnchorTime=performance.now(); _dxAnchorChar=_dxCharIndex; return; }
+    if(typeof speechSynthesis!=="undefined" && (performance.now()-_dxKA>9000)){ try{ speechSynthesis.resume(); }catch(e){} _dxKA=performance.now(); }
+    const len=_dxLen(); const segEnd=(_dxSegStarts[_dxSegIndex+1]!=null)?_dxSegStarts[_dxSegIndex+1]:len;
+    const est=_dxAnchorChar+((performance.now()-_dxAnchorTime)/1000)*_DX_CPS*_dxRate;
+    _dxCharIndex=Math.min(Math.max(0,segEnd-1), Math.max(_dxCharIndex, est));
+    if(_dxCharIndex<_dxSegStarts[_dxSegIndex]) _dxCharIndex=_dxSegStarts[_dxSegIndex];
+    _dxUpdateSlider(); _dxFollow(); _dxStatus("Leyendo: "+_dxCurrentSegText());
+}
+function _dxStartTimer(){ _dxStopTimer(); _dxAnchorTime=performance.now(); _dxAnchorChar=_dxCharIndex; _dxTimer=setInterval(_dxTick,120); }
+function _dxStopTimer(){ if(_dxTimer){ clearInterval(_dxTimer); _dxTimer=null; } }
+function _setDxBtns(playing,paused){
+    const p=document.getElementById("dxPlayBtn"); if(!p) return;
+    p.disabled=playing&&!paused; p.textContent=paused?"▶ Reanudar":"▶ Reproducir diagnóstico";
+    const pa=document.getElementById("dxPauseBtn"); if(pa) pa.disabled=!playing||paused;
+    const st=document.getElementById("dxStopBtn"); if(st) st.disabled=!playing && _dxCharIndex===0;
+    const bk=document.getElementById("dxBackBtn"); if(bk) bk.disabled=!_dxFullText;
+    const fw=document.getElementById("dxFwdBtn"); if(fw) fw.disabled=!_dxFullText;
+}
+function _dxSpeakSeg(i){
+    const len=_dxLen();
+    if(i>=_dxSegStarts.length){ _dxStopTimer(); _dxPlaying=false; _dxPaused=false; _dxCharIndex=len; _dxUpdateSlider(); _setDxBtns(false,false); _dxStatus("Diagnóstico finalizado"); return; }
+    _dxSegIndex=i; const start=_dxSegStarts[i]; const end=(_dxSegStarts[i+1]!=null)?_dxSegStarts[i+1]:len;
+    _dxCharIndex=start; _dxAnchorTime=performance.now(); _dxAnchorChar=start; _dxUpdateSlider(); _dxFollow(); _dxStatus("Leyendo: "+_dxCurrentSegText());
+    const u=new SpeechSynthesisUtterance(_dxFullText.slice(start,end));
+    u.lang="es-CO"; const v=(typeof _pickEsVoice==="function")?_pickEsVoice():null; if(v){ u.voice=v; u.lang=v.lang; }
+    u.rate=_dxRate;
+    u.onend=()=>{ if(_dxUtter!==u) return; if(!_dxPlaying||_dxPaused) return; _dxSpeakSeg(i+1); };
+    u.onerror=()=>{ if(_dxUtter!==u) return; if(!_dxPlaying||_dxPaused) return; setTimeout(()=>{ if(_dxUtter===u&&_dxPlaying&&!_dxPaused) _dxSpeakSeg(i+1); },120); };
+    _dxUtter=u;
+    try{ speechSynthesis.speak(u); }catch(e){}
+}
+function _dxSpeakFrom(pos){
+    if(typeof speechSynthesis==="undefined"){ _dxStatus("Audio no soportado en este navegador"); return; }
+    if(!_dxFullText){ _dxStatus("No hay diagnóstico para leer"); return; }
+    const len=_dxLen(); pos=Math.min(Math.max(0,pos),Math.max(0,len-1));
+    let idx=0; for(let k=0;k<_dxSegStarts.length;k++){ if(_dxSegStarts[k]<=pos) idx=k; else break; }
+    _dxPlaying=true; _dxPaused=false;
+    const _was=(speechSynthesis.speaking||speechSynthesis.pending); _dxUtter=null;
+    try{ if(_was) speechSynthesis.cancel(); }catch(e){}
+    _dxStartTimer(); _setDxBtns(true,false);
+    if(_was){ setTimeout(()=>{ if(_dxPlaying) _dxSpeakSeg(idx); },90); } else { _dxSpeakSeg(idx); }
+}
+function dxPlay(){
+    if(typeof speechSynthesis==="undefined"){ _dxStatus("Audio no soportado en este navegador"); return; }
+    if(_dxPaused && speechSynthesis.paused){ speechSynthesis.resume(); _dxPaused=false; _dxAnchorTime=performance.now(); _dxAnchorChar=_dxCharIndex; _setDxBtns(true,false); _dxStatus("Reproduciendo…"); return; }
+    if(!_dxFullText){ renderDiagnosis(); if(!_dxFullText){ _dxStatus("No hay diagnóstico para leer"); return; } }
+    if(_dxCharIndex>=_dxLen()-1) _dxCharIndex=0;
+    _dxSpeakFrom(_dxCharIndex);
+}
+function dxPause(){ if(typeof speechSynthesis==="undefined") return; if(speechSynthesis.speaking && !speechSynthesis.paused){ speechSynthesis.pause(); _dxPaused=true; _setDxBtns(true,true); _dxStatus("En pausa"); } }
+function dxStop(){
+    if(typeof speechSynthesis!=="undefined") speechSynthesis.cancel();
+    _dxStopTimer(); _dxUtter=null; _dxPlaying=false; _dxPaused=false; _dxCharIndex=0; _dxSegIndex=0; _dxLastKey=null; _dxClearHL(); _dxUpdateSlider(); _setDxBtns(false,false);
+}
+function dxReset(){ dxStop(); _dxStatus(""); }
+function dxSkip(dir){
+    if(!_dxFullText) return;
+    let idx=_dxSegIndexFor(_dxCharIndex); let target=Math.min(Math.max(0,idx+dir), _dxSegStarts.length-1); const pos=_dxSegStarts[target];
+    if(_dxPlaying && !_dxPaused){ _dxSpeakFrom(pos); }
+    else { try{ if(typeof speechSynthesis!=="undefined") speechSynthesis.cancel(); }catch(e){} _dxPlaying=false; _dxPaused=false; _dxCharIndex=pos; _dxUpdateSlider(); _setDxBtns(false,false); _dxFollow(); _dxStatus("Posición ajustada · presiona ▶"); }
+}
+function dxSeekInput(v){ const sk=document.getElementById("dxSeek"); if(sk) sk._dragging=true; const pc=document.getElementById("dxSeekPct"); if(pc) pc.textContent=Math.round(v/10)+"%"; }
+function dxSeekCommit(v){
+    const sk=document.getElementById("dxSeek"); if(sk) sk._dragging=false;
+    if(!_dxFullText) return; const pos=Math.round((v/1000)*_dxLen()); const target=_dxSnapSeg(pos);
+    if(_dxPlaying && !_dxPaused){ _dxSpeakFrom(target); }
+    else { try{ if(typeof speechSynthesis!=="undefined") speechSynthesis.cancel(); }catch(e){} _dxPlaying=false; _dxPaused=false; _dxCharIndex=target; _dxUpdateSlider(); _setDxBtns(false,false); _dxFollow(); _dxStatus("Posición ajustada · presiona ▶"); }
+}
+function dxRateChange(v){ _dxRate=parseFloat(v)||1; const lbl=document.getElementById("dxRateLbl"); if(lbl) lbl.textContent=String(_dxRate).replace(".",",")+"×"; if(_dxPlaying && !_dxPaused) _dxSpeakFrom(_dxCharIndex); }
+/* =================== FIN DIAGNÓSTICO EXPERTO (dx) =================== */
+
 
 function generateRecommendations(devs, tiendaName){
     const recoms = [];
@@ -6050,6 +6425,7 @@ function switchMonth(key){
     if(!SNAPSHOTS[key]) return;
     if(typeof pptoReset==="function") pptoReset();
     if(typeof taReset==="function") taReset();
+    if(typeof dxReset==="function") dxReset();
     if(typeof narrStop==="function") narrStop();
     currentMonthKey = key;
     const s = SNAPSHOTS[key];
