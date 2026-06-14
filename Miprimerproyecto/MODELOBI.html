@@ -4429,13 +4429,21 @@ function _pickEsVoice(){
     if(typeof speechSynthesis==="undefined") return null;
     const vs = speechSynthesis.getVoices()||[];
     if(!vs.length) return null;
-    // Por defecto: Microsoft Pablo
-    let v = vs.find(x=>/pablo/i.test(x.name||""));
-    if(v) return v;
     const es = vs.filter(x=>(x.lang||"").toLowerCase().startsWith("es"));
     if(!es.length) return null;
-    es.sort((a,b)=>_voiceScore(b)-_voiceScore(a));
-    return es[0];
+    // Voces masculinas en español por nombre (PC: Pablo/Gonzalo · iPhone: Jorge/Juan/Diego · etc.)
+    const MALE=/pablo|jorge|juan|diego|carlos|gonzalo|miguel|enrique|andr[eé]s|[aá]lvaro|ra[uú]l|dario|lucas/i;
+    const score=v=>{
+        const lang=(v.lang||"").toLowerCase(), name=(v.name||"").toLowerCase();
+        let s=0;
+        if(MALE.test(name)) s+=200;                    // prioriza voz masculina disponible en el dispositivo
+        if(lang==="es-co") s+=60; else if(lang.startsWith("es")) s+=20;
+        if(/natural|neural|online/.test(name)) s+=15;  // mejor calidad si existe
+        if(/google/.test(name)) s+=8;
+        return s;
+    };
+    es.sort((a,b)=>score(b)-score(a));
+    return es[0];   // si no hay masculina (algunos Android), usa la mejor es disponible para que SIEMPRE suene
 }
 function populateVoiceSelect(){
     if(typeof speechSynthesis==="undefined") return;
