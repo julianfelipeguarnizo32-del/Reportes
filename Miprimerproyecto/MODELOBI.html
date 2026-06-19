@@ -6735,7 +6735,6 @@ applyMonthLabels();
 
 
 
-/* ===== ASISTENTE DE CIFRAS (agente híbrido · IA: Gemini · Yulian · v56) ===== */
 /* ============================================================
    ASISTENTE DE CIFRAS · Agente híbrido (motor offline + IA opcional)
    Responde preguntas de los administradores sobre todas las pestañas.
@@ -7104,7 +7103,7 @@ applyMonthLabels();
   }
 
   function helpHtml(){
-    return "Soy tu <b>asistente de cifras</b>. Leo el mes y la empresa que tengas activos arriba y respondo de todas las pestañas. Prueba con:"+
+    return "Leo el mes y la empresa que tengas activos arriba y respondo de todas las pestañas. Prueba con:"+
       "<div class='ag-chips'>"+
       chip("¿Cómo vamos en la compañía?")+chip("Top 5 tiendas por cumplimiento")+
       chip("¿Cuánto vendió T05?")+chip("Peores 5 por crecimiento")+
@@ -7208,7 +7207,7 @@ applyMonthLabels();
   .ag-head{background:linear-gradient(135deg,var(--templo-black,#0e0606),var(--templo-red-deep,#7c161c));color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}\
   .ag-head h4{margin:0;font-size:15px;font-weight:700;flex:1;line-height:1.2}\
   .ag-head .ag-sub2{font-size:11px;opacity:.8;font-weight:400}\
-  .ag-head button{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px}\
+  .ag-head button{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px} .ag-voice.muted{opacity:.45}\
   .ag-msgs{flex:1;overflow-y:auto;padding:14px;background:var(--bg,#fdf6f0);display:flex;flex-direction:column;gap:10px}\
   .ag-msg{max-width:88%;padding:10px 13px;border-radius:13px;font-size:13.5px;line-height:1.5;word-wrap:break-word}\
   .ag-msg.bot{align-self:flex-start;background:var(--surface,#fff);border:1px solid var(--line,#ecddd2);color:var(--ink,#1a0808)}\
@@ -7233,6 +7232,9 @@ applyMonthLabels();
   .ag-send:disabled{opacity:.5;cursor:default}\
   .ag-ai-btn{background:var(--gold,#b8893a);border:none;color:#fff;height:40px;padding:0 10px;border-radius:11px;cursor:pointer;font-size:12px;font-weight:700;flex:none}\
   .ag-ai-btn.off{opacity:.45}\
+  .ag-mic{background:var(--templo-black,#0e0606);border:none;color:#fff;width:40px;height:40px;border-radius:11px;cursor:pointer;font-size:17px;flex:none}\
+  .ag-mic.listening{background:var(--templo-red,#a8232a);animation:agPulse 1s ease-in-out infinite}\
+  @keyframes agPulse{0%,100%{box-shadow:0 0 0 0 rgba(168,35,42,.55)}50%{box-shadow:0 0 0 7px rgba(168,35,42,0)}}\
   .ag-modal{position:absolute;inset:0;background:rgba(14,6,6,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:5}\
   .ag-modal.open{display:flex}\
   .ag-card{background:#fff;border-radius:13px;padding:18px;width:100%;max-width:340px}\
@@ -7255,11 +7257,12 @@ applyMonthLabels();
     var panel=el('<div class="ag-panel" role="dialog" aria-label="Consultor de Cifras">\
       <div class="ag-head"><div class="ag-av-sm"></div>\
         <h4>Consultor de Cifras<br><span class="ag-sub2">Pregúntale a cualquier pestaña</span></h4>\
-        <button class="ag-cfg" title="Configurar IA">⚙</button>\
+        <button class="ag-voice" title="Leer respuestas en voz alta">🔊</button> <button class="ag-cfg" title="Configurar IA">⚙</button>\
         <button class="ag-x" title="Cerrar">✕</button></div>\
       <div class="ag-msgs"></div>\
       <div class="ag-foot">\
         <textarea class="ag-in" rows="1" placeholder="Escribe tu pregunta…"></textarea>\
+        <button class="ag-mic" title="Preguntar por voz">🎤</button>\
         <button class="ag-ai-btn off" title="Responder con IA (requiere clave)">✨ IA</button>\
         <button class="ag-send" title="Enviar">➤</button></div>\
       <div class="ag-modal"><div class="ag-card">\
@@ -7275,6 +7278,40 @@ applyMonthLabels();
         modal=panel.querySelector(".ag-modal"), keyInput=panel.querySelector(".ag-key");
 
     function refreshAIBtn(){ aiBtn.classList.toggle("off", !hasAI()); aiBtn.title = hasAI()?"Responder con IA":"Requiere clave (⚙)"; }
+    /* ---- voz (lectura en voz alta) ---- */
+    var VOICE_LS="tdm_ia_voice";
+    var aiVoice=true; try{ if(localStorage.getItem(VOICE_LS)==="0") aiVoice=false; }catch(e){}
+    if("speechSynthesis" in window){ try{ window.speechSynthesis.getVoices(); }catch(e){} }
+    function numbersToWords(s){
+      s=s.replace(/(\d{1,3}(?:\.\d{3})*|\d+)(,\d+)?\s?%/g,function(m,ip,dec){return ip.replace(/\./g,"")+(dec||"")+" por ciento";});
+      if(typeof _numALetras==="function"){
+        s=s.replace(/\$\s?(\d{1,3}(?:\.\d{3})*)(?:,\d+)?/g,function(m,ip){var n=parseInt(ip.replace(/\./g,""),10);return isFinite(n)?((typeof _speechNum==="function")?_speechNum(n,"currency"):_numALetras(n)+" pesos"):m;});
+        s=s.replace(/\b\d{1,3}(?:\.\d{3})+\b/g,function(m){var n=parseInt(m.replace(/\./g,""),10);return isFinite(n)?_numALetras(n):m;});
+      }
+      return s;
+    }
+    function plainForSpeech(s){
+      s=String(s||"");
+      if(/<[a-z!\/]/i.test(s)){ var d=document.createElement("div"); d.innerHTML=s; s=d.textContent||d.innerText||""; }
+      s=s.replace(/[*_`#>]/g,"").replace(/^\s*[-•·]\s*/gm,"");
+      s=s.replace(/\n{2,}/g,". ").replace(/\n/g,". ").replace(/\s{2,}/g," ").trim();
+      s=numbersToWords(s);
+      return s;
+    }
+    function speak(s){
+      if(!aiVoice || !("speechSynthesis" in window)) return;
+      var txt=plainForSpeech(s); if(!txt) return;
+      try{
+        window.speechSynthesis.cancel();
+        var u=new SpeechSynthesisUtterance(txt.slice(0,8000));
+        u.lang="es-CO"; u.rate=1; u.pitch=1;
+        var v=(typeof _pickEsVoice==="function")?_pickEsVoice():null;
+        if(v){ u.voice=v; u.lang=v.lang||"es-CO"; }
+        else { var vs=window.speechSynthesis.getVoices()||[]; var es=vs.filter(function(x){return /^es/i.test(x.lang);}); if(es.length) u.voice=es[0]; }
+        window.speechSynthesis.speak(u);
+      }catch(e){}
+    }
+    function stopSpeak(){ try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){} }
     function addMsg(html, who, tag){
       var m=el('<div class="ag-msg '+who+(tag==="ai"?" ai":"")+'"></div>');
       if(tag) m.innerHTML='<span class="ag-tag '+tag+'">'+(tag==="ai"?"IA":"CIFRAS")+'</span>';
@@ -7284,7 +7321,7 @@ applyMonthLabels();
     }
     function ask(q, forceAI){
       q=(q||"").trim(); if(!q) return;
-      addMsg(esc(q),"user"); input.value=""; input.style.height="auto";
+      addMsg(esc(q),"user"); input.value=""; input.style.height="auto"; stopSpeak();
       // empresa mencionada explícitamente (tdm/tmf) -> responder sobre esa, sin cambiar la activa del tablero
       var qn=" "+q.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")+" ";
       var coReq=/\btmf\b/.test(qn)?"TMF":(/\btdm\b/.test(qn)?"TDM":null);
@@ -7293,7 +7330,7 @@ applyMonthLabels();
         var consult=/recomien|prioriz|qu[eé] hago|qu[eé] hacer|qu[eé] est[aá] pasando|qu[eé] pasa con|diagn[oó]stic|lectura ejecutiva|oportunidad|deber[ií]a|conviene|qu[eé] opinas|analiza|an[aá]lisis|interpret|qu[eé] decisi[oó]n|riesgo|qu[eé] tienda priorizo|priorizar/i.test(q);
         if((forceAI||consult) && hasAI()){ runAI(q); return; }
         var res=answerOffline(q);
-        if(res.ok){ addMsg(res.html,"bot","off"); }
+        if(res.ok){ addMsg(res.html,"bot","off"); speak(res.speech||res.html); }
         else if(hasAI()){ runAI(q); }
         else {
           addMsg("Mmm, eso no lo reconoce el motor de cifras directo. Puedes reformularlo, o activar a <b>Yulian</b> (IA) con el engranaje ⚙ para conversar con preguntas libres.<br>"+helpHtml(),"bot","off");
@@ -7312,11 +7349,12 @@ applyMonthLabels();
           if(off && off.ok){
             t.innerHTML='<span class="ag-tag off">CIFRAS</span>'+off.html+
               '<div class="ag-sub" style="margin-top:6px">💡 Te respondí con el motor de cifras porque la IA no estaba disponible en este momento.</div>';
+            speak(off.speech||off.html);
           } else {
             t.innerHTML='<span class="ag-tag ai">IA</span>'+r.error;
           }
         } else {
-          t.innerHTML='<span class="ag-tag ai">IA</span>'+mdLite(r.text);
+          t.innerHTML='<span class="ag-tag ai">IA</span>'+mdLite(r.text); speak(r.text);
         }
         msgs.scrollTop=msgs.scrollHeight;
       });
@@ -7325,10 +7363,14 @@ applyMonthLabels();
     fab.addEventListener("click",function(){
       panel.classList.toggle("open");
       if(panel.classList.contains("open") && !msgs.children.length){
-        addMsg("Hola, soy <b>YULIAN</b> 🤖. Estoy aquí para ayudarte a leer el comportamiento del negocio, interpretar las cifras y convertir los datos en decisiones claras para demanda, inventario y abastecimiento. ¿Qué quieres revisar?"+helpHtml(),"bot","off"); refreshAIBtn();
+        addMsg("Hola, soy <b>YULIAN</b> 🤖. Estoy aquí para ayudarte a leer el comportamiento del negocio, interpretar las cifras y convertir los datos en decisiones claras para demanda, inventario y abastecimiento. ¿Qué quieres revisar?<br><br>"+helpHtml(),"bot","off"); refreshAIBtn();
+        speak("Hola, soy YULIAN. Estoy aquí para ayudarte a leer el comportamiento del negocio e interpretar las cifras.");
       }
     });
-    panel.querySelector(".ag-x").addEventListener("click",function(){ panel.classList.remove("open"); });
+    panel.querySelector(".ag-x").addEventListener("click",function(){ panel.classList.remove("open"); stopSpeak(); });
+    var voiceBtn=panel.querySelector(".ag-voice");
+    function refreshVoiceBtn(){ if(!voiceBtn) return; voiceBtn.textContent=aiVoice?"🔊":"🔇"; voiceBtn.classList.toggle("muted",!aiVoice); voiceBtn.title=aiVoice?"Voz activada — leo las respuestas":"Voz desactivada"; }
+    if(voiceBtn){ voiceBtn.addEventListener("click",function(){ aiVoice=!aiVoice; try{localStorage.setItem(VOICE_LS, aiVoice?"1":"0");}catch(e){} if(!aiVoice) stopSpeak(); refreshVoiceBtn(); }); refreshVoiceBtn(); }
     panel.querySelector(".ag-cfg").addEventListener("click",function(){ keyInput.value=aiKey(); modal.classList.add("open"); });
     panel.querySelector(".ag-card .save").addEventListener("click",function(){
       try{ localStorage.setItem(AI_KEY_LS, keyInput.value.trim()); }catch(e){}
@@ -7344,12 +7386,53 @@ applyMonthLabels();
     aiBtn.addEventListener("click",function(){ if(!hasAI()){ modal.classList.add("open"); return; } ask(input.value,true); });
     input.addEventListener("keydown",function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); ask(input.value); } });
     input.addEventListener("input",function(){ input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,90)+"px"; });
+    /* Nota de voz: preguntar hablando (voz -> texto -> enviar) */
+    var micBtn=panel.querySelector(".ag-mic");
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(micBtn){
+      if(!SR){ micBtn.style.display="none"; }
+      else {
+        var recog=null, listening=false;
+        micBtn.addEventListener("click",function(){
+          if(listening){ try{recog.stop();}catch(e){} return; }
+          stopSpeak();
+          try{ recog=new SR(); }catch(e){ return; }
+          recog.lang="es-CO"; recog.interimResults=true; recog.maxAlternatives=1; recog.continuous=false;
+          listening=true; micBtn.classList.add("listening"); input.placeholder="Escuchando\u2026";
+          recog.onresult=function(e){
+            var live="",fin="";
+            for(var i=e.resultIndex;i<e.results.length;i++){ var tr=e.results[i][0].transcript; live+=tr; if(e.results[i].isFinal) fin+=tr; }
+            input.value=fin||live; input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,90)+"px";
+          };
+          recog.onerror=function(){ listening=false; micBtn.classList.remove("listening"); input.placeholder="Escribe tu pregunta\u2026"; };
+          recog.onend=function(){
+            listening=false; micBtn.classList.remove("listening"); input.placeholder="Escribe tu pregunta\u2026";
+            var q=(input.value||"").trim(); if(q) ask(q);
+          };
+          try{ recog.start(); }catch(e){ listening=false; micBtn.classList.remove("listening"); input.placeholder="Escribe tu pregunta\u2026"; }
+        });
+      }
+    }
     refreshAIBtn();
+    /* Auto-abrir YULIAN al ingresar (tras el login), una sola vez */
+    var _autoOpened=false;
+    function _openPanel(){ if(!panel.classList.contains("open")) fab.click(); }
+    function _maybeAutoOpen(){
+      if(_autoOpened) return;
+      if(document.body.classList.contains("locked")) return;
+      _autoOpened=true; setTimeout(_openPanel, 700);
+    }
+    _maybeAutoOpen();
+    if(!_autoOpened){
+      var _ao=setInterval(function(){ _maybeAutoOpen(); if(_autoOpened) clearInterval(_ao); }, 500);
+      setTimeout(function(){ clearInterval(_ao); }, 60000);
+    }
   }
 
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
   else init();
 })();
+
 
 </script>
 </body>
