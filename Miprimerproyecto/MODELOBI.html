@@ -7025,6 +7025,70 @@ applyMonthLabels();
     var pick = kind==="peor"? v[v.length-1] : v[0];
     return {ok:true, html:"El <b>"+kind+" día</b> de venta en "+CO()+" fue <b>"+pick.d+"</b> con <b>"+pesos(pick.e)+"</b> ejecutado (cumplimiento "+pct(pick.c)+")."};
   }
+  function _nmList(arr,n){ n=n||5; var names=arr.slice(0,n).map(function(x){return x.t;}); var extra=arr.length-n; return names.join(", ")+(extra>0?" y "+extra+" más":""); }
+  function lecturaEjecutiva(){
+    var s=S(), co=CO(); if(!s) return {ok:false};
+    var tr=totalRow(), d=diasCorte();
+    var serieCo=s["VTA_"+co]||[]; var diasMes=serieCo.length||30;
+    var periodo=s.period_label||"";
+    var ejec=tr?val(tr,"Ejecutado ($)"):null, pptoMes=tr?val(tr,"Ppto Mes ($)"):null, cump=tr?val(tr,"Cump (%)"):null, v25=tr?val(tr,"Venta 2025 ($)"):null;
+    var projCierre=(cump!=null&&pptoMes!=null)?cump*pptoMes:null;
+    var crec=(v25&&ejec!=null)?(ejec/v25-1):null;
+    var riesgoPpto=[],quiebre=[],sobreinv=[],criticas=[],caida=[],tendNeg=[],invAlto=[];
+    stores(true).forEach(function(r){
+      var t=r.Tienda, c=val(r,"Cump (%)"), pm=val(r,"Ppto Mes ($)");
+      var cob=cobertura(r), di=cob!=null?cob*7:null, u=val(r,"Unds 2026")||0, inv=val(r,"Unds Inv")||0;
+      if(c!=null&&c<1.0) riesgoPpto.push({t:t,gap:(pm!=null?pm*(1-c):0),c:c});
+      if(c!=null&&c<0.80) criticas.push({t:t,c:c});
+      if(di!=null&&u>0&&inv>0&&di<15) quiebre.push({t:t,di:di});
+      if(cob!=null&&cob>=12) sobreinv.push({t:t,cob:cob});
+      if(di!=null&&di>180) invAlto.push({t:t,di:di});
+      var serie=((s["VTA_X_TIENDA_"+co]||{})[t]||[]).filter(function(x){return Number(x.e)>0;});
+      if(serie.length>=3){
+        var last=Number(serie[serie.length-1].e);
+        var prev=serie.slice(Math.max(0,serie.length-6),serie.length-1);
+        var avg=prev.reduce(function(a,b){return a+Number(b.e);},0)/(prev.length||1);
+        if(avg>0&&last<0.8*avg) caida.push({t:t,drop:1-last/avg});
+      }
+      if(serie.length>=5){
+        var l5=serie.slice(serie.length-5).map(function(x){return Number(x.e);});
+        var dec=true; for(var i=1;i<l5.length;i++){ if(l5[i]>=l5[i-1]){dec=false;break;} }
+        if(dec) tendNeg.push({t:t});
+      }
+    });
+    riesgoPpto.sort(function(a,b){return b.gap-a.gap;});
+    criticas.sort(function(a,b){return a.c-b.c;});
+    quiebre.sort(function(a,b){return a.di-b.di;});
+    sobreinv.sort(function(a,b){return b.cob-a.cob;});
+    var cierreTxt=(cump!=null)?((cump>=1?"por encima":"por debajo")+" del presupuesto, "+pct(cump)):"sin dato";
+    var h="<b>\ud83d\udccb Lectura ejecutiva \u2014 "+co+"</b>"+(periodo?" \u00b7 "+periodo:"")+" (corte d\u00eda "+d+" de "+diasMes+")<br><br>";
+    h+="<span class='ag-sub'>Vista para "+rolObj().nombre+" \u00b7 foco: "+rolObj().foco+".</span><br><br>";
+    h+="<b>Desempe\u00f1o</b><br>";
+    h+="\u2022 Ejecutado: <b>"+pesos(ejec)+"</b> de "+pesos(pptoMes)+" \u2014 cumplimiento al corte <b>"+pct(cump)+"</b>.<br>";
+    if(projCierre!=null) h+="\u2022 Proyecci\u00f3n de cierre (curva de ppto): <b>"+pesos(projCierre)+"</b> \u2192 cerrar\u00eda <b>"+cierreTxt+"</b>.<br>";
+    if(crec!=null) h+="\u2022 Crecimiento en venta vs 2025: <b>"+pct(crec)+"</b>.<br>";
+    h+="<br><b>\ud83d\udea8 Riesgos y alertas</b><br>";
+    h+="\u2022 Riesgo de no cumplir el presupuesto al cierre: <b>"+riesgoPpto.length+"</b>"+(riesgoPpto.length?" \u2014 "+_nmList(riesgoPpto,5):"")+".<br>";
+    h+="\u2022 Riesgo de quiebre (<15 d\u00edas de inventario): <b>"+quiebre.length+"</b>"+(quiebre.length?" \u2014 "+_nmList(quiebre,5):"")+".<br>";
+    h+="\u2022 Cerrar\u00edan con sobreinventario (\u226512 sem): <b>"+sobreinv.length+"</b>"+(sobreinv.length?" \u2014 "+_nmList(sobreinv,5):"")+".<br>";
+    h+="\u2022 Cumplimiento cr\u00edtico (<80%): <b>"+criticas.length+"</b>"+(criticas.length?" \u2014 "+_nmList(criticas,5):"")+".<br>";
+    if(caida.length) h+="\u2022 Ca\u00edda de venta el \u00faltimo d\u00eda (>20%): <b>"+caida.length+"</b> \u2014 "+_nmList(caida,5)+".<br>";
+    if(tendNeg.length) h+="\u2022 Tendencia negativa 5 d\u00edas seguidos: <b>"+tendNeg.length+"</b> \u2014 "+_nmList(tendNeg,5)+".<br>";
+    if(invAlto.length) h+="\u2022 Inventario > 180 d\u00edas: <b>"+invAlto.length+"</b> \u2014 "+_nmList(invAlto,5)+".<br>";
+    h+="<br><b>Foco recomendado</b><br>";
+    h+= riesgoPpto.length? "\u2022 Priorizar las de mayor brecha: <b>"+_nmList(riesgoPpto,3)+"</b>"+(quiebre.length?", validando inventario (riesgo de quiebre en "+_nmList(quiebre,3)+")":"")+".<br>" : "\u2022 Sin tiendas en riesgo de incumplir; mantener el ritmo.<br>";
+    var _mnLE=memNeg(); if(_mnLE.length) h+="<br><span class='ag-sub'>Prioridades vigentes: "+_mnLE.slice(0,3).map(function(x){return esc(x.t);}).join("; ")+".</span>";
+    h+="<span class='ag-sub'>Proyecciones estimadas por ritmo y curva de presupuesto; son una gu\u00eda, no una certeza.</span>";
+    var sp="Lectura ejecutiva de "+co+(periodo?", "+periodo:"")+", corte d\u00eda "+d+". ";
+    sp+="El ejecutado es "+pesos(ejec)+" de "+pesos(pptoMes)+", cumplimiento al corte "+pct(cump)+". ";
+    if(projCierre!=null) sp+="Al ritmo actual cerrar\u00eda en "+pesos(projCierre)+", "+cierreTxt+". ";
+    if(crec!=null) sp+="El crecimiento en venta frente a 2025 es "+pct(crec)+". ";
+    sp+="Hay "+riesgoPpto.length+" tiendas en riesgo de no cumplir el presupuesto"+(riesgoPpto.length?", principalmente "+_nmList(riesgoPpto,3)+". ":". ");
+    if(quiebre.length) sp+=quiebre.length+" con riesgo de quiebre de inventario: "+_nmList(quiebre,3)+". ";
+    if(sobreinv.length) sp+=sobreinv.length+" cerrar\u00edan con sobreinventario. ";
+    if(criticas.length) sp+=criticas.length+" con cumplimiento cr\u00edtico bajo el 80 por ciento. ";
+    return {ok:true, html:h, speech:sp};
+  }
   function composition(dim,tienda){
     var co=CO(), data=S()[dim.key+"_"+co];
     if(!data) return {ok:false};
@@ -7109,8 +7173,8 @@ applyMonthLabels();
       chip("¿Cuánto vendió T05?")+chip("Peores 5 por crecimiento")+
       chip("¿Qué tiendas están en sobreinventario?")+chip("Cobertura de T12")+
       chip("Venta por género de T02")+chip("¿Cuánto falta para el presupuesto?")+
-      chip("Proyección de cierre")+chip("¿Cuál fue el mejor día?")+
-      "</div>";
+      chip("Lectura ejecutiva del corte")+chip("Proyección de cierre")+chip("¿Cuál fue el mejor día?")+
+      "</div>"+_rolChips()+_recientesChips();
   }
   function chip(t){ return "<button class='ag-chip' data-q=\""+esc(t)+"\">"+esc(t)+"</button>"; }
 
@@ -7119,7 +7183,88 @@ applyMonthLabels();
      ============================================================ */
   function aiKey(){ try{return localStorage.getItem(AI_KEY_LS)||"";}catch(e){return "";} }
   function hasAI(){ return !!aiKey(); }
+  /* ===== Memoria de negocio + preferencias + no entendidas (N4 / v74) ===== */
+  var MEM_NEG="tdm_ia_negocio", MEM_PREF="tdm_ia_prefs", MEM_NOM="tdm_ia_nomatch";
+  var ROLE_LS="tdm_ia_rol", AUDIT_LS="tdm_ia_audit";
+  var ROLES={
+    director:{nombre:"Director Comercial",nivel:"Ejecutivo",foco:"cumplimiento, ventas, rentabilidad y riesgos",instr:"Responde a nivel ejecutivo y conciso: prioriza cumplimiento, ventas, rentabilidad y riesgos de cierre; ve al grano y termina con la decisión recomendada."},
+    demanda:{nombre:"Planeación de Demanda",nivel:"Analítico",foco:"tendencias, proyecciones y cobertura",instr:"Responde a nivel analítico: enfócate en tendencias, proyección de cierre, cobertura y comportamiento de la venta; razona el porqué con cifras."},
+    logistica:{nombre:"Logística y Abastecimiento",nivel:"Operativo",foco:"traslados, quiebres, sobreinventario e inventario envejecido",instr:"Responde a nivel operativo de abastecimiento: prioriza traslados excedente-necesidad, riesgo de quiebre, sobreinventario e inventario envejecido, con acciones concretas."},
+    tienda:{nombre:"Administrador de Tienda",nivel:"Práctico",foco:"acciones del día y oportunidades inmediatas",instr:"Responde práctico y breve para tienda: qué hacer hoy, prioridades y oportunidades inmediatas; evita tecnicismos."},
+    analista:{nombre:"Analista BI",nivel:"Avanzado",foco:"KPIs, rankings y detalle técnico",instr:"Responde a nivel avanzado/técnico: KPIs detallados, rankings, definiciones y matices de cálculo; puedes ser exhaustivo."}
+  };
+  function getRol(){ try{ return localStorage.getItem(ROLE_LS)||"director"; }catch(e){ return "director"; } }
+  function setRol(k){ try{ localStorage.setItem(ROLE_LS,k); }catch(e){} }
+  function rolObj(){ return ROLES[getRol()]||ROLES.director; }
+  function _rolChips(){
+    var m={director:["¿Cómo vamos en la compañía?","Proyección de cierre","¿Qué tiendas no cumplirían el presupuesto?"],
+      demanda:["Lectura ejecutiva del corte","Cobertura de T12","Peores 5 por crecimiento"],
+      logistica:["¿Qué tiendas tienen riesgo de quiebre?","¿Qué tiendas están en sobreinventario?","¿Qué tiendas tienen inventario envejecido?"],
+      tienda:["¿Cómo vamos en la compañía?","¿Cuánto falta para el presupuesto?","¿Cuál fue el mejor día?"],
+      analista:["Top 5 tiendas por cumplimiento","Venta por género de T02","¿Cuánto vendió T05?"]};
+    var qs=m[getRol()]||m.director;
+    return "<div class='ag-sub' style='margin-top:9px'>Sugerencias para "+rolObj().nombre+":</div><div class='ag-chips'>"+qs.map(function(q){return chip(q);}).join("")+"</div>";
+  }
+  function audit(){ var a=lsGet(AUDIT_LS,[]); return Array.isArray(a)?a:[]; }
+  function auditAdd(q,src,resp){ var a=audit(); a.push({f:Date.now(),rol:getRol(),q:String(q||"").slice(0,300),src:src,r:String(resp||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,300)}); if(a.length>200) a=a.slice(a.length-200); lsSet(AUDIT_LS,a); }
+  function auditClear(){ lsSet(AUDIT_LS,[]); }
+  function lsGet(k,def){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  function memNeg(){ var a=lsGet(MEM_NEG,[]); return Array.isArray(a)?a:[]; }
+  function memNegAdd(txt){ var a=memNeg(); txt=String(txt||"").trim(); if(!txt) return a; a=a.filter(function(x){return x.t.toLowerCase()!==txt.toLowerCase();}); a.push({t:txt,d:Date.now()}); if(a.length>20) a=a.slice(a.length-20); lsSet(MEM_NEG,a); return a; }
+  function memNegDel(txt){ var a=memNeg(); txt=String(txt||"").trim().toLowerCase(); var b=a.filter(function(x){return x.t.toLowerCase().indexOf(txt)<0;}); lsSet(MEM_NEG,b); return {before:a.length,after:b.length}; }
+  function memNegClear(){ lsSet(MEM_NEG,[]); }
+  function prefs(){ var p=lsGet(MEM_PREF,null)||{}; p.kpis=p.kpis||{}; p.tiendas=p.tiendas||{}; p.empresas=p.empresas||{}; p.recientes=p.recientes||[]; return p; }
+  function prefBump(q){ var p=prefs(); try{ var co=CO(); p.empresas[co]=(p.empresas[co]||0)+1; var t=(typeof detectTienda==="function")?detectTienda(q):null; if(t) p.tiendas[t]=(p.tiendas[t]||0)+1; var k=(typeof detectKPI==="function")?detectKPI(q):null; if(k) p.kpis[k]=(p.kpis[k]||0)+1; }catch(e){} var qq=String(q||"").trim(); if(qq){ p.recientes=p.recientes.filter(function(x){return x.toLowerCase()!==qq.toLowerCase();}); p.recientes.push(qq); if(p.recientes.length>8) p.recientes=p.recientes.slice(p.recientes.length-8); } lsSet(MEM_PREF,p); }
+  function topKeys(o,n){ return Object.keys(o||{}).sort(function(a,b){return o[b]-o[a];}).slice(0,n||3); }
+  function nomatch(){ var a=lsGet(MEM_NOM,[]); return Array.isArray(a)?a:[]; }
+  function nomatchAdd(q){ var a=nomatch(); q=String(q||"").trim(); if(!q) return; a.push({q:q,d:Date.now(),co:CO()}); if(a.length>50) a=a.slice(a.length-50); lsSet(MEM_NOM,a); }
+  function _recientesChips(){ var r=(prefs().recientes||[]).slice(-4).reverse(); if(!r.length) return ""; return "<div class='ag-sub' style='margin-top:9px'>Tus preguntas recientes:</div><div class='ag-chips'>"+r.map(function(q){return chip(q);}).join("")+"</div>"; }
 
+  function _insights(){
+    var s=S(), co=CO(); if(!s) return null;
+    var tr=totalRow(), d=diasCorte();
+    var serieCo=s["VTA_"+co]||[]; var diasMes=serieCo.length||30;
+    var ejec=tr?val(tr,"Ejecutado ($)"):null, pptoMes=tr?val(tr,"Ppto Mes ($)"):null, cump=tr?val(tr,"Cump (%)"):null, v25=tr?val(tr,"Venta 2025 ($)"):null;
+    var projCierre=(cump!=null&&pptoMes!=null)?Math.round(cump*pptoMes):null;
+    var crec=(v25&&ejec!=null)?+(ejec/v25-1).toFixed(4):null;
+    var riesgoPpto=[],quiebre=[],sobreinv=[],criticas=[],caida=[],tendNeg=[],invAlto=[],excedente=[],necesidad=[];
+    stores(true).forEach(function(r){
+      var t=r.Tienda, c=val(r,"Cump (%)"), pm=val(r,"Ppto Mes ($)");
+      var cob=cobertura(r), di=cob!=null?+(cob*7).toFixed(0):null, u=val(r,"Unds 2026")||0, inv=val(r,"Unds Inv")||0;
+      if(c!=null&&c<1.0) riesgoPpto.push({tienda:t,cump:+c.toFixed(3),proyeccion_cierre:(pm!=null?Math.round(c*pm):null),brecha_mes:(pm!=null?Math.round(pm*(1-c)):null)});
+      if(c!=null&&c<0.80) criticas.push({tienda:t,cump:+c.toFixed(3)});
+      if(di!=null&&u>0&&inv>0&&di<15) quiebre.push({tienda:t,dias_inventario:di,unds_inv:inv});
+      if(cob!=null&&cob>=12){ sobreinv.push({tienda:t,cobertura_sem:+cob.toFixed(1),unds_inv:inv}); excedente.push({tienda:t,cobertura_sem:+cob.toFixed(1),unds_inv:inv}); }
+      if(cob!=null&&cob<3&&c!=null&&c>=0.98) necesidad.push({tienda:t,cobertura_sem:+cob.toFixed(1),cump:+c.toFixed(3)});
+      if(di!=null&&di>180) invAlto.push({tienda:t,dias_inventario:di});
+      var serie=((s["VTA_X_TIENDA_"+co]||{})[t]||[]).filter(function(x){return Number(x.e)>0;});
+      if(serie.length>=3){ var last=Number(serie[serie.length-1].e); var prev=serie.slice(Math.max(0,serie.length-6),serie.length-1); var avg=prev.reduce(function(a,b){return a+Number(b.e);},0)/(prev.length||1); if(avg>0&&last<0.8*avg) caida.push({tienda:t,caida_pct:+(1-last/avg).toFixed(3)}); }
+      if(serie.length>=5){ var l5=serie.slice(serie.length-5).map(function(x){return Number(x.e);}); var dec=true; for(var i=1;i<l5.length;i++){ if(l5[i]>=l5[i-1]){dec=false;break;} } if(dec) tendNeg.push(t); }
+    });
+    riesgoPpto.sort(function(a,b){return (b.brecha_mes||0)-(a.brecha_mes||0);});
+    criticas.sort(function(a,b){return a.cump-b.cump;});
+    quiebre.sort(function(a,b){return a.dias_inventario-b.dias_inventario;});
+    sobreinv.sort(function(a,b){return b.cobertura_sem-a.cobertura_sem;});
+    excedente.sort(function(a,b){return b.cobertura_sem-a.cobertura_sem;});
+    function lim(a){return a.slice(0,15);}
+    return {
+      corte:{empresa:co,dia:d,dias_mes:diasMes},
+      proyeccion_cierre_pesos:projCierre,
+      proyeccion_cierre_pct:(cump!=null?+cump.toFixed(3):null),
+      cierre_vs_presupuesto:(cump!=null?(cump>=1?"por encima":"por debajo"):null),
+      crecimiento_venta_vs_2025:crec,
+      tiendas_riesgo_incumplir_ppto:lim(riesgoPpto),
+      tiendas_riesgo_quiebre:lim(quiebre),
+      tiendas_sobreinventario:lim(sobreinv),
+      tiendas_cumplimiento_critico:lim(criticas),
+      caida_venta_ultimo_dia:lim(caida),
+      tendencia_negativa_5dias:lim(tendNeg),
+      inventario_mayor_180dias:lim(invAlto),
+      excedentes_donantes:lim(excedente),
+      necesidades_receptores:lim(necesidad)
+    };
+  }
   function buildContext(){
     var co=CO(), s=S(), d=diasCorte(), tr=totalRow();
     var keepCols=["Tienda","Ejecutado ($)","Ppto Mes ($)","Cump (%)","Var Vta ($)","% Var Vta (Unds)",
@@ -7139,11 +7284,15 @@ applyMonthLabels();
     var serie=(s["VTA_"+co]||[]).map(function(x){return {dia:x.d,ppto:Math.round(x.p),ejec:Math.round(x.e),cump:+(x.c||0).toFixed(3),vta2025:Math.round(x.v)};});
     return {
       empresa:co, mes:s.label, periodo:s.period_label, dias_corte:d,
+      analisis_motor:_insights(),
+      memoria_negocio:memNeg().map(function(x){return x.t;}),
+      preferencias_usuario:{kpis_frecuentes:topKeys(prefs().kpis,3),tiendas_frecuentes:topKeys(prefs().tiendas,3)},
+      rol_activo:{perfil:rolObj().nombre,nivel:rolObj().nivel,enfoque:rolObj().foco},
       compania_totales:totals, tiendas:rows,
       venta_por_genero:dimAgg("GRAFICAS"), por_tipo_inventario:dimAgg("INV"),
       por_marca:dimAgg("MCA"), por_tipo_precio:dimAgg("PRE"),
       serie_diaria_compania:serie,
-      notas:"Tienes el set COMPLETO de KPIs por tienda en 'tiendas' y los totales de compañía en 'compania_totales' (presupuesto, ejecutado, cumplimiento, diferencia, utilidad, rentabilidad, ventas y unidades 2026/2025 con sus variaciones, clientes, efectividad/conversión, unidades por cliente, inventario, PxM2, Vta x M2, PVP, etc.), más composición por género/inventario/marca/precio y la serie diaria. Con esto respondes de las pestañas Ppto vs Ejecución, Análisis por tienda, Analítica y Análisis IA. Unds=unidades. cobertura_sem = Unds Inv / (Unds 2026 / dias_corte * 7). Cump y % vienen en fracción (0.95 = 95%). Cifras en COP. No inventes datos."
+      notas:"Tienes el set COMPLETO de KPIs por tienda en 'tiendas' y los totales de compañía en 'compania_totales' (presupuesto, ejecutado, cumplimiento, diferencia, utilidad, rentabilidad, ventas y unidades 2026/2025 con sus variaciones, clientes, efectividad/conversión, unidades por cliente, inventario, PxM2, Vta x M2, PVP, etc.), más composición por género/inventario/marca/precio y la serie diaria. Con esto respondes de las pestañas Ppto vs Ejecución, Análisis por tienda, Analítica y Análisis IA. Unds=unidades. cobertura_sem = Unds Inv / (Unds 2026 / dias_corte * 7). Cump y % vienen en fracción (0.95 = 95%). En 'analisis_motor' están los cálculos YA HECHOS por el motor determinista (proyección de cierre, tiendas en riesgo de incumplir el presupuesto, riesgo de quiebre, sobreinventario, cumplimiento crítico, caídas y tendencias negativas, y excedentes/necesidades para traslados): ÚSALOS COMO VERDAD, cita esas cifras y NO recalcules ni estimes por tu cuenta. En 'memoria_negocio' están las prioridades, metas y campañas que el usuario te enseñó: ALINEA tus recomendaciones con ellas. 'preferencias_usuario' indica sus focos. Cifras en COP. No inventes datos. Adapta la profundidad y el enfoque al rol del usuario: "+rolObj().nombre+" ("+rolObj().nivel+"). "+rolObj().instr
     };
   }
 
@@ -7237,6 +7386,7 @@ applyMonthLabels();
   @keyframes agPulse{0%,100%{box-shadow:0 0 0 0 rgba(168,35,42,.55)}50%{box-shadow:0 0 0 7px rgba(168,35,42,0)}}\
   .ag-modal{position:absolute;inset:0;background:rgba(14,6,6,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:5}\
   .ag-modal.open{display:flex}\
+  .ag-rol{width:100%;padding:9px;border:1px solid var(--line-strong,#d9c2b6);border-radius:9px;font-family:inherit;font-size:13px;background:#fff}\
   .ag-card{background:#fff;border-radius:13px;padding:18px;width:100%;max-width:340px}\
   .ag-card h5{margin:0 0 6px;font-size:14px}.ag-card p{margin:0 0 10px;font-size:12px;color:var(--muted,#7a5e60);line-height:1.5}\
   .ag-card input{width:100%;box-sizing:border-box;border:1px solid var(--line-strong,#d9c2b6);border-radius:9px;padding:9px;font-size:13px;margin-bottom:10px}\
@@ -7266,6 +7416,16 @@ applyMonthLabels();
         <button class="ag-ai-btn off" title="Responder con IA (requiere clave)">✨ IA</button>\
         <button class="ag-send" title="Enviar">➤</button></div>\
       <div class="ag-modal"><div class="ag-card">\
+        <h5>Tu rol</h5>\
+        <p>Personaliza el enfoque y la profundidad de las respuestas.</p>\
+        <select class="ag-rol">\
+          <option value="director">Director Comercial</option>\
+          <option value="demanda">Planeación de Demanda</option>\
+          <option value="logistica">Logística y Abastecimiento</option>\
+          <option value="tienda">Administrador de Tienda</option>\
+          <option value="analista">Analista BI</option>\
+        </select>\
+        <hr style="border:none;border-top:1px solid var(--line,#ecddd2);margin:14px 0">\
         <h5>Activar IA · Gemini (gratis)</h5>\
         <p>Crea una clave gratuita en Google AI Studio (aistudio.google.com, sin tarjeta) y pégala aquí. Se guarda solo en este navegador. El motor de cifras funciona sin clave. Nota: en el plan gratuito de Gemini, Google puede usar tus consultas para mejorar sus productos; evita preguntar con datos que no quieras compartir.</p>\
         <input type="password" class="ag-key" placeholder="AIza..." autocomplete="off">\
@@ -7276,6 +7436,8 @@ applyMonthLabels();
     var msgs=panel.querySelector(".ag-msgs"), input=panel.querySelector(".ag-in"),
         send=panel.querySelector(".ag-send"), aiBtn=panel.querySelector(".ag-ai-btn"),
         modal=panel.querySelector(".ag-modal"), keyInput=panel.querySelector(".ag-key");
+    var rolSel=panel.querySelector(".ag-rol");
+    if(rolSel){ try{rolSel.value=getRol();}catch(e){} rolSel.addEventListener("change",function(){ setRol(rolSel.value); addMsg("Listo, ahora respondo con el enfoque de <b>"+esc(rolObj().nombre)+"</b> ("+esc(rolObj().nivel)+"). Foco: "+esc(rolObj().foco)+".","bot","off"); }); }
 
     function refreshAIBtn(){ aiBtn.classList.toggle("off", !hasAI()); aiBtn.title = hasAI()?"Responder con IA":"Requiere clave (⚙)"; }
     /* ---- voz (lectura en voz alta) ---- */
@@ -7327,12 +7489,47 @@ applyMonthLabels();
       var coReq=/\btmf\b/.test(qn)?"TMF":(/\btdm\b/.test(qn)?"TDM":null);
       var prevCO=coOverride; coOverride=coReq;
       try{
+        var mRec=q.match(/^\s*recuerda(?:\s+que|\s*:)?\s+(.+)/i);
+        if(mRec){ memNegAdd(mRec[1]); addMsg("Anotado. Lo tendré presente en mis recomendaciones. \u2705<br><span class='ag-sub'>Memoria de negocio: "+memNeg().length+" nota(s). Di \"qué recuerdas\" para verlas.</span>","bot","off"); return; }
+        if(/^\s*(qu[e\u00e9] recuerdas|memoria de negocio|qu[e\u00e9] tienes (en|de) memoria|cu[a\u00e1]les son (mis|las) prioridades|qu[e\u00e9] prioridades)/i.test(q)){
+          var _mn=memNeg(); if(!_mn.length){ addMsg("Aún no tengo prioridades guardadas. Dime, por ejemplo: \"recuerda que este mes priorizamos Jeans Mujer\".","bot","off"); return; }
+          addMsg("<b>Memoria de negocio</b> ("+_mn.length+"):<ul style='margin:6px 0 0;padding-left:18px'>"+_mn.map(function(x){return "<li>"+esc(x.t)+"</li>";}).join("")+"</ul><span class='ag-sub'>Para quitar una: \"olvida &lt;texto&gt;\". Para borrar todo: \"olvida todo\".</span>","bot","off"); return;
+        }
+        if(/^\s*(olvida todo|borra (la )?memoria|limpia (la )?memoria)/i.test(q)){ memNegClear(); addMsg("Listo, borré la memoria de negocio.","bot","off"); return; }
+        var mOlv=q.match(/^\s*(?:olvida|borra)\s+(?:de la memoria\s+)?(.+)/i);
+        if(mOlv){ var _r=memNegDel(mOlv[1]); addMsg(_r.before>_r.after?("Quité "+(_r.before-_r.after)+" nota(s) de la memoria."):"No encontré esa nota en la memoria.","bot","off"); return; }
+        if(/^\s*(preguntas no entendidas|qu[e\u00e9] no entiendes|no entendidas|qu[e\u00e9] no has entendido)/i.test(q)){
+          var _nm=nomatch(); if(!_nm.length){ addMsg("No tengo preguntas sin reconocer registradas. \ud83d\udc4d","bot","off"); return; }
+          var _last=_nm.slice(-15).reverse();
+          addMsg("<b>Preguntas no reconocidas por el motor</b> (últimas "+_last.length+"):<ul style='margin:6px 0 0;padding-left:18px'>"+_last.map(function(x){return "<li>"+esc(x.q)+"</li>";}).join("")+"</ul><span class='ag-sub'>Útil para ampliar el vocabulario del motor.</span>","bot","off"); return;
+        }
+        var rolTrig=/(^|\s)(soy|modo|rol|perfil|actua como|cambia(r)?\s+(a|el|de)\s+(rol|perfil))(\s|$)/.test(qn);
+        if(rolTrig){
+          var rk=null;
+          if(/director|comercial/.test(qn)) rk="director";
+          else if(/demanda|planeaci/.test(qn)) rk="demanda";
+          else if(/logist|abastec/.test(qn)) rk="logistica";
+          else if(/tienda|administrador/.test(qn)) rk="tienda";
+          else if(/analista|\bbi\b/.test(qn)) rk="analista";
+          if(rk){ setRol(rk); if(typeof rolSel!=="undefined"&&rolSel){ try{rolSel.value=rk;}catch(e){} } addMsg("Listo, ahora respondo con el enfoque de <b>"+esc(rolObj().nombre)+"</b> ("+esc(rolObj().nivel)+"). Foco: "+esc(rolObj().foco)+".","bot","off"); return; }
+        }
+        if(/^\s*(qu[eé] rol|cu[aá]l es mi rol|mi perfil|mi rol)/i.test(q)){ addMsg("Tu rol activo es <b>"+esc(rolObj().nombre)+"</b> ("+esc(rolObj().nivel)+"). Foco: "+esc(rolObj().foco)+". Cámbialo en \u2699 o di, por ejemplo, \"modo logística\".","bot","off"); return; }
+        if(/^\s*(auditor[ií]a|bit[aá]cora|historial)/i.test(q)){
+          var _au=audit(); if(!_au.length){ addMsg("No hay registros de auditoría todavía.","bot","off"); return; }
+          var _l=_au.slice(-15).reverse();
+          var _fch=function(ms){ try{var dt=new Date(ms);return ("0"+dt.getDate()).slice(-2)+"/"+("0"+(dt.getMonth()+1)).slice(-2)+" "+("0"+dt.getHours()).slice(-2)+":"+("0"+dt.getMinutes()).slice(-2);}catch(e){return "";} };
+          addMsg("<b>Auditoría</b> (últimas "+_l.length+" de "+_au.length+"):<table class='ag-tbl'><thead><tr><th>Fecha</th><th>Rol</th><th>Fuente</th><th>Pregunta</th></tr></thead><tbody>"+_l.map(function(x){return "<tr><td>"+_fch(x.f)+"</td><td>"+esc((ROLES[x.rol]||{}).nombre||x.rol)+"</td><td>"+esc(x.src)+"</td><td>"+esc(x.q)+"</td></tr>";}).join("")+"</tbody></table><span class='ag-sub'>Registro local en este navegador. Di \"borrar auditoría\" para limpiarlo.</span>","bot","off"); return;
+        }
+        if(/^\s*(borrar|limpia(r)?)\s+(la\s+)?(auditor[ií]a|bit[aá]cora|historial)/i.test(q)){ auditClear(); addMsg("Auditoría borrada.","bot","off"); return; }
+        prefBump(q);
+        if(/lectura ejecutiv|resumen ejecutiv|resumen del corte|diagn[oó]stic|panorama|c[oó]mo vamos|como vamos|qu[eé] riesgos|alertas|qu[eé] est[aá] pasando/i.test(q)){ var le=lecturaEjecutiva(); if(le&&le.ok){ addMsg(le.html,"bot","off"); speak(le.speech||le.html); auditAdd(q,"lectura",le.html); return; } }
         var consult=/recomien|prioriz|qu[eé] hago|qu[eé] hacer|qu[eé] est[aá] pasando|qu[eé] pasa con|diagn[oó]stic|lectura ejecutiva|oportunidad|deber[ií]a|conviene|qu[eé] opinas|analiza|an[aá]lisis|interpret|qu[eé] decisi[oó]n|riesgo|qu[eé] tienda priorizo|priorizar/i.test(q);
         if((forceAI||consult) && hasAI()){ runAI(q); return; }
         var res=answerOffline(q);
-        if(res.ok){ addMsg(res.html,"bot","off"); speak(res.speech||res.html); }
+        if(res.ok){ addMsg(res.html,"bot","off"); speak(res.speech||res.html); auditAdd(q,"motor",res.html); }
         else if(hasAI()){ runAI(q); }
         else {
+          nomatchAdd(q); auditAdd(q,"sin_respuesta","");
           addMsg("Mmm, eso no lo reconoce el motor de cifras directo. Puedes reformularlo, o activar a <b>Yulian</b> (IA) con el engranaje ⚙ para conversar con preguntas libres.<br>"+helpHtml(),"bot","off");
         }
       } finally { coOverride=prevCO; }
@@ -7349,12 +7546,12 @@ applyMonthLabels();
           if(off && off.ok){
             t.innerHTML='<span class="ag-tag off">CIFRAS</span>'+off.html+
               '<div class="ag-sub" style="margin-top:6px">💡 Te respondí con el motor de cifras porque la IA no estaba disponible en este momento.</div>';
-            speak(off.speech||off.html);
+            speak(off.speech||off.html); auditAdd(q,"IA-motor",off.html);
           } else {
-            t.innerHTML='<span class="ag-tag ai">IA</span>'+r.error;
+            t.innerHTML='<span class="ag-tag ai">IA</span>'+r.error; auditAdd(q,"IA-error",r.error);
           }
         } else {
-          t.innerHTML='<span class="ag-tag ai">IA</span>'+mdLite(r.text); speak(r.text);
+          t.innerHTML='<span class="ag-tag ai">IA</span>'+mdLite(r.text); speak(r.text); auditAdd(q,"IA",r.text);
         }
         msgs.scrollTop=msgs.scrollHeight;
       });
@@ -7363,8 +7560,10 @@ applyMonthLabels();
     fab.addEventListener("click",function(){
       panel.classList.toggle("open");
       if(panel.classList.contains("open") && !msgs.children.length){
-        addMsg("Hola, soy <b>YULIAN</b> 🤖. Estoy aquí para ayudarte a leer el comportamiento del negocio, interpretar las cifras y convertir los datos en decisiones claras para demanda, inventario y abastecimiento. ¿Qué quieres revisar?<br><br>"+helpHtml(),"bot","off"); refreshAIBtn();
-        speak("Hola, soy YULIAN. Estoy aquí para ayudarte a leer el comportamiento del negocio e interpretar las cifras.");
+        var _hr; try{ _hr=parseInt(new Intl.DateTimeFormat("en-US",{timeZone:"America/Bogota",hour:"numeric",hour12:false}).format(new Date()),10)%24; }catch(e){ _hr=new Date().getHours(); } if(isNaN(_hr)) _hr=new Date().getHours();
+        var _sal=_hr<12?"Buenos días":(_hr<19?"Buenas tardes":"Buenas noches");
+        addMsg(_sal+". Hola, soy <b>YULIAN</b> 🤖. Estoy aquí para ayudarte a leer el comportamiento del negocio, interpretar las cifras y convertir los datos en decisiones claras para demanda, inventario y abastecimiento.<br><br>¿Quieres que te dé la <b>lectura ejecutiva del corte</b>? Tócala abajo o pídemela cuando quieras.<br><br>"+helpHtml(),"bot","off"); refreshAIBtn();
+        speak(_sal+". Hola, soy YULIAN. Estoy aquí para ayudarte a leer el comportamiento del negocio. ¿Quieres la lectura ejecutiva del corte?");
       }
     });
     panel.querySelector(".ag-x").addEventListener("click",function(){ panel.classList.remove("open"); stopSpeak(); });
