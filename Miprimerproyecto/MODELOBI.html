@@ -7474,26 +7474,17 @@ applyMonthLabels();
       s=numbersToWords(s);
       return s;
     }
-    var _ttsTimer=null;
-    function _ttsKeep(){
-      clearInterval(_ttsTimer);
-      _ttsTimer=setInterval(function(){
-        try{
-          if(!window.speechSynthesis.speaking){ clearInterval(_ttsTimer); _ttsTimer=null; return; }
-          window.speechSynthesis.pause(); window.speechSynthesis.resume();
-        }catch(e){ clearInterval(_ttsTimer); _ttsTimer=null; }
-      }, 9000);
-    }
+    var _ttsGen=0;
     function _ttsChunks(t){
       var parts=t.match(/[^.!?\n]+[.!?\n]*/g)||[t];
       var out=[], cur="";
       for(var i=0;i<parts.length;i++){
         var p=parts[i];
-        if(p.length>220){
+        if(p.length>200){
           if(cur){ out.push(cur); cur=""; }
-          var sub=p.match(/[^,;]+[,;]?\s*/g)||[p];
-          for(var j=0;j<sub.length;j++){ if((cur+sub[j]).length>220){ if(cur) out.push(cur); cur=sub[j]; } else cur+=sub[j]; }
-        } else if((cur+p).length>220){ out.push(cur); cur=p; }
+          var sub=p.match(/[^,;:]+[,;:]?\s*/g)||[p];
+          for(var j=0;j<sub.length;j++){ if((cur+sub[j]).length>200){ if(cur) out.push(cur); cur=sub[j]; } else cur+=sub[j]; }
+        } else if((cur+p).length>200){ out.push(cur); cur=p; }
         else cur+=p;
       }
       if(cur.trim()) out.push(cur);
@@ -7502,20 +7493,22 @@ applyMonthLabels();
     function speak(s){
       if(!aiVoice || !("speechSynthesis" in window)) return;
       var txt=plainForSpeech(s); if(!txt) return;
-      try{
-        window.speechSynthesis.cancel();
-        var v=(typeof _pickEsVoice==="function")?_pickEsVoice():null;
-        if(!v){ var vs=window.speechSynthesis.getVoices()||[]; var es=vs.filter(function(x){return /^es/i.test(x.lang);}); v=es.length?es[0]:null; }
-        var chunks=_ttsChunks(txt.slice(0,12000));
-        for(var k=0;k<chunks.length;k++){
-          var u=new SpeechSynthesisUtterance(chunks[k]);
-          u.rate=1; u.pitch=1; u.lang=(v&&v.lang)||"es-CO"; if(v) u.voice=v;
-          window.speechSynthesis.speak(u);
-        }
-        _ttsKeep();
-      }catch(e){}
+      var v=(typeof _pickEsVoice==="function")?_pickEsVoice():null;
+      if(!v){ try{ var vs=window.speechSynthesis.getVoices()||[]; var es=vs.filter(function(x){return /^es/i.test(x.lang);}); v=es.length?es[0]:null; }catch(e){} }
+      var chunks=_ttsChunks(txt.slice(0,12000)); if(!chunks.length) return;
+      var gen=++_ttsGen, idx=0;
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      function say(){
+        if(gen!==_ttsGen || idx>=chunks.length) return;
+        var u=new SpeechSynthesisUtterance(chunks[idx++]);
+        u.rate=1; u.pitch=1; u.lang=(v&&v.lang)||"es-CO"; if(v) u.voice=v;
+        u.onend=function(){ if(gen===_ttsGen) setTimeout(say,0); };
+        u.onerror=function(){ if(gen===_ttsGen) setTimeout(say,0); };
+        try{ window.speechSynthesis.speak(u); }catch(e){}
+      }
+      setTimeout(say,120);
     }
-    function stopSpeak(){ try{ clearInterval(_ttsTimer); _ttsTimer=null; if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){} }
+    function stopSpeak(){ try{ _ttsGen++; if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){} }
     function addMsg(html, who, tag){
       if(who==="bot" && html.indexOf("data-q")<0) html=_templo(html);
       var m=el('<div class="ag-msg '+who+(tag==="ai"?" ai":"")+'"></div>');
