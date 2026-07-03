@@ -8073,7 +8073,7 @@ function buildContext(question){
     var key=aiKey();
     if(!key){ cb({error:"Configura una clave gratuita de Gemini para usar la IA (botón ⚙)."}); return; }
     var ctx=buildContext(question);
-    var persona="Eres YULIAN, asistente experto de análisis de negocio, planeación de demanda, abastecimiento, inventarios y retail analytics, integrado en el Dashboard Templo de la Moda (Grupo TDM/TMF, cadena de moda en Colombia).\nIDENTIDAD Y TONO: hablas en español de Colombia, tuteando, con tono cercano, ejecutivo y natural; suenas como un colega experto de planeación de demanda, nunca como un robot. Tu estilo es humano, concreto, analítico, profesional, cercano, claro y orientado a la acción.\nNUNCA uses frases como 'Como inteligencia artificial...', 'Según los datos proporcionados...', 'No tengo suficiente contexto...' ni 'Basado únicamente en...'. En su lugar usa expresiones como 'Al revisar el comportamiento del modelo...', 'Lo que observo es...', 'Desde planeación de demanda, esto indica que...', 'Mi recomendación sería...', 'Aquí hay una oportunidad clara...'.\nDATOS: trabajas únicamente con el contexto activo (empresa, mes y corte de los DATOS de abajo). Expresa las cifras en pesos colombianos (formato es-CO, p.ej. $4.941.867.359) y los porcentajes con un decimal. No inventes datos ni generes cifras que no estén en el modelo; respeta los números exactos del contexto y tu aporte es la lectura, interpretación y recomendación.\nESTRUCTURA: cuando la pregunta sea analítica o consultiva, organiza la respuesta en bloques con título en negrita: **Diagnóstico** (qué está pasando), **Causa probable** (por qué puede estar ocurriendo), **Impacto** (qué riesgo o efecto genera), **Recomendación** (una acción concreta) y **Conclusión** (lectura ejecutiva para decidir). Si la pregunta es simple, responde breve y directo, sin forzar la estructura.\nAMBIGÜEDAD: si la pregunta no es clara o falta un dato, no adivines; haz UNA sola pregunta corta y concreta, por ejemplo: '¿Lo reviso por tienda o a nivel compañía?', '¿Sobre qué mes hacemos el análisis?', '¿Qué KPI comparamos: cumplimiento, venta, inventario o cobertura?', '¿Lo quieres para TDM o TMF?'. Recuerda lo hablado antes en la conversación para dar continuidad.\nFORMATO: limpio y ejecutivo — títulos en negrita, listas cortas con '-', lenguaje claro, sin asteriscos crudos y sin respuestas largas innecesarias.";
+    var persona="Eres YULIAN, asistente experto de análisis de negocio, planeación de demanda, abastecimiento, inventarios y retail analytics, integrado en el Dashboard Templo de la Moda (Grupo TDM/TMF, cadena de moda en Colombia).\nIDENTIDAD Y TONO: hablas en español de Colombia, tuteando, con tono cercano, ejecutivo y natural; suenas como un colega experto de planeación de demanda, nunca como un robot. Tu estilo es humano, concreto, analítico, profesional, cercano, claro y orientado a la acción.\nNUNCA uses frases como 'Como inteligencia artificial...', 'Según los datos proporcionados...', 'No tengo suficiente contexto...' ni 'Basado únicamente en...'. En su lugar usa expresiones como 'Al revisar el comportamiento del modelo...', 'Lo que observo es...', 'Desde planeación de demanda, esto indica que...', 'Mi recomendación sería...', 'Aquí hay una oportunidad clara...'.\nDATOS: trabajas únicamente con el contexto activo (empresa, mes y corte de los DATOS de abajo). Expresa las cifras en pesos colombianos (formato es-CO, p.ej. $4.941.867.359) y los porcentajes con un decimal. No inventes datos ni generes cifras que no estén en el modelo; respeta los números exactos del contexto y tu aporte es la lectura, interpretación y recomendación.\nESTRUCTURA: cuando la pregunta sea analítica o consultiva, organiza la respuesta en bloques con título en negrita: **Diagnóstico** (qué está pasando), **Causa probable** (por qué puede estar ocurriendo), **Impacto** (qué riesgo o efecto genera), **Recomendación** (una acción concreta) y **Conclusión** (lectura ejecutiva para decidir). Si la pregunta es simple, responde breve y directo, sin forzar la estructura.\nAMBIGÜEDAD: si la pregunta no es clara o falta un dato, no adivines; haz UNA sola pregunta corta y concreta, por ejemplo: '¿Lo reviso por tienda o a nivel compañía?', '¿Sobre qué mes hacemos el análisis?', '¿Qué KPI comparamos: cumplimiento, venta, inventario o cobertura?', '¿Lo quieres para TDM o TMF?'. Recuerda lo hablado antes en la conversación para dar continuidad.\nDEFINICIONES: cuando te pregunten qué es, qué significa o cómo se calcula un concepto o KPI (por ejemplo presupuesto/Ppto, ejecutado, cumplimiento, utilidad, rentabilidad, inventario, cobertura, efectividad/conversión, unidades, PxM2, Vta x M2, PVP, etc.), primero da la definición técnica breve y clara del concepto —qué es y cómo se calcula o interpreta en retail y planeación de demanda—, y luego complétala SIEMPRE con la cifra actual del modelo tomada del contexto (empresa y mes activos), citando el número exacto en formato es-CO y cerrando con una lectura de una frase. Nunca inventes la cifra: tómala de compania_totales o de la tienda pedida. Si el concepto no tiene una cifra directa en el contexto, da solo la definición con naturalidad.\nFORMATO: limpio y ejecutivo — títulos en negrita, listas cortas con '-', lenguaje claro, sin asteriscos crudos y sin respuestas largas innecesarias.";
     var sys=persona+"\n\nDATOS ACTUALES (única fuente de verdad, JSON):\n"+JSON.stringify(ctx);
     var turns=aiHistory.slice(-12).concat([{role:"user", text:question}]);
     var body={
@@ -8332,6 +8332,8 @@ function buildContext(question){
         if(/lectura ejecutiv|resumen ejecutiv|resumen del corte|diagn[oó]stic|panorama|c[oó]mo vamos|como vamos|qu[eé] riesgos|alertas|qu[eé] est[aá] pasando/i.test(q)){ var le=lecturaEjecutiva(); if(le&&le.ok){ addMsg(le.html,"bot","off"); speak(le.speech||le.html); auditAdd(q,"lectura",le.html); return; } }
         var consult=/recomien|prioriz|qu[eé] hago|qu[eé] hacer|qu[eé] est[aá] pasando|qu[eé] pasa con|diagn[oó]stic|lectura ejecutiva|oportunidad|deber[ií]a|conviene|qu[eé] opinas|analiza|an[aá]lisis|interpret|qu[eé] decisi[oó]n|riesgo|qu[eé] tienda priorizo|priorizar/i.test(q);
         if(/an[aá]lisis profundo|analiza a fondo|profundiza|an[aá]lisis detallado|m[aá]s a fondo|en detalle/i.test(q)){ if(hasAI()){ runAI(q,true); return; } }
+        var defIntent=/(^|\s)(qu[e\u00e9]\s+es|qu[e\u00e9]\s+son|qu[e\u00e9]\s+significan?|qu[e\u00e9]\s+quiere\s+decir|qu[e\u00e9]\s+mide|qu[e\u00e9]\s+indica|defin(?:e|ir|eme|ici[o\u00f3]n(?:es)?)|concepto|significado|para\s+qu[e\u00e9]\s+sirve|c[o\u00f3]mo\s+se\s+(?:calcula|interpreta|mide|define))/i.test(q);
+        if(defIntent){ if(hasAI()){ runAI(q,false,true); return; } var _dr=defOffline(q); if(_dr&&_dr.ok){ addMsg(_dr.html,"bot","off"); speak(_dr.speech||_dr.html); auditAdd(q,"definicion",_dr.html); return; } }
         if((forceAI||consult) && hasAI()){ runAI(q); return; }
         var res=answerOffline(q);
         if(res.ok){ addMsg(res.html,"bot","off"); speak(res.speech||res.html); auditAdd(q,"motor",res.html); }
@@ -8342,14 +8344,50 @@ function buildContext(question){
         }
       } finally { coOverride=prevCO; }
     }
-    function runAI(q,deep){
+    function _defFmt(v,f){ if(v===null||v===undefined||v==="-") return "\u2014"; if(f==="m") return "$"+fmtCurrencyFull(v); if(f==="p") return fmtPctSimple(v); if(f==="i") return fmtInt(v); if(f==="i2"){ var n=Number(v); return isFinite(n)? n.toFixed(2).replace(".",","):"\u2014"; } return String(v); }
+    var KPI_DEFS=[
+      {kw:["ppto corte","presupuesto corte","ppto a la fecha"],col:"Ppto Corte ($)",f:"m",d:"presupuesto proporcional a los d\u00edas transcurridos del mes; es la meta de venta a la fecha del corte."},
+      {kw:["ppto","presupuesto","meta de venta"],col:"Ppto Mes ($)",f:"m",d:"meta de venta planificada para el mes completo."},
+      {kw:["ejecutad","ejecucion","ejecuci\u00f3n","venta real"],col:"Ejecutado ($)",f:"m",d:"venta real lograda en el per\u00edodo (lo efectivamente vendido)."},
+      {kw:["cumplimiento","cump"],col:"Cump (%)",f:"p",d:"porcentaje de la meta alcanzado: ejecutado dividido entre el presupuesto a la fecha."},
+      {kw:["diferencia"],col:"Diferencia ($)",f:"m",d:"pesos por encima o por debajo del presupuesto (ejecutado menos ppto corte)."},
+      {kw:["rentabilidad"],col:"Rentabilidad 2026 (%)",f:"p",d:"utilidad expresada como porcentaje de la venta; es el margen del negocio."},
+      {kw:["utilidad"],col:"Utilidad 2026",f:"m",d:"ganancia bruta: venta menos el costo de la mercanc\u00eda vendida."},
+      {kw:["efectividad","conversion","conversi\u00f3n"],col:"Efectividad (%)",f:"p",d:"tasa de conversi\u00f3n: clientes que compran sobre clientes que ingresan a la tienda."},
+      {kw:["venta 2025","vta 2025","a\u00f1o anterior"],col:"Venta 2025 ($)",f:"m",d:"venta del mismo per\u00edodo del a\u00f1o anterior, para medir crecimiento."},
+      {kw:["unidades","unds vendidas","unds 2026"],col:"Unds 2026",f:"i",d:"cantidad de unidades (prendas) vendidas en el per\u00edodo."},
+      {kw:["inventario","unds inv","existencia"],col:"Unds Inv",f:"i",d:"unidades disponibles en inventario (stock actual)."},
+      {kw:["cobertura"],col:null,f:null,d:"semanas de inventario que alcanzan al ritmo de venta actual; mide cu\u00e1nto dura el stock."},
+      {kw:["pxm2","px m2","precio por m2","precio medio"],col:"PxM2",f:"m",d:"precio medio por metro cuadrado; mide la productividad del espacio."},
+      {kw:["vta x m2","venta por m2","venta x m2"],col:"Vta x M2 2026",f:"m",d:"venta generada por cada metro cuadrado de sala de la tienda."},
+      {kw:["utilidad por m2","utilidad x m2"],col:"Utilidad por M2 2026",f:"m",d:"utilidad generada por cada metro cuadrado de sala."},
+      {kw:["prom compra","ticket","compra por cliente"],col:"Prom Compra por Cliente 2026",f:"m",d:"ticket promedio: cu\u00e1nto gasta en pesos cada cliente que compra."},
+      {kw:["unds por cliente","unidades por cliente"],col:"Unds por Cliente 2026",f:"i2",d:"unidades promedio que lleva cada cliente que compra."},
+      {kw:["pvp"],col:"PVP",f:"m",d:"precio de venta al p\u00fablico promedio de la mercanc\u00eda."},
+      {kw:["clientes compran","clientes que compran"],col:"Clientes Compran 2026",f:"i",d:"n\u00famero de clientes que efectivamente realizaron una compra."},
+      {kw:["ingreso de clientes","clientes ingresan","ing clientes","trafico","tr\u00e1fico"],col:"Ing Clientes 2026",f:"i",d:"n\u00famero de clientes que ingresaron a la tienda (tr\u00e1fico)."},
+      {kw:["prendas vendidas x m2","prendas x m2"],col:"Prendas Vendidas x M2",f:"i2",d:"unidades vendidas por metro cuadrado de sala."}
+    ];
+    function defOffline(q){
+      var ql=(q||"").toLowerCase(); var hit=null;
+      for(var i=0;i<KPI_DEFS.length;i++){ var e=KPI_DEFS[i]; for(var j=0;j<e.kw.length;j++){ if(ql.indexOf(e.kw[j])>=0){ hit=e; break; } } if(hit) break; }
+      if(!hit) return {ok:false};
+      var co=CO(), sn=S(), tr=totalRow();
+      var nombre=hit.kw[0].charAt(0).toUpperCase()+hit.kw[0].slice(1);
+      var html="<b>"+esc(nombre)+"</b> \u2014 "+esc(hit.d);
+      if(hit.col && tr && tr[hit.col]!==undefined && tr[hit.col]!==null && tr[hit.col]!=="-"){
+        html+="<br><span class='ag-sub'>En el corte actual de "+esc(co)+" \u00b7 "+esc((sn&&sn.label)||"")+": "+esc(hit.col)+" = <b>"+_defFmt(tr[hit.col],hit.f)+"</b>.</span>";
+      }
+      return {ok:true, html:html, speech:nombre+". "+hit.d};
+    }
+    function runAI(q,deep,isDef){
       var coAtAsk=coOverride;  // empresa pedida en esta consulta (para el fallback al motor)
       var t=addMsg('<span class="ag-typing">Pensando…</span>',"bot","ai");
       aiAnswer(q,function(r){
         if(r.error){
           // Si la IA no respondió (p. ej. límite del plan gratis), intentar el motor de cifras
           var prev=coOverride; coOverride=coAtAsk;
-          var off=answerOffline(q);
+          var off=(isDef?defOffline(q):null); if(!(off&&off.ok)) off=answerOffline(q);
           coOverride=prev;
           if(off && off.ok){
             t.innerHTML='<span class="ag-tag off">CIFRAS</span>'+_templo(off.html)+
