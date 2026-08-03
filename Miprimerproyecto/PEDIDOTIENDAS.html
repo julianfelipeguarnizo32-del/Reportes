@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pedido de fichas y adhesivos · Grupo TDM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --ink:#12161C; --slate:#2A323D; --mute:#67727F;
+  --line:#DCE3EA; --line2:#EBF0F5; --paper:#EDF1F5; --card:#FFFFFF;
+  --teal:#0E7C86; --teal-d:#0A5C64; --teal-l:#E4F3F4;
+  --mag:#C81D63; --mag-l:#FCE7EF;
+  --amber:#A85B00; --green:#12735A;
+  --r:10px;
+  --fd:'Barlow Condensed',Impact,sans-serif;
+  --fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--fb);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.45;
+  -webkit-text-size-adjust:100%;font-variant-numeric:tabular-nums;padding-bottom:78px}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px}
+.eyebrow{font-family:var(--fd);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--mute)}
+
+.topbar{position:sticky;top:0;z-index:60;background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:10px 16px}
+.logo{font-family:var(--fd);font-weight:700;font-size:20px;letter-spacing:.04em;line-height:1}
+.logo span{color:var(--mag)}
+.topbar .sub{font-size:12px;color:#9AA6B2;border-left:1px solid #333C48;padding-left:14px}
+.conn{display:flex;align-items:center;gap:7px;font-size:12px;color:#9AA6B2;background:#1C222B;border:1px solid #2C3542;border-radius:999px;padding:5px 11px}
+.dot{width:7px;height:7px;border-radius:50%;background:#5B6673;flex:none}
+.dot.on{background:#39C08A;box-shadow:0 0 0 3px rgba(57,192,138,.18)}
+.dot.err{background:var(--mag)}
+
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.panel-h{padding:11px 14px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.panel-b{padding:14px}
+.setup{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+@media(max-width:980px){.setup{grid-template-columns:1fr}}
+.fields{display:flex;flex-wrap:wrap;gap:14px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f>label{font-family:var(--fd);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.ctrl{border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px 10px;min-height:38px}
+.ctrl:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-l)}
+select.ctrl{min-width:150px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 13px;font-family:var(--fd);font-weight:600;
+  font-size:15px;letter-spacing:.03em;color:var(--slate);display:flex;align-items:center;gap:7px;transition:.14s}
+.chip small{font-family:var(--fb);font-weight:500;font-size:11px;color:var(--mute);letter-spacing:0}
+.chip:hover{border-color:#B9C4CF}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip[aria-pressed="true"] small{color:#9AA6B2}
+
+.tag{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px 16px 40px;overflow:hidden}
+.tag::before{content:"";position:absolute;left:22px;top:0;bottom:0;width:1px;
+  background:repeating-linear-gradient(to bottom,var(--line) 0 4px,transparent 4px 9px)}
+.tag::after{content:"";position:absolute;left:6px;top:16px;width:11px;height:11px;border-radius:50%;border:1px solid var(--line);background:var(--paper)}
+.tag-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tag-name{font-family:var(--fd);font-weight:700;font-size:23px;line-height:1;letter-spacing:.02em}
+.tag-per{font-family:var(--fd);font-weight:600;font-size:15px;color:var(--mag);letter-spacing:.08em}
+.tag-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.tag-k{font-family:var(--fd);font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.tag-v{font-family:var(--fd);font-weight:700;font-size:25px;line-height:1.05}
+.tag-v.sm{font-size:19px}
+.tag-v.mag{color:var(--mag)}
+.tag-note{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);font-size:12px;color:var(--mute)}
+
+.picker{margin-top:14px}
+.picker .panel-b{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.picker .f{flex:1;min-width:250px}
+.picker select{width:100%;font-family:var(--fd);font-weight:600;font-size:17px;letter-spacing:.02em}
+.nav{display:flex;gap:6px}
+.iconbtn{border:1px solid var(--line);background:#fff;border-radius:8px;width:40px;height:38px;display:grid;place-items:center;color:var(--slate)}
+.iconbtn:hover{border-color:#B9C4CF}
+.iconbtn:disabled{opacity:.4;cursor:not-allowed}
+
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 14px;font-weight:600;font-size:13px;
+  display:inline-flex;align-items:center;gap:7px;transition:.14s;white-space:nowrap}
+.btn:hover{border-color:#B9C4CF;background:#FAFCFD}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.primary:hover{background:var(--teal-d);border-color:var(--teal-d)}
+.btn.danger{color:var(--mag);border-color:#F0CFDC}
+.btn.danger:hover{background:var(--mag-l)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.entry{margin-top:14px}
+.entry-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 16px;background:var(--ink);color:#fff;
+  border-radius:var(--r) var(--r) 0 0}
+.entry-h .code{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;letter-spacing:.03em}
+.entry-h .city{font-size:12px;color:#9AA6B2;text-transform:capitalize}
+.entry-h .st{margin-left:auto;text-align:right}
+.entry-h .st b{font-family:var(--fd);font-weight:700;font-size:26px;display:block;line-height:1.05}
+.entry-h .st span{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#9AA6B2;font-weight:600}
+.state{font-family:var(--fd);font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+.state.pend{background:#2C3542;color:#C3CDD8}
+.state.env{background:var(--green);color:#fff}
+.state.mod{background:var(--amber);color:#fff}
+
+.grp{padding:14px 16px;border-bottom:1px solid var(--line2)}
+.grp-t{font-family:var(--fd);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:9px}
+.qf{display:flex;flex-direction:column;gap:3px}
+.qf label{font-family:var(--fd);font-weight:700;font-size:14px;letter-spacing:.04em;text-align:center;color:var(--slate)}
+.qf input{border:1px solid var(--line);border-radius:8px;height:46px;text-align:center;font-size:16px;font-weight:500;width:100%;padding:0 2px;background:#fff}
+.qf input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-l)}
+.qf input.has{border-color:#9EC9CD;background:#F5FCFC;font-weight:700}
+
+.entry-a{display:flex;gap:8px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--line2);background:#F7F9FB;
+  border-radius:0 0 var(--r) var(--r)}
+
+.empty{padding:44px 22px;text-align:center;color:var(--mute)}
+.empty b{display:block;font-family:var(--fd);font-size:20px;color:var(--slate);margin-bottom:6px;letter-spacing:.03em}
+
+.adv{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.adv>summary{padding:12px 14px;font-family:var(--fd);font-weight:600;font-size:15px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--slate);display:flex;align-items:center;gap:10px;list-style:none}
+.adv>summary::-webkit-details-marker{display:none}
+.adv>summary .cnt{font-family:var(--fb);font-size:12px;font-weight:500;color:var(--mute);text-transform:none;letter-spacing:0}
+.adv>summary .chev{margin-left:auto;transition:.18s;color:var(--mute)}
+.adv[open]>summary .chev{transform:rotate(180deg)}
+.advb{border-top:1px solid var(--line2);padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px}
+.scell{border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:#fff;text-align:left;display:flex;align-items:center;gap:9px}
+.scell:hover{border-color:#B9C4CF;background:#FAFCFD}
+.scell.sel{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.scell .c{font-family:var(--fd);font-weight:700;font-size:16px;min-width:38px}
+.scell .u{margin-left:auto;font-size:12px;font-weight:600}
+.scell .u.z{color:#B4BDC7;font-weight:500}
+.scell .pill{width:7px;height:7px;border-radius:50%;background:#D3DAE2;flex:none}
+.scell .pill.env{background:var(--green)} .scell .pill.mod{background:var(--amber)}
+
+.statusbar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--ink);color:#fff;display:flex;align-items:center;gap:18px;
+  padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));border-top:1px solid #2C3542;flex-wrap:wrap}
+.sb{display:flex;flex-direction:column;line-height:1.15}
+.sb b{font-family:var(--fd);font-weight:700;font-size:20px}
+.sb span{font-size:10px;color:#9AA6B2;letter-spacing:.11em;text-transform:uppercase;font-weight:600}
+.sb.mag b{color:#FF6FA5}
+.statusbar .btn{border-color:#3A4553;background:#1C222B;color:#fff}
+.statusbar .btn:hover{background:#242C37}
+.statusbar .btn.primary{background:var(--teal);border-color:var(--teal)}
+.statusbar .btn.primary:hover{background:var(--teal-d)}
+
+.ov{position:fixed;inset:0;background:rgba(18,22,28,.5);z-index:90;display:none}
+.ov.on{display:block}
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.modal-c{background:var(--card);border-radius:14px;width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line2)}
+.modal-h h3{margin:0;font-family:var(--fd);font-weight:700;font-size:19px;letter-spacing:.03em;flex:1}
+.modal-b{padding:16px;overflow:auto}
+.x{background:transparent;border:0;color:inherit;font-size:22px;line-height:1;padding:0 4px}
+pre.sql{background:#12161C;color:#D6E2EA;padding:14px;border-radius:9px;overflow:auto;font-size:11.5px;line-height:1.6;margin:0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.hint{font-size:12.5px;color:var(--mute);margin:0 0 12px}
+
+.toasts{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(18,22,28,.28);animation:pop .2s ease}
+.toast.ok{background:var(--green)} .toast.err{background:var(--mag)}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media(max-width:760px){
+  .wrap{padding:10px}
+  .topbar .sub{display:none}
+  .tag-v{font-size:21px}
+  .sb b{font-size:17px}
+  .qgrid{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}
+  .entry-h .code{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">GRUPO <span>TDM</span></div>
+  <div class="sub">Pedido de fichas y adhesivos</div>
+  <div style="flex:1"></div>
+  <button class="btn" id="btnSql" style="border-color:#3A4553;background:#1C222B;color:#fff">Conexión</button>
+  <div class="conn"><span class="dot" id="connDot"></span><span id="connTxt">Sin conectar</span></div>
+</header>
+
+<div class="wrap">
+
+  <div class="setup">
+    <div class="panel">
+      <div class="panel-h"><span class="eyebrow">Pedido</span></div>
+      <div class="panel-b">
+        <div class="fields">
+          <div class="f"><label>Empresa</label><div class="chips" id="chipsEmp"></div></div>
+          <div class="f"><label>Producto</label><div class="chips" id="chipsTipo"></div></div>
+        </div>
+        <div class="fields" style="margin-top:14px">
+          <div class="f"><label>Periodo</label><input class="ctrl" type="month" id="fPeriodo"></div>
+          <div class="f"><label>Nombre</label><input class="ctrl" id="fNombre" placeholder="Pedido principal" style="min-width:170px"></div>
+          <div class="f"><label>Precio unitario</label><input class="ctrl" type="number" id="fPrecio" min="0" step="0.01" value="38" style="width:110px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tag">
+      <div class="tag-top"><div class="tag-name" id="tagName">Empresa Templo</div><div class="tag-per" id="tagPer">2026-12</div></div>
+      <div class="tag-grid">
+        <div><div class="tag-k">Unidades del pedido</div><div class="tag-v" id="tagUnd">0</div></div>
+        <div><div class="tag-k">Valor</div><div class="tag-v mag" id="tagVal">$0</div></div>
+        <div><div class="tag-k">Tiendas cargadas</div><div class="tag-v sm" id="tagTdas">0</div></div>
+        <div><div class="tag-k">Enviadas</div><div class="tag-v sm" id="tagEnv">0</div></div>
+      </div>
+      <div class="tag-note" id="tagNote">Elige una tienda para cargar su pedido.</div>
+    </div>
+  </div>
+
+  <div class="panel picker">
+    <div class="panel-h"><span class="eyebrow">Tienda</span></div>
+    <div class="panel-b">
+      <div class="f">
+        <label>Selecciona la tienda a cargar</label>
+        <select class="ctrl" id="fTienda"></select>
+      </div>
+      <div class="nav">
+        <button class="iconbtn" id="btnPrev" title="Tienda anterior" aria-label="Tienda anterior">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button class="iconbtn" id="btnNext" title="Tienda siguiente" aria-label="Tienda siguiente">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <button class="btn" id="btnSync">Traer lo guardado</button>
+      <button class="btn" id="btnExcel">Excel del pedido</button>
+    </div>
+  </div>
+
+  <div id="entry" class="entry"></div>
+
+  <details class="adv" id="adv">
+    <summary>Avance del pedido <span class="cnt" id="advCnt"></span>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <div class="advb" id="advB"></div>
+  </details>
+</div>
+
+<div class="statusbar">
+  <div class="sb"><b id="sbTda">—</b><span>Tienda</span></div>
+  <div class="sb"><b id="sbTdaUnd">0</b><span>Und. tienda</span></div>
+  <div class="sb mag"><b id="sbVal">$0</b><span>Valor pedido</span></div>
+  <div style="flex:1"></div>
+  <button class="btn primary" id="btnEnviar">Enviar a Supabase</button>
+</div>
+
+<div class="ov" id="ov"></div>
+
+<div class="modal" id="modalSql">
+  <div class="modal-c">
+    <div class="modal-h"><h3>Conexión a Supabase</h3>
+      <button class="x" id="btnCerrarSql" aria-label="Cerrar">&times;</button></div>
+    <div class="modal-b">
+      <p class="hint">Project URL y anon key están en Supabase → Project Settings → API. Quedan recordadas en este navegador. Para dejarlas fijas para todo el equipo, edita <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> al inicio del archivo.</p>
+      <div class="fields">
+        <div class="f" style="flex:1;min-width:240px"><label>Project URL</label><input class="ctrl" id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
+        <div class="f" style="flex:1;min-width:240px"><label>Anon key</label><input class="ctrl" id="cfgKey" type="password" placeholder="eyJhbGciOi..."></div>
+      </div>
+      <div class="fields" style="margin-top:14px;align-items:center">
+        <button class="btn primary" id="btnConectar">Conectar</button>
+        <button class="btn" id="btnOlvidar">Olvidar</button>
+        <div style="flex:1"></div>
+        <button class="btn" id="btnCopiarSql" title="Copia al portapapeles el script de creación de tablas">Copiar SQL del esquema</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — reemplaza estos dos valores para dejar la conexión fija
+   ===================================================================== */
+const SUPABASE_URL = "";
+const SUPABASE_ANON_KEY = "";
+/* ===================================================================== */
+
+const DATA = {"sizes":["XXS","XS","S","M","L","XL","XXL","XXXL","4XL","1","2","3","4","6","8","10","12","14","16","18","20","22","28","30","32","34","36","38","40","42","44","46","12/14","U"],"catalog":{"TEMPLO":[{"code":"T01","city":""},{"code":"T02","city":""},{"code":"T04","city":""},{"code":"T05","city":""},{"code":"T06","city":""},{"code":"T08","city":""},{"code":"T09","city":""},{"code":"T10","city":""},{"code":"T11","city":""},{"code":"T13","city":""},{"code":"T14","city":""},{"code":"T16","city":""},{"code":"T17","city":""},{"code":"T18","city":""},{"code":"T19","city":""},{"code":"T20","city":""},{"code":"T23","city":""},{"code":"T24","city":""},{"code":"T26","city":""},{"code":"T27","city":""},{"code":"T28","city":""},{"code":"T29","city":""},{"code":"T30","city":""},{"code":"T31","city":""},{"code":"T32","city":""},{"code":"T33","city":""},{"code":"T34","city":""},{"code":"T35","city":""}],"SHOPPING":[{"code":"T01","city":"BARRANCA"},{"code":"T02","city":"BARRANCA"},{"code":"T03","city":"OCAÑA"},{"code":"T04","city":"CARTAGENA"},{"code":"T05","city":"SANTA MARTA"},{"code":"T06","city":"GIRON"},{"code":"T07","city":"PIEDECUESTA"},{"code":"T08","city":"BUCARAMANGA"},{"code":"T09","city":"FLORIDABLANCA"},{"code":"T10","city":"CARTAGENA"},{"code":"T11","city":"CARTAGENA"},{"code":"T13","city":"BARRANQUILLA"},{"code":"T17","city":"BARRANQUILLA"},{"code":"T18","city":"YOPAL"},{"code":"T19","city":"ACACIAS"},{"code":"T22","city":"CUCUTA"},{"code":"NEBRASKA","city":""}]},"sizesBy":{"TEMPLO":{"FICHAS":["XXS","XS","S","M","L","XL","XXL","XXXL","4XL","1","2","3","4","6","8","10","12","14","16","18","20","22","28","30","32","34","36","38","40","42","44","46","12/14","U"],"ADHESIVOS":["XXS","XS","S","M","L","XL","XXL","XXXL","4XL","1","2","3","4","6","8","10","12","14","16","18","20","22","28","30","32","34","36","38","40","42","U"]},"SHOPPING":{"FICHAS":["XXS","XS","S","M","L","XL","XXL","XXXL","4XL","1","2","3","4","6","8","10","12","14","16","18","20","22","28","30","32","34","36","38","40","42","44","U"],"ADHESIVOS":["XXS","XS","S","M","L","XL","XXL","XXXL","4XL","1","2","3","4","6","8","10","12","14","16","18","20","22","28","30","32","34","36","38","40","42","U"]}}};
+
+const SQL = `-- =====================================================================
+-- Grupo TDM · Pedido de fichas y adhesivos
+-- Esquema completo. Idempotente: se puede volver a ejecutar sin romper nada.
+-- Ejecutar una vez en el SQL editor de Supabase.
+-- =====================================================================
+
+create extension if not exists pgcrypto;
+
+-- ---------------------------------------------------------------- catálogos
+create table if not exists tiendas (
+  empresa  text    not null check (empresa in ('TEMPLO','SHOPPING')),
+  codigo   text    not null,
+  ciudad   text,
+  activa   boolean not null default true,
+  primary key (empresa, codigo)
+);
+comment on table tiendas is 'Puntos de venta por empresa. NEBRASKA pertenece a SHOPPING.';
+
+create table if not exists tallas (
+  talla text primary key,
+  grupo text not null check (grupo in ('LETRA','NUMERICA','OTRA')),
+  orden int  not null
+);
+
+-- ---------------------------------------------------------------- pedidos
+create table if not exists pedidos_fichas (
+  id              uuid          primary key default gen_random_uuid(),
+  periodo         text          not null check (periodo ~ '^[0-9]{4}-[0-9]{2}$'),
+  empresa         text          not null check (empresa in ('TEMPLO','SHOPPING')),
+  tipo            text          not null check (tipo    in ('FICHAS','ADHESIVOS')),
+  nombre          text          not null default 'Pedido principal',
+  precio_unitario numeric(12,2) not null default 38,
+  total_unidades  integer       not null default 0,
+  total_valor     numeric(16,2) not null default 0,
+  created_at      timestamptz   not null default now(),
+  updated_at      timestamptz   not null default now(),
+  constraint pedidos_fichas_uq unique (periodo, empresa, tipo, nombre)
+);
+
+create table if not exists pedidos_fichas_detalle (
+  id         bigserial   primary key,
+  pedido_id  uuid        not null references pedidos_fichas(id) on delete cascade,
+  -- Copia de la cabecera para poder ver y filtrar el detalle sin hacer join.
+  -- La llenan los triggers de abajo; el cliente no las envía.
+  empresa    text        not null,
+  periodo    text        not null,
+  tipo       text        not null,
+  tienda     text        not null,
+  ciudad     text,
+  talla      text        not null,
+  cantidad   integer     not null check (cantidad >= 0),
+  enviado_en timestamptz not null default now(),
+  constraint pedidos_fichas_detalle_uq unique (pedido_id, tienda, talla)
+);
+
+create index if not exists ix_pfd_pedido  on pedidos_fichas_detalle (pedido_id);
+create index if not exists ix_pfd_tienda  on pedidos_fichas_detalle (pedido_id, tienda);
+create index if not exists ix_pfd_talla   on pedidos_fichas_detalle (talla);
+create index if not exists ix_pfd_empresa on pedidos_fichas_detalle (empresa, periodo, tipo);
+create index if not exists ix_pf_periodo  on pedidos_fichas (periodo, empresa, tipo);
+
+-- ---------------------------------------------------------------- triggers
+-- El valor siempre se deriva de unidades x precio; nunca lo escribe el cliente.
+create or replace function pf_normaliza() returns trigger as $$
+begin
+  new.updated_at  := now();
+  new.total_valor := coalesce(new.total_unidades,0) * coalesce(new.precio_unitario,0);
+  return new;
+end $$ language plpgsql;
+
+drop trigger if exists trg_pf_normaliza on pedidos_fichas;
+create trigger trg_pf_normaliza before insert or update on pedidos_fichas
+for each row execute function pf_normaliza();
+
+-- Los totales de la cabecera se recalculan solos con cada línea del detalle.
+create or replace function pf_recalcula_totales() returns trigger as $$
+declare pid uuid;
+begin
+  pid := coalesce(new.pedido_id, old.pedido_id);
+  update pedidos_fichas p
+     set total_unidades = coalesce((select sum(d.cantidad)::int
+                                      from pedidos_fichas_detalle d
+                                     where d.pedido_id = pid), 0)
+   where p.id = pid;
+  return null;
+end $$ language plpgsql;
+
+drop trigger if exists trg_pfd_totales on pedidos_fichas_detalle;
+create trigger trg_pfd_totales after insert or update or delete on pedidos_fichas_detalle
+for each row execute function pf_recalcula_totales();
+
+-- Cada línea hereda empresa, periodo y tipo de su cabecera.
+create or replace function pfd_hereda_cabecera() returns trigger as $$
+begin
+  select p.empresa, p.periodo, p.tipo
+    into new.empresa, new.periodo, new.tipo
+    from pedidos_fichas p
+   where p.id = new.pedido_id;
+  return new;
+end $$ language plpgsql;
+
+drop trigger if exists trg_pfd_hereda on pedidos_fichas_detalle;
+create trigger trg_pfd_hereda before insert or update of pedido_id on pedidos_fichas_detalle
+for each row execute function pfd_hereda_cabecera();
+
+-- Si se corrige la cabecera, el detalle se pone al dia.
+create or replace function pf_propaga_cabecera() returns trigger as $$
+begin
+  update pedidos_fichas_detalle
+     set empresa = new.empresa, periodo = new.periodo, tipo = new.tipo
+   where pedido_id = new.id;
+  return null;
+end $$ language plpgsql;
+
+drop trigger if exists trg_pf_propaga on pedidos_fichas;
+create trigger trg_pf_propaga after update on pedidos_fichas
+for each row
+when (old.empresa is distinct from new.empresa
+   or old.periodo is distinct from new.periodo
+   or old.tipo    is distinct from new.tipo)
+execute function pf_propaga_cabecera();
+
+-- ---------------------------------------------------------------- vistas
+-- Se recrean desde cero: así el script se puede reejecutar aunque cambien columnas.
+drop view if exists v_pedidos_fichas         cascade;
+drop view if exists v_pedidos_fichas_tienda  cascade;
+drop view if exists v_pedidos_fichas_talla   cascade;
+drop view if exists v_pedidos_fichas_resumen cascade;
+
+create view v_pedidos_fichas as
+select p.id as pedido_id, p.periodo, p.empresa, p.tipo, p.nombre, p.precio_unitario,
+       d.tienda, d.ciudad, d.talla, t.grupo as grupo_talla, t.orden as orden_talla,
+       d.cantidad,
+       (d.cantidad * p.precio_unitario)::numeric(16,2) as valor,
+       d.enviado_en
+from pedidos_fichas p
+join pedidos_fichas_detalle d on d.pedido_id = p.id
+left join tallas t on t.talla = d.talla;
+
+create view v_pedidos_fichas_tienda as
+select p.periodo, p.empresa, p.tipo, p.nombre, d.tienda, d.ciudad,
+       count(*)::int                                      as tallas,
+       sum(d.cantidad)::int                                as unidades,
+       (sum(d.cantidad) * p.precio_unitario)::numeric(16,2) as valor,
+       max(d.enviado_en)                                   as enviado_en
+from pedidos_fichas p
+join pedidos_fichas_detalle d on d.pedido_id = p.id
+group by p.periodo, p.empresa, p.tipo, p.nombre, d.tienda, d.ciudad, p.precio_unitario;
+
+create view v_pedidos_fichas_talla as
+select p.periodo, p.empresa, p.tipo, p.nombre, d.talla, t.orden as orden_talla,
+       sum(d.cantidad)::int as unidades
+from pedidos_fichas p
+join pedidos_fichas_detalle d on d.pedido_id = p.id
+left join tallas t on t.talla = d.talla
+group by p.periodo, p.empresa, p.tipo, p.nombre, d.talla, t.orden;
+
+create view v_pedidos_fichas_resumen as
+select p.id as pedido_id, p.periodo, p.empresa, p.tipo, p.nombre, p.precio_unitario,
+       count(distinct d.tienda)::int as tiendas,
+       coalesce(sum(d.cantidad),0)::int as unidades,
+       (coalesce(sum(d.cantidad),0) * p.precio_unitario)::numeric(16,2) as valor,
+       p.updated_at
+from pedidos_fichas p
+left join pedidos_fichas_detalle d on d.pedido_id = p.id
+group by p.id, p.periodo, p.empresa, p.tipo, p.nombre, p.precio_unitario, p.updated_at;
+
+-- ---------------------------------------------------------------- acceso
+-- Políticas abiertas para la clave anónima. Endurécelas si el tablero sale del equipo.
+alter table tiendas                enable row level security;
+alter table tallas                 enable row level security;
+alter table pedidos_fichas         enable row level security;
+alter table pedidos_fichas_detalle enable row level security;
+
+drop policy if exists tiendas_all on tiendas;
+drop policy if exists tallas_all  on tallas;
+drop policy if exists pf_all      on pedidos_fichas;
+drop policy if exists pfd_all     on pedidos_fichas_detalle;
+
+create policy tiendas_all on tiendas                for all using (true) with check (true);
+create policy tallas_all  on tallas                 for all using (true) with check (true);
+create policy pf_all      on pedidos_fichas         for all using (true) with check (true);
+create policy pfd_all     on pedidos_fichas_detalle for all using (true) with check (true);
+
+-- ---------------------------------------------------------------- catálogo de tallas
+insert into tallas (talla, grupo, orden) values
+  ('XXS', 'LETRA', 1),
+  ('XS', 'LETRA', 2),
+  ('S', 'LETRA', 3),
+  ('M', 'LETRA', 4),
+  ('L', 'LETRA', 5),
+  ('XL', 'LETRA', 6),
+  ('XXL', 'LETRA', 7),
+  ('XXXL', 'LETRA', 8),
+  ('4XL', 'LETRA', 9),
+  ('1', 'NUMERICA', 10),
+  ('2', 'NUMERICA', 11),
+  ('3', 'NUMERICA', 12),
+  ('4', 'NUMERICA', 13),
+  ('6', 'NUMERICA', 14),
+  ('8', 'NUMERICA', 15),
+  ('10', 'NUMERICA', 16),
+  ('12', 'NUMERICA', 17),
+  ('14', 'NUMERICA', 18),
+  ('16', 'NUMERICA', 19),
+  ('18', 'NUMERICA', 20),
+  ('20', 'NUMERICA', 21),
+  ('22', 'NUMERICA', 22),
+  ('28', 'NUMERICA', 23),
+  ('30', 'NUMERICA', 24),
+  ('32', 'NUMERICA', 25),
+  ('34', 'NUMERICA', 26),
+  ('36', 'NUMERICA', 27),
+  ('38', 'NUMERICA', 28),
+  ('40', 'NUMERICA', 29),
+  ('42', 'NUMERICA', 30),
+  ('44', 'NUMERICA', 31),
+  ('46', 'NUMERICA', 32),
+  ('12/14', 'OTRA', 33),
+  ('U', 'OTRA', 34)
+on conflict (talla) do update set grupo = excluded.grupo, orden = excluded.orden;
+
+-- ---------------------------------------------------------------- catálogo de tiendas
+insert into tiendas (empresa, codigo, ciudad) values
+  ('TEMPLO', 'T01', null),
+  ('TEMPLO', 'T02', null),
+  ('TEMPLO', 'T04', null),
+  ('TEMPLO', 'T05', null),
+  ('TEMPLO', 'T06', null),
+  ('TEMPLO', 'T08', null),
+  ('TEMPLO', 'T09', null),
+  ('TEMPLO', 'T10', null),
+  ('TEMPLO', 'T11', null),
+  ('TEMPLO', 'T13', null),
+  ('TEMPLO', 'T14', null),
+  ('TEMPLO', 'T16', null),
+  ('TEMPLO', 'T17', null),
+  ('TEMPLO', 'T18', null),
+  ('TEMPLO', 'T19', null),
+  ('TEMPLO', 'T20', null),
+  ('TEMPLO', 'T23', null),
+  ('TEMPLO', 'T24', null),
+  ('TEMPLO', 'T26', null),
+  ('TEMPLO', 'T27', null),
+  ('TEMPLO', 'T28', null),
+  ('TEMPLO', 'T29', null),
+  ('TEMPLO', 'T30', null),
+  ('TEMPLO', 'T31', null),
+  ('TEMPLO', 'T32', null),
+  ('TEMPLO', 'T33', null),
+  ('TEMPLO', 'T34', null),
+  ('TEMPLO', 'T35', null),
+  ('SHOPPING', 'T01', 'BARRANCA'),
+  ('SHOPPING', 'T02', 'BARRANCA'),
+  ('SHOPPING', 'T03', 'OCAÑA'),
+  ('SHOPPING', 'T04', 'CARTAGENA'),
+  ('SHOPPING', 'T05', 'SANTA MARTA'),
+  ('SHOPPING', 'T06', 'GIRON'),
+  ('SHOPPING', 'T07', 'PIEDECUESTA'),
+  ('SHOPPING', 'T08', 'BUCARAMANGA'),
+  ('SHOPPING', 'T09', 'FLORIDABLANCA'),
+  ('SHOPPING', 'T10', 'CARTAGENA'),
+  ('SHOPPING', 'T11', 'CARTAGENA'),
+  ('SHOPPING', 'T13', 'BARRANQUILLA'),
+  ('SHOPPING', 'T17', 'BARRANQUILLA'),
+  ('SHOPPING', 'T18', 'YOPAL'),
+  ('SHOPPING', 'T19', 'ACACIAS'),
+  ('SHOPPING', 'T22', 'CUCUTA'),
+  ('SHOPPING', 'NEBRASKA', null)
+on conflict (empresa, codigo) do update set ciudad = excluded.ciudad;`;
+
+/* ------------------------------ modelo ------------------------------ */
+const EMP = {
+  TEMPLO:  {label:'Empresa Templo',   short:'Templo'},
+  SHOPPING:{label:'Empresa Shopping', short:'Shopping'}
+};
+const TIPOS = {FICHAS:'Fichas', ADHESIVOS:'Adhesivos'};
+const GRUPOS = [
+  {t:'Talla letra',    z:['XXS','XS','S','M','L','XL','XXL','XXXL','4XL']},
+  {t:'Talla numérica', z:['1','2','3','4','6','8','10','12','14','16','18','20','22','28','30','32','34','36','38','40','42','44','46']},
+  {t:'Otras',          z:['12/14','U']}
+];
+const LBL_EST = {pend:'Sin cargar', env:'Enviada', mod:'Sin enviar'};
+
+const S = {
+  empresa:'TEMPLO', tipo:'FICHAS', periodo:defaultPeriodo(),
+  nombre:'Pedido principal', precio:38,
+  tienda:null,
+  qty:{}, sent:{}, pedidoId:null, sb:null
+};
+
+function defaultPeriodo(){ const d=new Date(); d.setMonth(d.getMonth()+1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+const $=id=>document.getElementById(id);
+const fmt=n=>new Intl.NumberFormat('es-CO').format(Math.round(n||0));
+const money=n=>'$'+fmt(n);
+
+function stores(){ return DATA.catalog[S.empresa]||[]; }
+function storeAt(code){ return stores().find(s=>s.code===code); }
+function sizes(){
+  const a=(DATA.sizesBy[S.empresa]||{})[S.tipo];
+  return (a&&a.length)?a:DATA.sizes;
+}
+const q=(t,z)=>(S.qty[t]&&S.qty[t][z])||0;
+function setQ(t,z,v){ v=Math.max(0,parseInt(v,10)||0);
+  if(!S.qty[t]) S.qty[t]={};
+  if(v) S.qty[t][z]=v; else delete S.qty[t][z]; }
+const rowTot=t=>Object.values(S.qty[t]||{}).reduce((a,b)=>a+b,0);
+function estado(code){
+  const cur=JSON.stringify(S.qty[code]||{});
+  if(S.sent[code]===undefined) return rowTot(code)?'mod':'pend';
+  return S.sent[code]===cur ? 'env' : 'mod';
+}
+function totals(){
+  let u=0,td=0,en=0;
+  stores().forEach(s=>{ const r=rowTot(s.code); if(r>0){u+=r;td++; if(estado(s.code)==='env') en++;} });
+  return {und:u,val:u*(S.precio||0),tdas:td,env:en};
+}
+/* ------------------------------ render ------------------------------ */
+function renderChips(){
+  $('chipsEmp').innerHTML=Object.entries(EMP).map(([k,v])=>{
+    const n=(DATA.catalog[k]||[]).length;
+    return `<button class="chip" data-emp="${k}" aria-pressed="${S.empresa===k}">${v.short}<small>${n} tiendas</small></button>`;
+  }).join('');
+  $('chipsTipo').innerHTML=Object.entries(TIPOS).map(([k,v])=>
+    `<button class="chip" data-tipo="${k}" aria-pressed="${S.tipo===k}">${v}</button>`).join('');
+}
+function renderPicker(){
+  const st=stores();
+  $('fTienda').innerHTML='<option value="">— Elige una tienda —</option>'+st.map(s=>{
+    const r=rowTot(s.code), e=estado(s.code);
+    const mark=r?(e==='env'?' ✓':' •'):'';
+    return `<option value="${s.code}">${s.code}${s.city?' · '+s.city:''}${r?' — '+fmt(r)+' und':''}${mark}</option>`;
+  }).join('');
+  $('fTienda').value=S.tienda||'';
+  const i=st.findIndex(s=>s.code===S.tienda);
+  $('btnPrev').disabled=i<=0;
+  $('btnNext').disabled=i<0||i>=st.length-1;
+}
+function renderEntry(){
+  const box=$('entry');
+  if(!S.tienda){
+    box.innerHTML=`<div class="panel"><div class="empty"><b>Ninguna tienda seleccionada</b>
+      Elige la tienda arriba y aquí aparece su pedido para cargarlo.</div></div>`;
+    return;
+  }
+  const s=storeAt(S.tienda), zs=sizes(), e=estado(S.tienda);
+  const groups=GRUPOS.map(g=>{
+    const zz=g.z.filter(z=>zs.includes(z));
+    if(!zz.length) return '';
+    return `<div class="grp"><div class="grp-t">${g.t}</div><div class="qgrid">${zz.map(z=>{
+      const v=q(S.tienda,z);
+      return `<div class="qf"><label>${z}</label>
+        <input type="number" inputmode="numeric" min="0" step="10" class="${v?'has':''}" value="${v||''}"
+               data-z="${z}" aria-label="Talla ${z}"></div>`;
+    }).join('')}</div></div>`;
+  }).join('');
+  box.innerHTML=`<div class="panel">
+    <div class="entry-h">
+      <div><div class="code">${s.code}</div><div class="city">${(s.city||EMP[S.empresa].label).toLowerCase()}</div></div>
+      <span class="state ${e}" id="entEst">${LBL_EST[e]}</span>
+      <div class="st"><b id="entTot">${fmt(rowTot(S.tienda))}</b><span>Unidades</span></div>
+    </div>
+    ${groups}
+    <div class="entry-a">
+      <button class="btn primary" id="btnEnviar2">Enviar a Supabase</button>
+      <button class="btn" id="btnFill">Igualar todas las tallas</button>
+      <button class="btn danger" id="btnClear">Limpiar tienda</button>
+      <div style="flex:1"></div>
+      <button class="btn" id="btnNext2">Siguiente tienda →</button>
+    </div></div>`;
+  bindEntry();
+}
+function renderAdv(){
+  const st=stores(), T=totals();
+  $('advCnt').textContent=`${T.tdas} de ${st.length} cargadas · ${T.env} enviadas`;
+  $('advB').innerHTML=st.map(s=>{
+    const r=rowTot(s.code), e=estado(s.code);
+    return `<button class="scell ${S.tienda===s.code?'sel':''}" data-go="${s.code}">
+      <span class="pill ${e}"></span><span class="c">${s.code}</span>
+      <span class="u ${r?'':'z'}">${r?fmt(r):'—'}</span></button>`;
+  }).join('');
+  $('advB').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>selectStore(b.dataset.go));
+}
+function syncAll(){
+  const T=totals();
+  $('tagName').textContent=EMP[S.empresa].label+' · '+TIPOS[S.tipo];
+  $('tagPer').textContent=S.periodo;
+  $('tagUnd').textContent=fmt(T.und); $('tagVal').textContent=money(T.val);
+  $('tagTdas').textContent=T.tdas+' de '+stores().length; $('tagEnv').textContent=T.env;
+  $('tagNote').textContent=S.tienda
+    ? `Tienda ${S.tienda}: ${fmt(rowTot(S.tienda))} und en ${Object.keys(S.qty[S.tienda]||{}).length} tallas`
+    : 'Elige una tienda para cargar su pedido.';
+  $('sbTda').textContent=S.tienda||'—';
+  $('sbTdaUnd').textContent=S.tienda?fmt(rowTot(S.tienda)):'0';
+  $('sbVal').textContent=money(T.val);
+  $('btnEnviar').disabled=!S.tienda;
+  const et=$('entTot'); if(et&&S.tienda) et.textContent=fmt(rowTot(S.tienda));
+  const ee=$('entEst');
+  if(ee&&S.tienda){ const e=estado(S.tienda); ee.className='state '+e; ee.textContent=LBL_EST[e]; }
+  renderPicker(); renderAdv();
+}
+function selectStore(code){
+  S.tienda=code||null; renderEntry(); syncAll();
+  if(code) $('entry').scrollIntoView?.({behavior:'smooth',block:'nearest'});
+}
+function step(d){
+  const st=stores(), i=st.findIndex(s=>s.code===S.tienda), j=(i<0?0:i+d);
+  if(j<0||j>=st.length) return; selectStore(st[j].code);
+}
+function bindEntry(){
+  const box=$('entry');
+  box.oninput=e=>{
+    const el=e.target; if(el.tagName!=='INPUT'||!el.dataset.z) return;
+    setQ(S.tienda, el.dataset.z, el.value);
+    el.classList.toggle('has', !!q(S.tienda,el.dataset.z));
+    syncAll();
+  };
+  box.onkeydown=e=>{
+    const el=e.target; if(el.tagName!=='INPUT'||!el.dataset.z) return;
+    if(!['ArrowUp','ArrowDown','Enter'].includes(e.key)) return;
+    const all=[...box.querySelectorAll('input[data-z]')], i=all.indexOf(el);
+    const j=e.key==='ArrowUp'?i-1:i+1;
+    if(all[j]){ e.preventDefault(); all[j].focus(); all[j].select?.(); }
+  };
+  $('btnEnviar2').onclick=enviar;
+  $('btnNext2').onclick=()=>step(1);
+  $('btnFill').onclick=()=>{
+    const v=prompt('Cantidad para todas las tallas de '+S.tienda,'100'); if(v===null) return;
+    sizes().forEach(z=>setQ(S.tienda,z,v)); renderEntry(); syncAll();
+  };
+  $('btnClear').onclick=()=>{
+    if(!confirm('Se borran las cantidades en pantalla de '+S.tienda+'. ¿Continuar?')) return;
+    delete S.qty[S.tienda]; renderEntry(); syncAll();
+  };
+}
+
+/* ------------------------------ supabase ------------------------------ */
+function toast(msg,kind){ const el=document.createElement('div');
+  el.className='toast'+(kind?' '+kind:''); el.textContent=msg;
+  $('toasts').appendChild(el); setTimeout(()=>el.remove(),3200); }
+function setConn(on,txt,kind){ $('connDot').className='dot'+(on?' on':(kind==='err'?' err':'')); $('connTxt').textContent=txt; }
+function connect(url,key,quiet){
+  if(!url||!key){ setConn(false,'Sin conectar'); return false; }
+  try{ S.sb=window.supabase.createClient(url,key); setConn(true,'Conectado');
+    if(!quiet) toast('Conectado a Supabase','ok'); return true;
+  }catch(e){ setConn(false,'Error','err'); toast('No se pudo conectar: '+e.message,'err'); return false; }
+}
+function requireSb(){ if(!S.sb){ openModal(); toast('Configura la conexión a Supabase','err'); return false; } return true; }
+
+/* La conexión se recuerda en este navegador cuando el entorno lo permite. */
+const CFGK='tdm_pedidos_cfg';
+function cfgGuardar(u,k){ try{ window.localStorage.setItem(CFGK,JSON.stringify({u,k})); }catch(e){} }
+function cfgLeer(){ try{ return JSON.parse(window.localStorage.getItem(CFGK)||'null'); }catch(e){ return null; } }
+function cfgBorrar(){ try{ window.localStorage.removeItem(CFGK); }catch(e){} }
+
+/* El catálogo de tiendas vive en Supabase; el embebido queda como respaldo. */
+async function cargarCatalogo(){
+  if(!S.sb) return;
+  try{
+    const {data,error}=await S.sb.from('tiendas').select('empresa,codigo,ciudad,activa').eq('activa',true);
+    if(error||!data||!data.length) return;
+    const c={};
+    data.forEach(r=>{ (c[r.empresa]=c[r.empresa]||[]).push({code:r.codigo,city:r.ciudad||''}); });
+    const nk=x=>{ const m=/^T(\d+)$/.exec(x.code); return m?[0,+m[1]]:[1,0]; };
+    Object.keys(c).forEach(e=>c[e].sort((a,b)=>{const A=nk(a),B=nk(b);return A[0]-B[0]||A[1]-B[1];}));
+    Object.assign(DATA.catalog,c);
+    renderChips(); syncAll();
+  }catch(e){}
+}
+
+async function headerId(create){
+  const f={periodo:S.periodo,empresa:S.empresa,tipo:S.tipo,nombre:(S.nombre||'Pedido principal').trim()};
+  const {data,error}=await S.sb.from('pedidos_fichas').select('id').match(f).maybeSingle();
+  if(error) throw error;
+  if(data) return data.id;
+  if(!create) return null;
+  const {data:ins,error:e2}=await S.sb.from('pedidos_fichas')
+    .insert({...f,precio_unitario:S.precio}).select('id').single();
+  if(e2) throw e2;
+  return ins.id;
+}
+
+/* total_unidades y total_valor los recalcula un trigger en Postgres.
+   Desde aquí solo se sincroniza el precio unitario. */
+async function pushPrecio(id){
+  const {error}=await S.sb.from('pedidos_fichas').update({precio_unitario:S.precio}).eq('id',id);
+  if(error) throw error;
+}
+async function enviar(){
+  if(!requireSb()) return;
+  if(!S.tienda){ toast('Elige una tienda','err'); return; }
+  const t=S.tienda, u=rowTot(t);
+  if(!u && !confirm('La tienda '+t+' quedó en cero. ¿Enviar y borrar lo guardado?')) return;
+  const btns=[...document.querySelectorAll('#btnEnviar,#btnEnviar2')];
+  btns.forEach(b=>{b.disabled=true;b.dataset.txt=b.textContent;b.textContent='Enviando…';});
+  try{
+    const id=await headerId(true); S.pedidoId=id;
+    const {error:e1}=await S.sb.from('pedidos_fichas_detalle').delete().eq('pedido_id',id).eq('tienda',t);
+    if(e1) throw e1;
+    const city=(storeAt(t)||{}).city||null;
+    const rows=Object.entries(S.qty[t]||{}).filter(([,v])=>v>0)
+      .map(([z,v])=>({pedido_id:id,tienda:t,ciudad:city,talla:z,cantidad:v}));
+    if(rows.length){ const {error:e2}=await S.sb.from('pedidos_fichas_detalle').insert(rows); if(e2) throw e2; }
+    await pushPrecio(id);
+    S.sent[t]=JSON.stringify(S.qty[t]||{});
+    renderEntry(); syncAll();
+    toast(`${t} enviada · ${fmt(u)} und en ${rows.length} tallas`,'ok');
+  }catch(err){ toast('No se envió: '+(err.message||err),'err'); }
+  finally{ btns.forEach(b=>{b.disabled=false;b.textContent=b.dataset.txt||'Enviar a Supabase';}); }
+}
+async function sincronizar(quiet){
+  if(!S.sb){ if(!quiet) requireSb(); return; }
+  try{
+    const id=await headerId(false);
+    S.pedidoId=id; S.sent={};
+    if(!id){ if(!quiet) toast('Todavía no hay nada guardado para este periodo'); renderEntry(); syncAll(); return; }
+    const {data,error}=await S.sb.from('pedidos_fichas_detalle').select('tienda,talla,cantidad').eq('pedido_id',id);
+    if(error) throw error;
+    const m={}; data.forEach(d=>{ (m[d.tienda]=m[d.tienda]||{})[d.talla]=d.cantidad; });
+    Object.entries(m).forEach(([t,r])=>{ S.qty[t]={...r}; S.sent[t]=JSON.stringify(r); });
+    renderEntry(); syncAll();
+    if(!quiet) toast(`Traídas ${Object.keys(m).length} tiendas guardadas`,'ok');
+  }catch(err){ if(!quiet) toast('No se pudo consultar: '+(err.message||err),'err'); }
+}
+
+function exportExcel(){
+  const zs=sizes(), st=stores(), city=st.some(s=>s.city);
+  const aoa=[[EMP[S.empresa].label, TIPOS[S.tipo].toUpperCase(), S.periodo],[],
+    city?['#','CIUDAD',...zs,'TOTAL','PRECIO','VALOR']:['#',...zs,'TOTAL','PRECIO','VALOR']];
+  st.forEach(s=>{ const r=city?[s.code,s.city]:[s.code];
+    zs.forEach(z=>r.push(q(s.code,z)||null));
+    const t=rowTot(s.code); r.push(t,S.precio,t*S.precio); aoa.push(r); });
+  const tr=city?['TOTAL','']:['TOTAL'];
+  zs.forEach(z=>tr.push(st.reduce((a,s)=>a+q(s.code,z),0)||null));
+  const T=totals(); tr.push(T.und,'',T.val); aoa.push(tr);
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:9},...(city?[{wch:16}]:[]),...zs.map(()=>({wch:7})),{wch:10},{wch:8},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,(EMP[S.empresa].short+' '+TIPOS[S.tipo]).toUpperCase().slice(0,31));
+  XLSX.writeFile(wb,`pedido_${S.empresa}_${S.tipo}_${S.periodo}.xlsx`);
+  toast('Excel descargado','ok');
+}
+
+/* ------------------------------ eventos ------------------------------ */
+function openModal(){ $('modalSql').classList.add('on'); $('ov').classList.add('on'); }
+function closeModal(){ $('modalSql').classList.remove('on'); $('ov').classList.remove('on'); }
+function pendientes(){ return stores().filter(s=>rowTot(s.code)>0&&estado(s.code)!=='env').map(s=>s.code); }
+function guardCambio(){
+  const p=pendientes();
+  return !p.length || confirm('Hay '+p.length+' tienda(s) sin enviar ('+p.join(', ')+'). ¿Continuar y descartarlas?');
+}
+function resetPedido(){
+  S.qty={}; S.sent={}; S.tienda=null; S.pedidoId=null;
+  renderChips(); renderEntry(); syncAll();
+  sincronizar(true);
+}
+document.addEventListener('click',e=>{
+  const em=e.target.closest('[data-emp]'), tp=e.target.closest('[data-tipo]');
+  if(em&&em.dataset.emp!==S.empresa){ if(!guardCambio()) return; S.empresa=em.dataset.emp; resetPedido(); }
+  if(tp&&tp.dataset.tipo!==S.tipo){ if(!guardCambio()) return; S.tipo=tp.dataset.tipo;
+    if(S.tipo==='ADHESIVOS'&&S.precio===38){ S.precio=0; $('fPrecio').value=0; }
+    resetPedido(); }
+});
+$('fTienda').onchange=e=>selectStore(e.target.value);
+$('btnPrev').onclick=()=>step(-1);
+$('btnNext').onclick=()=>step(1);
+$('fPeriodo').onchange=e=>{ if(!guardCambio()){ e.target.value=S.periodo; return; } S.periodo=e.target.value; resetPedido(); };
+$('fNombre').onchange=e=>{ if(!guardCambio()){ e.target.value=S.nombre; return; } S.nombre=e.target.value||'Pedido principal'; e.target.value=S.nombre; resetPedido(); };
+$('fPrecio').oninput=e=>{ S.precio=parseFloat(e.target.value)||0; syncAll(); };
+$('btnSync').onclick=()=>sincronizar(false);
+$('btnExcel').onclick=exportExcel;
+$('btnEnviar').onclick=enviar;
+$('btnSql').onclick=openModal;
+$('btnCerrarSql').onclick=closeModal;
+$('ov').onclick=closeModal;
+$('btnConectar').onclick=async()=>{
+  const u=$('cfgUrl').value.trim(), k=$('cfgKey').value.trim();
+  if(!connect(u,k)) return;
+  cfgGuardar(u,k); closeModal();
+  await cargarCatalogo(); await sincronizar(true);
+};
+$('btnOlvidar').onclick=()=>{ cfgBorrar(); $('cfgUrl').value=''; $('cfgKey').value='';
+  S.sb=null; setConn(false,'Sin conectar'); toast('Conexión olvidada en este navegador'); };
+$('btnCopiarSql').onclick=async()=>{ try{ await navigator.clipboard.writeText(SQL); toast('SQL copiado','ok'); }
+  catch{ toast('Selecciona y copia manualmente','err'); } };
+window.addEventListener('beforeunload',e=>{ if(pendientes().length){ e.preventDefault(); e.returnValue=''; } });
+
+/* ------------------------------ arranque ------------------------------ */
+$('fPeriodo').value=S.periodo;
+$('fNombre').value=S.nombre;
+renderChips(); renderEntry(); syncAll();
+(async()=>{
+  const g=cfgLeer();
+  const url=SUPABASE_URL||(g&&g.u)||'', key=SUPABASE_ANON_KEY||(g&&g.k)||'';
+  if(url){ $('cfgUrl').value=url; $('cfgKey').value=key; }
+  if(connect(url,key,true)){
+    await cargarCatalogo(); await sincronizar(true);
+  }else{ openModal(); }
+})();
+</script>
+</body>
+</html>
