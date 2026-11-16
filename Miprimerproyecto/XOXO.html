@@ -1686,17 +1686,20 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
   const G=D.guias, C=D.conf, N=D.nov, S=D.desp;
   const eiEnt=G.estados.indexOf('Entregada a destino');
   const eiDev=G.estados.indexOf('Devolución a origen');
-  const corteM=+D.meta.corte.slice(5,7), corteD=+D.meta.corte.slice(8,10);
+  const corteM=+D.meta.corte.slice(5,7), corteD=+D.meta.corte.slice(8,10), yearN=+D.meta.corte.slice(0,4);
   const M_={};
-  MONTHS.forEach(m=>M_[m]={ord:0,rev:0,remi:0,g:0,gent:0,gdev:0,td:0,tdEnt:0,coEnt:0,tdDev:0,fl:0,net:0,nov:0,novAt:0,dsp:0,dspN:0,t:0,tc:0});
+  MONTHS.forEach(m=>M_[m]={ord:0,rev:0,remi:0,perd:0,g:0,gent:0,gdev:0,td:0,tdEnt:0,coEnt:0,tdDev:0,flDev:0,fl:0,net:0,nov:0,novAt:0,sevT:0,sevV:0,dsp:0,dspN:0,t:0,tc:0,wknd:0});
   const dayRev={};
   C.daily.forEach(r=>{const o=M_[r[1]]; if(!o)return; o.ord+=r[4]+r[5]; o.remi+=r[5]; o.rev+=r[6];
+    if(r[3]===0)o.perd+=r[4];
     dayRev[r[0]]=(dayRev[r[0]]||0)+r[6];});
+  Object.keys(dayRev).forEach(k=>{const dw=new Date(k+'T12:00:00').getDay(); if(dw===0||dw===6){const o=M_[+k.slice(5,7)]; if(o)o.wknd+=dayRev[k];}});
   G.month.forEach(r=>{const o=M_[r[0]]; if(!o)return; o.g+=r[2]; o.td+=r[3]; o.fl+=r[5];
     if(r[1]===eiEnt){o.gent+=r[2]; o.tdEnt+=r[3]; o.coEnt+=r[4];}
-    if(r[1]===eiDev){o.gdev+=r[2]; o.tdDev+=r[3];}});
+    if(r[1]===eiDev){o.gdev+=r[2]; o.tdDev+=r[3]; o.flDev+=r[5];}});
   G.dailyNet.forEach(r=>{const o=M_[r[0]]; if(o)o.net+=r[2];});
   N.cube.forEach(r=>{const o=M_[r[0]]; if(!o)return; o.nov+=r[3]; if(r[2]===1)o.novAt+=r[3];});
+  N.dailyVal.forEach(r=>{const o=M_[r[0]]; if(!o)return; o.sevT+=r[4]; if(r[3]===1)o.sevV+=r[4];});
   S.month.forEach(r=>{const o=M_[r[0]]; if(!o)return; o.dsp+=r[2]; o.dspN+=r[3]; o.t+=r[4]; o.tc+=r[5];});
 
   const dIn=m=>(G.ppto[m]||{}).d||30;
@@ -1705,21 +1708,66 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
     const pc=pp&&pp.c? pp.c*(days/dIn(m)):0;
     return {m,o,days,enCurso:m===corteM,
       ticket:o.ord?o.rev/o.ord:0, diario:days?o.rev/days:0,
-      ns:pct(o.remi,o.ord), ent:pct(o.gent,o.g), devp:pct(o.gdev,o.gent+o.gdev),
+      ns:pct(o.remi,o.ord), perd:pct(o.perd,o.ord), ent:pct(o.gent,o.g), devp:pct(o.gdev,o.gent+o.gdev),
       ppto:pc?o.net/pc*100:null, novAtp:pct(o.novAt,o.nov), tasaNov:pct(o.nov,o.g),
-      dsp:pct(o.dsp,o.dsp+o.dspN), tP:o.tc?o.t/o.tc:0,
-      efec:o.rev?o.net/o.rev*100:0,
+      dsp:pct(o.dsp,o.dsp+o.dspN), tP:o.tc?o.t/o.tc:0, sev:o.sevT?o.sevV/o.sevT*100:0,
+      efec:o.rev?o.net/o.rev*100:0, wk:pct(o.wknd,o.rev),
+      fg:o.g?o.fl/o.g:0,
       mg:o.tdEnt?(o.tdEnt-o.coEnt)/o.tdEnt*100:0, flp:o.td?o.fl/o.td*100:0};}
   const MT={}; MONTHS.forEach(m=>MT[m]=met(m));
   const closed=MONTHS.filter(m=>m!==corteM);
+  const avg=k=> closed.length? closed.reduce((s,m)=>s+MT[m][k],0)/closed.length:0;
 
+  /* proyección mes en curso (nivel 14d desestacionalizado) */
+  const dayKeys=Object.keys(dayRev).sort();
+  const dowS=[0,0,0,0,0,0,0],dowN=[0,0,0,0,0,0,0];
+  dayKeys.forEach(k=>{const dw=new Date(k+'T12:00:00').getDay();dowS[dw]+=dayRev[k];dowN[dw]++;});
+  const overall=dayKeys.reduce((s,k)=>s+dayRev[k],0)/dayKeys.length;
+  const factor=dw=>dowN[dw]&&overall?(dowS[dw]/dowN[dw])/overall:1;
+  const l14=dayKeys.slice(-14);
+  const level=l14.reduce((s,k)=>s+dayRev[k]/factor(new Date(k+'T12:00:00').getDay()),0)/Math.max(l14.length,1);
+  let projAdd=0; for(let dd=corteD+1;dd<=dIn(corteM);dd++)projAdd+=level*factor(new Date(yearN,corteM-1,dd,12).getDay());
+  const projB=M_[corteM].rev+projAdd, projP=M_[corteM].rev+projAdd*0.92, projO=M_[corteM].rev+projAdd*1.08;
+  const ppCur=G.ppto[corteM]||{}; const vsC=ppCur.c?projB/ppCur.c*100:null;
+  const l7=dayKeys.slice(-7), pv7=dayKeys.slice(-14,-7);
+  const s7=l7.reduce((s,k)=>s+dayRev[k],0), s7p=pv7.reduce((s,k)=>s+dayRev[k],0);
+  const mom=s7p?(s7-s7p)/s7p*100:0;
+
+  /* responsables, SKUs, departamentos */
+  const RA={}; C.user.forEach(r=>{if(r[2]===0&&r[3]===0){const k=r[0]+'|'+r[1]; RA[k]=(RA[k]||0)+r[4];}});
+  const topResp=m=>{let bi=-1,bv=-1; C.resp.forEach((n,i)=>{if(n==='(Sin responsable)')return; const v=RA[m+'|'+i]||0; if(v>bv){bv=v;bi=i;}}); return bi>=0&&bv>0?{n:C.resp[bi],v:bv}:null;};
+  const DSK={}; D.dev.cube.forEach(r=>{const k=r[0]+'|'+r[2]; const o=DSK[k]=DSK[k]||{e:0,d:0}; if(r[1]===1)o.d+=r[3]; else o.e+=r[3];});
+  const topSkus=m=>{const rows=[]; Object.keys(DSK).forEach(k=>{const[mm,s]=k.split('|').map(Number); if(mm===m&&DSK[k].d>0)rows.push({n:D.dev.skus[s],d:DSK[k].d,r:pct(DSK[k].d,DSK[k].d+DSK[k].e)});});
+    return rows.sort((a,b)=>b.d-a.d).slice(0,2);};
+  const DP={}; G.dept.forEach(r=>{const key=r[0]+'|'+r[2]; const o=DP[key]=DP[key]||{g:0,e:0,d:0}; o.g+=r[3]; if(r[1]===eiEnt)o.e+=r[3]; if(r[1]===eiDev)o.d+=r[3];});
+  const worstDept=m=>{let best=null; Object.keys(DP).forEach(k=>{const[mm,i]=k.split('|').map(Number); if(mm!==m)return; const o=DP[k]; if(o.e+o.d<100)return; const v=pct(o.d,o.e+o.d); if(!best||v>best.v)best={n:G.deptL[i],v,g:o.g};}); return best;};
+
+  /* correlación tasaNov(m) → devp(m+1) en cerrados */
+  let corrTxt=null;
+  (function(){const xs=[],ys=[];
+    for(let i=0;i<closed.length-1;i++){const a=closed[i],b=closed[i+1];
+      if(b===a+1){xs.push(MT[a].tasaNov); ys.push(MT[b].devp);}}
+    if(xs.length>=5){const mx=xs.reduce((s,v)=>s+v,0)/xs.length,my=ys.reduce((s,v)=>s+v,0)/ys.length;
+      let num=0,dx=0,dy=0; xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);dx+=(x-mx)**2;dy+=(ys[i]-my)**2;});
+      const r=dx&&dy?num/Math.sqrt(dx*dy):0;
+      if(Math.abs(r)>=0.45) corrTxt='En lo corrido del año, los meses con mayor tasa de novedades tienden a mostrar mayor devolución al mes siguiente (correlación '+r.toFixed(2).replace('.',',')+'): la gestión de novedades de hoy es la devolución de mañana.';}})();
+
+  /* semáforos y score v2 */
   const SEM={ns:v=>v>=82?'g':v>=78?'y':'r', ent:v=>v>=66?'g':v>=60?'y':'r',
     devp:v=>v<=22.5?'g':v<=25?'y':'r', ppto:v=>v==null?'n':v>=100?'g':v>=90?'y':'r',
     novAtp:v=>v>=85?'g':v>=75?'y':'r', tasaNov:v=>v<=30?'g':v<=35?'y':'r',
-    dsp:v=>v>=85?'g':v>=80?'y':'r', tP:v=>v<=1?'g':v<=1.5?'y':'r'};
-  const W={ppto:20,ns:15,ent:15,devp:15,novAtp:10,tasaNov:10,dsp:10,tP:5};
+    dsp:v=>v>=85?'g':v>=80?'y':'r', tP:v=>v<=1?'g':v<=1.5?'y':'r',
+    perd:v=>v<=15?'g':v<=18?'y':'r',
+    proy:v=>v==null?'n':v>=100?'g':v>=92?'y':'r', mom:v=>v>5?'g':v>=-5?'y':'r'};
+  const W2={ppto:18,ns:13,ent:13,devp:13,perd:10,novAtp:9,tasaNov:9,dsp:10,tP:5};
+  const WCUR={proy:30,mom:20,perd:20,novAtp:15,tasaNov:15};
   const PV={g:100,y:60,r:20};
-  function score(t){let s=0,w=0; for(const k in W){const c=SEM[k](t[k]); if(c==='n')continue; s+=PV[c]*W[k]; w+=W[k];} return w?Math.round(s/w):0;}
+  function score(t){
+    if(t.enCurso){const vals={proy:vsC,mom,perd:t.perd,novAtp:t.novAtp,tasaNov:t.tasaNov};
+      let s=0,w=0; for(const k in WCUR){const c=SEM[k](vals[k]); if(c==='n')continue; s+=PV[c]*WCUR[k]; w+=WCUR[k];}
+      return w?Math.round(s/w):0;}
+    let s=0,w=0; for(const k in W2){const c=SEM[k](t[k]); if(c==='n')continue; s+=PV[c]*W2[k]; w+=W2[k];}
+    return w?Math.round(s/w):0;}
   const estado=s=> s>=85?['g','Saludable']:s>=65?['y','Atención']:['r','Crítico'];
   const B=(c,txt)=>`<span class="dgb ${c}">${txt}</span>`;
   const sb=(k,v,txt)=>B(SEM[k](v),txt);
@@ -1745,10 +1793,14 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
      .dg-span2{grid-column:1/-1}
      .dg-ct{font-weight:800;font-size:12.5px;margin-bottom:0}
      .dg-cs{font-size:10.5px;color:#64748b;letter-spacing:.4px;font-weight:700;text-transform:uppercase}
+     .dg-btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 14px;font-weight:800;font-size:12.5px;cursor:pointer;box-shadow:var(--shadow)}
+     .dg-btn:hover{background:#eef6fb}
+     #dg-informe{display:none}
+     #dg-informe.on{display:block}
      @media(max-width:1100px){.dg-grid{grid-template-columns:1fr}}
    </style>
    <div class="grid kpis" id="dg-kpis"></div>
-   <div class="pivot-head"><div class="ph-title">Matriz de <em>diagnóstico</em> mensual</div><div class="ph-sub">ÓRDENES · GUÍAS · NOVEDADES — VERDE SALUDABLE · ÁMBAR ATENCIÓN · ROJO CRÍTICO</div></div>
+   <div class="pivot-head"><div class="ph-title">Matriz de <em>diagnóstico</em> mensual</div><div class="ph-sub">VERDE SALUDABLE · ÁMBAR ATENCIÓN · ROJO CRÍTICO · EL MES EN CURSO SE CALIFICA SOLO POR LO MEDIBLE</div></div>
    <div class="tbl-wrap" id="dg-matrix" style="margin-bottom:14px"></div>
    <div class="pivot-head"><div class="ph-title">Gráficas de <em>diagnóstico</em></div><div class="ph-sub">TENDENCIA · EMBUDO · RENTABILIDAD · TRANSPORTADORAS · CALIDAD</div></div>
    <div class="dg-grid">
@@ -1763,70 +1815,152 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
      <div class="chart-card"><div class="dg-ct">Novedades: incidencia vs gestión</div><div class="dg-cs">Tasa de novedades por guía (barras) y % atendidas (línea)</div><div class="cw"><canvas id="dg-c9"></canvas></div></div>
      <div class="chart-card"><div class="dg-ct">Radar de salud</div><div class="dg-cs" id="dg-c10sub">Mes seleccionado vs promedio de meses cerrados · 100 = ideal</div><div class="cw"><canvas id="dg-c10"></canvas></div></div>
    </div>
-   <div class="pivot-head"><div class="ph-title">Diagnóstico <em>experto</em> del mes</div><div class="ph-sub">ANÁLISIS AUTOMÁTICO SOBRE LOS DATOS AL CORTE ${D.meta.corte}</div></div>
-   <div class="mtabs" id="dg-mtabs"></div>
-   <div class="dg-rep" id="dg-report"></div>`;
+   <div class="pivot-head"><div class="ph-title">Diagnóstico <em>experto</em> del mes</div><div class="ph-sub">ANALISTA POR REGLAS · DATOS AL CORTE ${D.meta.corte}</div></div>
+   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+     <div class="mtabs" id="dg-mtabs" style="margin:0"></div>
+     <button class="dg-btn" id="dg-geninf">📄 Informe gerencial del mes</button>
+   </div>
+   <div class="dg-rep" id="dg-report"></div>
+   <div class="dg-sec" id="dg-informe" style="margin-top:14px"></div>`;
 
-  /* ---------- KPIs, matriz, selector, informe (igual que antes) ---------- */
-  function kpis(){const t=MT[sel], [c,lbl]=estado(score(t));
+  function kpis(){const t=MT[sel], s=score(t), [c,lbl]=estado(s);
     el('dg-kpis').innerHTML=
-      kpi(c,'Salud del mes · '+MES[sel],score(t)+' / 100',lbl+(t.enCurso?' · mes en curso':''))+
-      kpi(SEM.ppto(t.ppto)==='n'?'':SEM.ppto(t.ppto),'Ingreso entregado vs PPTO',t.ppto!=null?pf(t.ppto):'—','neto entregado '+moneyK(t.o.net))+
-      kpi(SEM.ent(t.ent),'% Guías entregadas',pf(t.ent),fmt(t.o.gent)+' de '+fmt(t.o.g))+
+      kpi(c,'Salud del mes · '+MES[sel],s+' / 100',lbl+(t.enCurso?' · mes en curso (score de gestión)':''))+
+      (t.enCurso?
+        kpi(SEM.proy(vsC)==='n'?'':SEM.proy(vsC),'Proyección de cierre',moneyK(projB),(vsC!=null?pf(vsC)+' del PPTO conservador · ':'')+'rango '+moneyK(projP)+' – '+moneyK(projO)):
+        kpi(SEM.ppto(t.ppto)==='n'?'':SEM.ppto(t.ppto),'Ingreso entregado vs PPTO',t.ppto!=null?pf(t.ppto):'—','neto entregado '+moneyK(t.o.net)))+
+      kpi(SEM.perd(t.perd),'Órdenes perdidas',pf(t.perd),fmt(t.o.perd)+' anuladas sin remisionar ≈ '+moneyK(t.o.perd*t.ticket))+
       kpi(SEM.novAtp(t.novAtp),'% Novedades atendidas',pf(t.novAtp),fmt(t.o.nov)+' novedades · tasa '+pf(t.tasaNov));}
+
   function matrix(){
-    const head=`<tr><th>Mes</th><th>Órdenes</th><th>Ingreso</th><th>NS%</th><th>Guías</th><th>% Entreg.</th><th>% Devol.</th><th>vs PPTO</th><th>Novedades</th><th>% Atend.</th><th>Tasa nov.</th><th>Salud</th></tr>`;
+    const head=`<tr><th>Mes</th><th>Órdenes</th><th>Ingreso</th><th>NS%</th><th>Perd.</th><th>Guías</th><th>% Entreg.</th><th>% Devol.</th><th>vs PPTO</th><th>Nov.</th><th>% Atend.</th><th>Tasa nov.</th><th>Salud</th></tr>`;
     const rows=MONTHS.map(m=>{const t=MT[m], s=score(t), [c,lbl]=estado(s);
       return `<tr style="${m===sel?'background:#e9f4fa':''}">
         <td><b>${MES[m]}</b>${t.enCurso?' <span class="dgb n">en curso</span>':''}</td>
         <td class="mono">${fmt(t.o.ord)}</td><td class="mono">${moneyK(t.o.rev)}</td>
-        <td>${sb('ns',t.ns,pf(t.ns))}</td>
+        <td>${t.enCurso?B('n',pf(t.ns)):sb('ns',t.ns,pf(t.ns))}</td>
+        <td>${sb('perd',t.perd,pf(t.perd))}</td>
         <td class="mono">${fmt(t.o.g)}</td>
-        <td>${sb('ent',t.ent,pf(t.ent))}</td>
-        <td>${sb('devp',t.devp,pf(t.devp))}</td>
-        <td>${t.ppto!=null?sb('ppto',t.ppto,pf(t.ppto)):B('n','—')}</td>
+        <td>${t.enCurso?B('n',pf(t.ent)):sb('ent',t.ent,pf(t.ent))}</td>
+        <td>${t.enCurso?B('n',pf(t.devp)):sb('devp',t.devp,pf(t.devp))}</td>
+        <td>${t.enCurso?(vsC!=null?sb('proy',vsC,pf(vsC)+' pr.'):B('n','—')):(t.ppto!=null?sb('ppto',t.ppto,pf(t.ppto)):B('n','—'))}</td>
         <td class="mono">${fmt(t.o.nov)}</td>
         <td>${sb('novAtp',t.novAtp,pf(t.novAtp))}</td>
         <td>${sb('tasaNov',t.tasaNov,pf(t.tasaNov))}</td>
         <td>${B(c,s+' · '+lbl)}</td></tr>`;}).join('');
     el('dg-matrix').innerHTML=`<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;}
-  function mtabs(){el('dg-mtabs').innerHTML=MONTHS.map(m=>`<button class="mtab ${sel===m?'on':''}" data-m="${m}">${MES[m]}</button>`).join('');}
-  function report(){
-    const t=MT[sel], i=MONTHS.indexOf(sel), pv=i>0?MT[MONTHS[i-1]]:null;
-    const cmp=(a,b)=> b? (a-b)/b*100:0;
-    const avg=k=> closed.length? closed.reduce((s,m)=>s+MT[m][k],0)/closed.length:0;
-    let html='';
-    let dd='';
-    if(pv){const dD=cmp(t.diario,pv.diario), dT=cmp(t.ticket,pv.ticket);
-      dd=`<p>📈 <b>Demanda:</b> ${MES[sel]} ${t.enCurso?'promedia':'promedió'} <b>${moneyK(t.diario)}/día</b> (${dl(dD)} vs ${MES[pv.m]}) con <b>${fmt(t.o.ord)}</b> órdenes y ticket promedio de <b>${money(t.ticket)}</b> (${dl(dT)}). ${dD<-5?'La demanda viene en contracción: revisar pauta, oferta y frecuencia de campañas.':dD>5?'La demanda está en expansión: cuidar inventario disponible y capacidad del CEDI.':'La demanda está estable frente al mes anterior.'}</p>`;
-    } else dd=`<p>📈 <b>Demanda:</b> ${fmt(t.o.ord)} órdenes por ${moneyK(t.o.rev)} (${moneyK(t.diario)}/día), ticket promedio ${money(t.ticket)}.</p>`;
-    dd+=`<p>✅ <b>Neto de ventas:</b> ${sb('ns',t.ns,pf(t.ns))} de las órdenes quedaron remisionadas. ${t.ns>=82?'Conversión a remisión sana para COD.':t.ns>=78?'Conversión algo baja: reforzar confirmación temprana (WhatsApp / call center).':'Conversión crítica: hay demasiada orden pendiente sin convertir.'}${t.enCurso?' <i>(mes en curso: las órdenes recientes aún están en proceso de confirmación).</i>':''}</p>`;
-    html+=`<div class="dg-sec"><h4>🛒 Órdenes de venta</h4>${dd}</div>`;
-    let lg=`<p>🚚 <b>Entregas:</b> ${sb('ent',t.ent,pf(t.ent))} de las ${fmt(t.o.g)} guías llegaron a destino y ${sb('devp',t.devp,pf(t.devp))} terminó en devolución (prom. meses cerrados: ${pf(avg('devp'))}). ${t.devp<=22.5?'La devolución está controlada.':t.devp<=25?'Devolución por encima de lo ideal: revisar causas por transportadora y ciudad.':'Devolución crítica: atacar causas raíz de rechazo en entrega.'}${t.enCurso?' <i>(mes en curso: parte de las guías sigue en tránsito y el % entregado subirá).</i>':''}</p>`;
-    lg+=`<p>📦 <b>CEDI:</b> tasa de despacho ${sb('dsp',t.dsp,pf(t.dsp))} con tiempo promedio de <b>${t.tP.toFixed(2).replace('.',',')} días</b> ${B(SEM.tP(t.tP),t.tP<=1?'ágil':t.tP<=1.5?'aceptable':'lento')}. Flete sobre venta: <b>${pf(t.flp)}</b>. Margen bruto sobre lo entregado: <b>${pf(t.mg)}</b>.</p>`;
-    if(t.ppto!=null) lg+=`<p>🎯 <b>Presupuesto:</b> el neto entregado (${moneyK(t.o.net)}) ${t.enCurso?'va al':'cerró al'} ${sb('ppto',t.ppto,pf(t.ppto))} del PPTO conservador${t.enCurso?' prorrateado a '+t.days+' días':''}. ${t.ppto>=100?'Cumplimiento logrado.':t.ppto>=90?'Cerca de la meta: el cierre de guías en tránsito puede completarla.':'Lejos de la meta: se requiere más volumen entregado.'}</p>`;
-    html+=`<div class="dg-sec"><h4>🚛 Guías y despacho</h4>${lg}</div>`;
-    let pq=`<p>📣 <b>Novedades:</b> ${fmt(t.o.nov)} novedades, equivalentes al ${sb('tasaNov',t.tasaNov,pf(t.tasaNov))} de las guías (prom. cerrados: ${pf(avg('tasaNov'))}). ${t.tasaNov<=30?'Incidencia normal para COD nacional.':t.tasaNov<=35?'Incidencia elevada: validar direcciones y teléfonos en el checkout.':'Incidencia crítica: revisar cobertura y calidad de datos de envío.'}</p>`;
-    pq+=`<p>🛠 <b>Gestión:</b> ${sb('novAtp',t.novAtp,pf(t.novAtp))} atendidas. ${t.novAtp>=85?'Equipo al día: la atención rápida de novedades protege la entrega.':t.novAtp>=75?'Gestión rezagada: cada novedad sin atender eleva la probabilidad de devolución.':'Gestión crítica: priorizar la cola de novedades sin atender.'}</p>`;
-    html+=`<div class="dg-sec"><h4>📣 Novedades</h4>${pq}</div>`;
-    const s=score(t), [c,lbl]=estado(s);
-    const nombres={ns:'Neto de ventas',ent:'% entregadas',devp:'% devolución',ppto:'cumplimiento PPTO',novAtp:'% novedades atendidas',tasaNov:'tasa de novedades',dsp:'tasa de despacho',tP:'tiempo de despacho'};
-    const acciones={ns:'reforzar confirmación temprana de órdenes (WhatsApp / call center)',ent:'hacer seguimiento con transportadoras a guías estancadas (tránsito / oficina)',devp:'analizar causas de devolución por transportadora y ciudad (pestaña Devoluciones)',ppto:'impulsar volumen entregado: pauta, oferta y cierre de guías en tránsito',novAtp:'acelerar la gestión de la cola de novedades sin atender',tasaNov:'validar direcciones y teléfonos en el checkout y revisar cobertura',dsp:'revisar capacidad y backlog del CEDI',tP:'priorizar picking para bajar el tiempo de despacho'};
-    const malos=Object.keys(W).map(k=>({k,c:SEM[k](t[k])})).filter(x=>x.c==='r'||x.c==='y');
-    let sy=`<p><b>Salud del mes: ${B(c,s+' / 100 · '+lbl)}</b></p>`;
-    sy+= malos.length? `<p>Prioridades:</p><ul>${malos.sort((a,b)=>(a.c==='r'?0:1)-(b.c==='r'?0:1)).map(x=>`<li>${B(x.c,x.c==='r'?'crítico':'atención')} <b>${nombres[x.k]}</b>: ${acciones[x.k]}.</li>`).join('')}</ul>`
-      : `<p>✅ Todos los indicadores en verde: mantener el mix de pauta, la cobertura de transportadoras y el ritmo de gestión actual.</p>`;
-    if(sel>=8) sy+=`<div class="dg-note">⚠ Nota: desde agosto las órdenes no traen el cruce a remisión ("convertida a remisión de venta #N"), por lo que la pestaña Retención no refleja clientes de ${MES[sel]}.</div>`;
-    html+=`<div class="dg-sec"><h4>🩺 Síntesis y recomendaciones</h4>${sy}</div>`;
-    el('dg-report').innerHTML=html;}
 
-  /* ---------- GRÁFICAS ---------- */
+  function mtabs(){el('dg-mtabs').innerHTML=MONTHS.map(m=>`<button class="mtab ${sel===m?'on':''}" data-m="${m}">${MES[m]}</button>`).join('');}
+
+  /* ---------- motor de hallazgos ---------- */
+  function hallazgos(m){
+    const t=MT[m], i=MONTHS.indexOf(m), pv=i>0?MT[MONTHS[i-1]]:null;
+    const cmp=(a,b)=>b?(a-b)/b*100:0;
+    const H={demanda:[],conv:[],logi:[],pos:[],prod:[],fugas:[],rec:[]};
+    const rankRev=[...MONTHS].sort((a,b)=>MT[b].rev-MT[a].rev).indexOf(m)+1;
+    // DEMANDA
+    if(pv){const dD=cmp(t.diario,pv.diario);
+      H.demanda.push(`${MES[m]} ${t.enCurso?'promedia':'promedió'} <b>${moneyK(t.diario)}/día</b> (${dl(dD)} vs ${MES[pv.m]}), con ${fmt(t.o.ord)} órdenes y ticket de <b>${money(t.ticket)}</b> (${dl(cmp(t.ticket,pv.ticket))}). ${dD<-5?'Demanda en contracción: revisar pauta y oferta.':dD>5?'Demanda en expansión: proteger inventario y capacidad.':'Demanda estable.'}`);}
+    else H.demanda.push(`${fmt(t.o.ord)} órdenes por ${moneyK(t.o.rev)} (${moneyK(t.diario)}/día), ticket ${money(t.ticket)}.`);
+    H.demanda.push(`Ranking: <b>${rankRev}º</b> mes del año por ingreso${t.enCurso?' (parcial)':''}. Fin de semana aporta ${pf(t.wk)} del ingreso.`);
+    if(t.enCurso){H.demanda.push(`Momentum 7 días: ${B(SEM.mom(mom),dl(mom))} (${moneyK(s7)} vs ${moneyK(s7p)}). Proyección de cierre <b>${moneyK(projB)}</b> ${vsC!=null?'('+pf(vsC)+' del PPTO conservador)':''}, rango ${moneyK(projP)}–${moneyK(projO)}.`);}
+    // mezcla de ticket: canal top share change
+    (function(){if(!pv)return; const CE={}; C.daily.forEach(r=>{if(r[1]!==m&&r[1]!==pv.m)return; const k=r[1]+'|'+r[2]; const o=CE[k]=CE[k]||{rev:0}; o.rev+=r[6];});
+      let bi=-1,bd=0; C.eco.forEach((e,ix)=>{const sN=t.o.rev?((CE[m+'|'+ix]||{}).rev||0)/t.o.rev*100:0, sP=pv.o.rev?((CE[pv.m+'|'+ix]||{}).rev||0)/pv.o.rev*100:0; if(Math.abs(sN-sP)>Math.abs(bd)){bd=sN-sP;bi=ix;}});
+      if(bi>=0&&Math.abs(bd)>=3) H.demanda.push(`Mezcla de canal: <b>${C.eco[bi]}</b> ${bd>0?'ganó':'perdió'} ${pf(Math.abs(bd))} de participación vs ${MES[pv.m]} — parte del movimiento del ticket es mezcla, no precio.`);})();
+    // CONVERSIÓN
+    H.conv.push(`Neto de ventas ${t.enCurso?B('n',pf(t.ns))+' (en maduración)':sb('ns',t.ns,pf(t.ns))} y <b>órdenes perdidas</b> (anuladas sin remisionar) ${sb('perd',t.perd,pf(t.perd))}: ${fmt(t.o.perd)} órdenes ≈ <b>${moneyK(t.o.perd*t.ticket)}</b> que se captaron y murieron sin convertirse.`);
+    if(!t.enCurso&&t.ns<82) H.conv.push(`El NS% sigue ${(82-t.ns).toFixed(1).replace('.',',')} pp bajo el estándar ene–jun (84,4): la fuga nació en julio y no se ha cerrado.`);
+    const tr=topResp(m); if(tr) H.conv.push(`Mayor responsable de anulación del mes: <b>${tr.n}</b> (${fmt(tr.v)} órdenes, ${pf(pct(tr.v,t.o.perd))} de las perdidas).`);
+    // LOGÍSTICA
+    H.logi.push(`Entregas ${t.enCurso?B('n',pf(t.ent))+' (en tránsito)':sb('ent',t.ent,pf(t.ent))} · devolución ${t.enCurso?B('n',pf(t.devp)):sb('devp',t.devp,pf(t.devp))} (prom. cerrados ${pf(avg('devp'))}) · despacho ${sb('dsp',t.dsp,pf(t.dsp))} en ${t.tP.toFixed(2).replace('.',',')} d ${B(SEM.tP(t.tP),t.tP<=1?'ágil':t.tP<=1.5?'ok':'lento')}.`);
+    H.logi.push(`Flete por guía ${money(t.fg)} (${pf(t.flp)} de la venta) · margen bruto sobre lo entregado <b>${pf(t.mg)}</b>. Flete ya pagado en guías devueltas: <b>${moneyK(t.o.flDev)}</b> — plata de transporte sin venta.`);
+    const wd=worstDept(m); if(wd) H.logi.push(`Departamento más crítico (≥100 guías cerradas): <b>${wd.n}</b> con ${B(wd.v<=20?'g':wd.v<=25?'y':'r',pf(wd.v))} de devolución.`);
+    // POSVENTA
+    H.pos.push(`${fmt(t.o.nov)} novedades (tasa ${sb('tasaNov',t.tasaNov,pf(t.tasaNov))}, prom. ${pf(avg('tasaNov'))}) con ${sb('novAtp',t.novAtp,pf(t.novAtp))} atendidas; severidad novedad→devolución: <b>${pf(t.sev)}</b>.`);
+    if(corrTxt) H.pos.push(corrTxt);
+    // PRODUCTOS
+    const sk=topSkus(m);
+    if(sk.length) H.prod.push('Mayores devoluciones del mes: '+sk.map(x=>`<b>${x.n.length>45?x.n.slice(0,43)+'…':x.n}</b> (${fmt(x.d)} u, tasa ${pf(x.r)})`).join(' · ')+'.');
+    // FUGAS $
+    const gap=t.enCurso?(ppCur.c?ppCur.c-projB:null):(G.ppto[m]&&G.ppto[m].c?G.ppto[m].c-t.o.net:null);
+    H.fugas.push(`No convertido (órdenes perdidas × ticket): <b>${moneyK(t.o.perd*t.ticket)}</b>.`);
+    H.fugas.push(`Devuelto en guías: <b>${moneyK(t.o.tdDev)}</b>${t.enCurso?' (aún madura)':''} + flete perdido en devoluciones <b>${moneyK(t.o.flDev)}</b>.`);
+    if(gap!=null) H.fugas.push(gap>0?`Brecha vs PPTO conservador${t.enCurso?' (proyectada)':''}: <b>${moneyK(gap)}</b> faltantes.`:`PPTO conservador ${t.enCurso?'proyectado ':''}cumplido con <b>${moneyK(-gap)}</b> de excedente.`);
+    // RECOMENDACIONES (plan 30 días)
+    const acc=[];
+    if(SEM.perd(t.perd)!=='g') acc.push({c:SEM.perd(t.perd),t:`Bajar órdenes perdidas a ≤15%: célula de confirmación <2h (WhatsApp+llamada). Premio: hasta ${moneyK(Math.max(0,(t.perd-15)/100*t.o.ord*t.ticket))}/mes.`});
+    if(!t.enCurso&&SEM.ns(t.ns)!=='g') acc.push({c:SEM.ns(t.ns),t:`Recuperar NS% a 82+: auditar flujo de remisión en el ERP y confirmación temprana.`});
+    if(SEM.devp(t.devp)!=='g'&&!t.enCurso) acc.push({c:SEM.devp(t.devp),t:`Devolución sobre ${pf(t.devp)}: plan por transportadora crítica y los 2 SKUs del Pareto. Cada 2 pp ≈ ${moneyK(0.02/Math.max(t.devp/100,0.01)*t.o.tdDev)}/mes.`});
+    if(SEM.tasaNov(t.tasaNov)!=='g') acc.push({c:SEM.tasaNov(t.tasaNov),t:`Tasa de novedades ${pf(t.tasaNov)}: validar dirección/teléfono en checkout y cobertura.`});
+    if(SEM.novAtp(t.novAtp)!=='g') acc.push({c:SEM.novAtp(t.novAtp),t:`Acelerar atención de novedades (hoy ${pf(t.novAtp)}): cada novedad sin atender sube la severidad (${pf(t.sev)} termina en devolución).`});
+    if(t.enCurso&&SEM.proy(vsC)==='y') acc.push({c:'y',t:`Proyección al ${pf(vsC)} del conservador: asegurar los días pico restantes (quincena/Black Friday) con pauta y stock.`});
+    if(t.enCurso&&SEM.proy(vsC)==='r') acc.push({c:'r',t:`Proyección lejos de la meta: replantear pauta/oferta esta semana.`});
+    if(!acc.length) acc.push({c:'g',t:'Todos los frentes en verde: sostener mix, cobertura y ritmo de gestión.'});
+    H.rec=acc.slice(0,4);
+    // récords
+    const recs=[];
+    const isMax=k=>MT[m][k]===Math.max(...MONTHS.map(x=>MT[x][k]));
+    const isMaxC=k=>!t.enCurso&&MT[m][k]===Math.max(...closed.map(x=>MT[x][k]));
+    const isMinC=k=>!t.enCurso&&MT[m][k]===Math.min(...closed.map(x=>MT[x][k]));
+    if(!t.enCurso&&MT[m].rev===Math.max(...closed.map(x=>MT[x].rev))) recs.push('mes récord de ingreso');
+    if(isMax('ticket')) recs.push('ticket máximo del año');
+    if(isMaxC('ent')) recs.push('mejor % de entregas');
+    if(isMinC('devp')) recs.push('menor % de devolución');
+    if(isMaxC('novAtp')) recs.push('mejor gestión de novedades');
+    H.records=recs;
+    H.score=score(t); H.rank=rankRev;
+    return H;}
+
+  function report(){
+    const t=MT[sel], H=hallazgos(sel), [c,lbl]=estado(H.score);
+    const sec=(tt,items)=>items.length?`<div class="dg-sec"><h4>${tt}</h4>${items.map(x=>`<p>${x}</p>`).join('')}</div>`:'';
+    let syn=`<p><b>Salud: ${B(c,H.score+' / 100 · '+lbl)}</b>${t.enCurso?' <i>(mes en curso: calificado solo por demanda, conversión y gestión; lo logístico madura)</i>':''}${H.records.length?' · Récords: '+H.records.join(' · ')+'.':''}</p>`;
+    syn+=`<p><b>Plan 30 días (priorizado):</b></p><ul>${H.rec.map(a=>`<li>${B(a.c,a.c==='r'?'crítico':a.c==='y'?'atención':'ok')} ${a.t}</li>`).join('')}</ul>`;
+    if(sel>=8) syn+=`<div class="dg-note">⚠ Retención sin cruce orden→remisión desde agosto: la recompra de ${MES[sel]} no es medible (pendiente de fuente).</div>`;
+    el('dg-report').innerHTML=
+      sec('🛒 Demanda y canales',H.demanda)+
+      sec('🚫 Conversión y anulaciones',H.conv)+
+      sec('🚛 Logística y geografía',H.logi)+
+      sec('📣 Novedades y posventa',H.pos)+
+      sec('📦 Productos',H.prod)+
+      sec('💰 Fugas del mes, en pesos',H.fugas)+
+      `<div class="dg-sec"><h4>🩺 Síntesis y plan</h4>${syn}</div>`;
+    el('dg-informe').classList.remove('on');}
+
+  /* ---------- informe gerencial ---------- */
+  function informe(){
+    const t=MT[sel], H=hallazgos(sel), [c,lbl]=estado(H.score);
+    const strip=s=>s.replace(/<[^>]+>/g,'');
+    const lines=[];
+    lines.push(`INFORME GERENCIAL — XOXO · ${MES[sel].toUpperCase()} ${yearN}`);
+    lines.push(`Corte: ${D.meta.corte}${t.enCurso?' (mes en curso, día '+t.days+' de '+dIn(sel)+')':''} · Salud: ${H.score}/100 (${lbl}) · ${H.rank}º mes del año por ingreso`);
+    lines.push('');
+    lines.push(`1. RESUMEN: ingreso ${moneyK(t.o.rev)} con ${fmt(t.o.ord)} órdenes (ticket ${money(t.ticket)}). ${t.enCurso?('Proyección de cierre '+moneyK(projB)+(vsC!=null?' ('+pf(vsC)+' del PPTO conservador)':'')+'.'):(t.ppto!=null?('Cumplimiento del PPTO entregado: '+pf(t.ppto)+'.'):'')}`);
+    lines.push('');
+    lines.push('2. DEMANDA Y CANALES'); H.demanda.forEach(x=>lines.push('   • '+strip(x)));
+    lines.push('3. CONVERSIÓN Y ANULACIONES'); H.conv.forEach(x=>lines.push('   • '+strip(x)));
+    lines.push('4. LOGÍSTICA Y GEOGRAFÍA'); H.logi.forEach(x=>lines.push('   • '+strip(x)));
+    lines.push('5. NOVEDADES Y POSVENTA'); H.pos.forEach(x=>lines.push('   • '+strip(x)));
+    if(H.prod.length){lines.push('6. PRODUCTOS'); H.prod.forEach(x=>lines.push('   • '+strip(x)));}
+    lines.push('7. FUGAS DEL MES'); H.fugas.forEach(x=>lines.push('   • '+strip(x)));
+    lines.push('8. PLAN 30 DÍAS'); H.rec.forEach((a,i)=>lines.push('   '+(i+1)+'. '+strip(a.t)));
+    if(sel>=8) lines.push('Nota: retención sin cruce orden→remisión desde agosto (pendiente de fuente).');
+    const txt=lines.join('\n');
+    const inf=el('dg-informe');
+    inf.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h4 style="margin:0">📄 Informe gerencial · ${MES[sel]}</h4>
+      <div><button class="dg-btn" id="dg-copy">Copiar texto</button></div></div>
+      <pre style="white-space:pre-wrap;font-size:12.3px;line-height:1.55;font-family:'JetBrains Mono',monospace;margin:0" id="dg-inf-txt">${txt.replace(/</g,'&lt;')}</pre>`;
+    inf.classList.add('on');
+    el('dg-copy').onclick=()=>{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>{el('dg-copy').textContent='¡Copiado!'; setTimeout(()=>el('dg-copy').textContent='Copiar texto',1500);}).catch(()=>{});}
+      else{const r=document.createRange(); r.selectNodeContents(el('dg-inf-txt')); const s=getSelection(); s.removeAllRanges(); s.addRange(r);} };
+    inf.scrollIntoView({behavior:'smooth'});}
+
+  /* ---------- gráficas (idénticas a v1) ---------- */
   const mLabels=MONTHS.map(m=>MES[m]+(m===corteM?' *':''));
   const tickM=v=>moneyK(v);
-
-  function c1(){ // ingreso diario + MM7 + PPTO diario
-    const days=Object.keys(dayRev).sort();
-    const rev=days.map(d=>dayRev[d]);
+  function c1(){const days=Object.keys(dayRev).sort(); const rev=days.map(d=>dayRev[d]);
     const mm7=rev.map((_,i)=>{const a=rev.slice(Math.max(0,i-6),i+1); return a.reduce((x,y)=>x+y,0)/a.length;});
     const ppd=days.map(d=>{const m=+d.slice(5,7), pp=G.ppto[m]; return pp&&pp.c? pp.c/pp.d : null;});
     mkChart('dg-c1',{type:'line',data:{labels:days.map(d=>d.slice(8)+'/'+d.slice(5,7)),datasets:[
@@ -1836,12 +1970,10 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
       options:{interaction:{mode:'index',intersect:false},
         plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+moneyK(c.parsed.y)}}},
         scales:{y:{ticks:{callback:tickM}},x:{ticks:{maxTicksLimit:18,maxRotation:0}}}}});}
-
-  function c2(){ // estacionalidad día de semana
-    const WD=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-    const agg=(mFilter)=>{const s=[0,0,0,0,0,0,0],n=[0,0,0,0,0,0,0];
+  function c2(){const WD=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const agg=f=>{const s=[0,0,0,0,0,0,0],n=[0,0,0,0,0,0,0];
       Object.keys(dayRev).forEach(d=>{const m=+d.slice(5,7);
-        if(mFilter==='sel'&&m!==sel)return; if(mFilter==='closed'&&(m===corteM))return;
+        if(f==='sel'&&m!==sel)return; if(f==='closed'&&m===corteM)return;
         const wd=(new Date(d+'T12:00:00').getDay()+6)%7; s[wd]+=dayRev[d]; n[wd]++;});
       return s.map((v,i)=>n[i]?v/n[i]:0);};
     el('dg-c2sub').textContent='Ingreso promedio por día de semana · '+MES[sel]+' vs meses cerrados';
@@ -1850,12 +1982,10 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
       {label:'Prom. meses cerrados',data:agg('closed'),backgroundColor:'rgba(42,163,224,.45)',borderRadius:6}]},
       options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+moneyK(c.parsed.y)}}},
         scales:{y:{ticks:{callback:tickM}}}}});}
-
   function c3(){mkChart('dg-c3',{type:'line',data:{labels:mLabels,datasets:[
       {label:'Ticket promedio',data:MONTHS.map(m=>MT[m].ticket),borderColor:PURPLE,backgroundColor:'rgba(42,163,224,.12)',fill:true,tension:.3,pointRadius:3.5}]},
       options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>money(c.parsed.y)}}},
         scales:{y:{ticks:{callback:v=>moneyK(v)}}}}});}
-
   function c4(){mkChart('dg-c4',{type:'bar',data:{labels:mLabels,datasets:[
       {label:'Órdenes',data:MONTHS.map(m=>MT[m].o.ord),backgroundColor:'rgba(42,163,224,.35)'},
       {label:'Remisionadas',data:MONTHS.map(m=>MT[m].o.remi),backgroundColor:CYAN},
@@ -1864,20 +1994,16 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
       options:{plugins:{tooltip:{callbacks:{footer:items=>{const m=MONTHS[items[0].dataIndex],t=MT[m];
           return '→ remisión '+pf(t.ns)+' · → entrega '+pf(pct(t.o.gent,t.o.ord));}}}},
         scales:{y:{ticks:{callback:v=>fmt(v)}},x:{}}}});}
-
   function c5(){mkChart('dg-c5',{type:'line',data:{labels:mLabels,datasets:[
       {label:'% ingreso entregado',data:MONTHS.map(m=>MT[m].efec),borderColor:GREEN,backgroundColor:'rgba(16,185,129,.12)',fill:true,tension:.3,pointRadius:3.5}]},
       options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>pf(c.parsed.y)+' efectivo ('+moneyK(MT[MONTHS[c.dataIndex]].o.net)+')'}}},
         scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}});}
-
   function c6(){mkChart('dg-c6',{type:'line',data:{labels:mLabels,datasets:[
       {label:'Margen bruto %',data:MONTHS.map(m=>MT[m].mg),borderColor:GREEN,tension:.3,pointRadius:3},
       {label:'Flete % sobre venta',data:MONTHS.map(m=>MT[m].flp),borderColor:RED,tension:.3,pointRadius:3}]},
       options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+pf(c.parsed.y)}}},
         scales:{y:{ticks:{callback:v=>v+'%'}}}}});}
-
-  function c7(){ // matriz transportadoras
-    const gT={}; S.month.forEach(r=>{const n=S.transp[r[1]]; gT[n]=(gT[n]||0)+r[2]+r[3];});
+  function c7(){const gT={}; S.month.forEach(r=>{const n=S.transp[r[1]]; gT[n]=(gT[n]||0)+r[2]+r[3];});
     const nT={}, nD={};
     N.cube.forEach(r=>{const n=N.transp[r[1]]; nT[n]=(nT[n]||0)+r[3];});
     N.dailyVal.forEach(r=>{const n=N.transp[r[2]]; if(r[3]===1)nD[n]=(nD[n]||0)+r[4];});
@@ -1889,24 +2015,20 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
           return p.n+': tasa nov. '+pf(p.x)+' · nov→devolución '+pf(p.y)+' · '+fmt(p.g)+' guías';}}}},
         scales:{x:{title:{display:true,text:'Tasa de novedades (nov / guías)'},ticks:{callback:v=>v+'%'}},
                 y:{title:{display:true,text:'% novedades que van a devolución'},ticks:{callback:v=>v+'%'}}}}});}
-
   function c8(){mkChart('dg-c8',{type:'bar',data:{labels:mLabels,datasets:[
       {label:'$ devuelto',data:MONTHS.map(m=>MT[m].o.tdDev),backgroundColor:'rgba(244,63,94,.55)',borderRadius:6}]},
       options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>moneyK(c.parsed.y)+' ('+fmt(MT[MONTHS[c.dataIndex]].o.gdev)+' guías)'}}},
         scales:{y:{ticks:{callback:tickM}}}}});}
-
   function c9(){mkChart('dg-c9',{data:{labels:mLabels,datasets:[
       {type:'bar',label:'Tasa de novedades',data:MONTHS.map(m=>MT[m].tasaNov),backgroundColor:'rgba(245,181,10,.55)',borderRadius:6},
       {type:'line',label:'% atendidas',data:MONTHS.map(m=>MT[m].novAtp),borderColor:GREEN,tension:.3,pointRadius:3}]},
       options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+pf(c.parsed.y)}}},
         scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%'}}}}});}
-
   function norm(t){return [
       clamp(t.ns/85*100), clamp(t.ent/66*100), clamp((30-t.devp)/10*100),
       clamp(t.ppto!=null?t.ppto:0), clamp(t.novAtp/90*100), clamp((40-t.tasaNov)/15*100),
       clamp(t.dsp/88*100), clamp((2-t.tP)/1.3*100)];}
-  function c10(){
-    const axes=['NS','Entregas','Devolución','PPTO','Nov. atendidas','Tasa nov.','Despacho','Tiempo'];
+  function c10(){const axes=['NS','Entregas','Devolución','PPTO','Nov. atendidas','Tasa nov.','Despacho','Tiempo'];
     const avgT={}; ['ns','ent','devp','novAtp','tasaNov','dsp','tP'].forEach(k=>avgT[k]=closed.reduce((s,m)=>s+MT[m][k],0)/closed.length);
     avgT.ppto=closed.reduce((s,m)=>s+(MT[m].ppto||0),0)/closed.length;
     el('dg-c10sub').textContent=MES[sel]+' vs promedio de meses cerrados · 100 = ideal';
@@ -1918,11 +2040,11 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
   function staticCharts(){c1();c3();c4();c5();c6();c7();c8();c9();}
   function renderAll(){kpis();matrix();mtabs();report();c2();c10();}
   P.addEventListener('click',e=>{
+    const g=e.target.closest('#dg-geninf'); if(g){informe();return;}
     const b=e.target.closest('#dg-mtabs .mtab'); if(!b)return;
     sel=+b.dataset.m; renderAll();});
   staticCharts(); renderAll();
 })();
-
 
 /* ============================================================ 8. INDICADORES EXTENDIDOS POR PESTAÑA */
 (function(){
