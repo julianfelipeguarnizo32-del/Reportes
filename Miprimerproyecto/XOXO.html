@@ -1923,6 +1923,269 @@ el('footMeta').textContent='Corte '+D.meta.corte+' · '+MONTHS.length+' meses ·
   staticCharts(); renderAll();
 })();
 
+
+/* ============================================================ 8. INDICADORES EXTENDIDOS POR PESTAÑA */
+(function(){
+  if(typeof D==='undefined') return;
+  const ECO=D.conf.eco, RESP=D.conf.resp, TIPOS=D.nov.tiposL, SKUS=D.dev.skus, DEPTL=D.guias.deptL;
+  const eiEnt=D.guias.estados.indexOf('Entregada a destino');
+  const eiDev=D.guias.estados.indexOf('Devolución a origen');
+  const lastM=MONTHS[MONTHS.length-1];
+  const corteD=+D.meta.corte.slice(8,10), year=+D.meta.corte.slice(0,4);
+  const dIn=m=>(D.guias.ppto[m]||{}).d||30;
+  const pf=v=>v.toFixed(1).replace('.',',')+'%';
+  const dl=v=>(v>=0?'+':'')+v.toFixed(1).replace('.',',')+'%';
+  const B=(c,t)=>`<span class="dgb ${c}">${t}</span>`;
+  const mLabels=MONTHS.map(m=>MES[m]+(m===lastM?' *':''));
+
+  /* ---------- agregados base ---------- */
+  const days={};
+  D.conf.daily.forEach(r=>{const o=days[r[0]]=days[r[0]]||{rev:0,ord:0,perd:0,perdRev:0};
+    o.rev+=r[6]; o.ord+=r[4]+r[5];
+    if(r[3]===0){o.perd+=r[4]; o.perdRev+= r[5]? 0:0;}});
+  // perdRev: rev de anuladas sin remisionar no es separable por fila (rev mezcla pend+remi) → solo conteo.
+  const dayKeys=Object.keys(days).sort();
+  const M_={}; MONTHS.forEach(m=>M_[m]={rev:0,ord:0,perd:0,wknd:0});
+  dayKeys.forEach(k=>{const m=+k.slice(5,7),o=M_[m],d=days[k];
+    o.rev+=d.rev;o.ord+=d.ord;o.perd+=d.perd;
+    const dw=new Date(k+'T12:00:00').getDay(); if(dw===0||dw===6)o.wknd+=d.rev;});
+
+  // momentum 7d
+  const l7=dayKeys.slice(-7), pv7=dayKeys.slice(-14,-7);
+  const s7=l7.reduce((s,k)=>s+days[k].rev,0), s7p=pv7.reduce((s,k)=>s+days[k].rev,0);
+  const mom=s7p?(s7-s7p)/s7p*100:0;
+
+  // factores día de semana (año) y proyección del mes en curso
+  const dowS=[0,0,0,0,0,0,0],dowN=[0,0,0,0,0,0,0];
+  dayKeys.forEach(k=>{const dw=new Date(k+'T12:00:00').getDay();dowS[dw]+=days[k].rev;dowN[dw]++;});
+  const overall=dayKeys.reduce((s,k)=>s+days[k].rev,0)/dayKeys.length;
+  const factor=dw=>dowN[dw]&&overall?(dowS[dw]/dowN[dw])/overall:1;
+  const l14=dayKeys.slice(-14);
+  const level=l14.reduce((s,k)=>s+days[k].rev/factor(new Date(k+'T12:00:00').getDay()),0)/Math.max(l14.length,1);
+  let projAdd=0;
+  for(let dd=corteD+1;dd<=dIn(lastM);dd++){projAdd+=level*factor(new Date(year,lastM-1,dd,12).getDay());}
+  const mtd=M_[lastM].rev;
+  const projB=mtd+projAdd, projP=mtd+projAdd*0.92, projO=mtd+projAdd*1.08;
+  const pp=D.guias.ppto[lastM]||{};
+  const vsC=pp.c?projB/pp.c*100:null;
+
+  // perdidas (anuladas sin remisionar)
+  const perdP=m=>pct(M_[m].perd,M_[m].ord);
+  const perdSem=v=>v<=15?'g':v<=18?'y':'r';
+
+  // canales: rev y ord por M×eco
+  const CE={}; D.conf.daily.forEach(r=>{const k=r[1]+'|'+r[2]; const o=CE[k]=CE[k]||{rev:0,ord:0}; o.rev+=r[6]; o.ord+=r[4]+r[5];});
+  const ecoYear={}; ECO.forEach((e,i)=>{ecoYear[i]=MONTHS.reduce((s,m)=>s+((CE[m+'|'+i]||{}).rev||0),0);});
+  const topEco=Object.keys(ecoYear).map(Number).sort((a,b)=>ecoYear[b]-ecoYear[a]).filter(i=>ecoYear[i]>0).slice(0,4);
+
+  // responsables de anulación sin remisionar por mes
+  const RA={}; D.conf.user.forEach(r=>{if(r[2]===0&&r[3]===0){const k=r[0]+'|'+r[1]; RA[k]=(RA[k]||0)+r[4];}});
+
+  // departamentos: guías/dev por dpto (año y mes en curso)
+  const DP={}; D.guias.dept.forEach(r=>{const o=DP[r[2]]=DP[r[2]]||{gY:0,eY:0,dY:0,gM:0,eM:0,dM:0};
+    o.gY+=r[3]; if(r[1]===eiEnt)o.eY+=r[3]; if(r[1]===eiDev)o.dY+=r[3];
+    if(r[0]===lastM){o.gM+=r[3]; if(r[1]===eiEnt)o.eM+=r[3]; if(r[1]===eiDev)o.dM+=r[3];}});
+  const topDp=Object.keys(DP).map(Number).sort((a,b)=>DP[b].gY-DP[a].gY).slice(0,10);
+  const devSem=v=>v<=20?'g':v<=25?'y':'r';
+
+  // flete por mes (todas las guías)
+  const FL={}; D.guias.month.forEach(r=>{const o=FL[r[0]]=FL[r[0]]||{fl:0,n:0,td:0}; o.fl+=r[5]; o.n+=r[2]; o.td+=r[3];});
+
+  // transportadoras mes en curso (despachos)
+  const TR={}; D.desp.month.forEach(r=>{if(r[0]!==lastM)return; const o=TR[r[1]]=TR[r[1]]||{d:0,n:0,st:0,ct:0}; o.d+=r[2];o.n+=r[3];o.st+=r[4];o.ct+=r[5];});
+  const topTr=Object.keys(TR).map(Number).sort((a,b)=>(TR[b].d+TR[b].n)-(TR[a].d+TR[a].n)).slice(0,8);
+  const tSem=v=>v<=1?'g':v<=1.5?'y':'r';
+
+  // novedades: tipos por mes y severidad
+  const TPy={}, TPm={};
+  D.nov.tipos.forEach(r=>{TPy[r[2]]=(TPy[r[2]]||0)+r[3]; const k=r[0]+'|'+r[2]; TPm[k]=(TPm[k]||0)+r[3];});
+  const topTp=Object.keys(TPy).map(Number).sort((a,b)=>TPy[b]-TPy[a]).slice(0,6);
+  const SEV={}; D.nov.dailyVal.forEach(r=>{const o=SEV[r[0]]=SEV[r[0]]||{t:0,v:0}; o.t+=r[4]; if(r[3]===1)o.v+=r[4];});
+  const novM={}; D.nov.cube.forEach(r=>{novM[r[0]]=(novM[r[0]]||0)+r[3];});
+  const domTipo=m=>{let bi=-1,bv=-1; Object.keys(TPm).forEach(k=>{const[mm,t]=k.split('|').map(Number); if(mm===m&&TPm[k]>bv){bv=TPm[k];bi=t;}}); return bi>=0?{n:TIPOS[bi],v:bv}:null;};
+
+  // devoluciones por SKU
+  const DSK={}; D.dev.cube.forEach(r=>{const k=r[0]+'|'+r[2]; const o=DSK[k]=DSK[k]||{e:0,d:0}; if(r[1]===1)o.d+=r[3]; else o.e+=r[3];});
+  const devTotM=m=>{let s=0; Object.keys(DSK).forEach(k=>{if(+k.split('|')[0]===m)s+=DSK[k].d;}); return s;};
+
+  /* ---------- estilos ---------- */
+  const st=document.createElement('style');
+  st.textContent=`.xt-wrap{margin-top:18px}
+   .xt-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+   @media(max-width:1100px){.xt-grid2{grid-template-columns:1fr}}
+   .xt-ct{font-weight:800;font-size:12.5px}
+   .xt-cs{font-size:10.5px;color:#64748b;letter-spacing:.4px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+   .dgb{display:inline-block;min-width:48px;text-align:center;padding:2px 8px;border-radius:7px;font-family:'JetBrains Mono';font-size:11px;font-weight:800}
+   .dgb.g{background:#d1fae5;color:#047857}.dgb.y{background:#fef3c7;color:#b45309}
+   .dgb.r{background:#ffe4e6;color:#be123c}.dgb.n{background:#f1f5f9;color:#64748b}
+   .xt-note{font-size:11.5px;color:#64748b;margin:6px 0 0}
+   .xt-syn{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:14px}
+   .xt-syn ul{margin:6px 0 0 18px;padding:0}.xt-syn li{font-size:12.8px;line-height:1.55;margin-bottom:3px}`;
+  document.head.appendChild(st);
+
+  const head=(t,s)=>`<div class="pivot-head"><div class="ph-title">${t}</div><div class="ph-sub">${s}</div></div>`;
+
+  /* ================= CONFIRMACIONES ================= */
+  (function(){
+    const P=el('p-conf'); if(!P)return;
+    const w=document.createElement('div'); w.className='xt-wrap'; w.id='xt-conf';
+    const momC=mom>5?'g':mom>=-5?'y':'r';
+    const projC=vsC==null?'n':vsC>=100?'g':vsC>=92?'y':'r';
+    const wk=pct(M_[lastM].wknd,M_[lastM].rev);
+    const pd=perdP(lastM);
+    w.innerHTML=head('Indicadores <em>extendidos</em> de demanda','MOMENTUM · PROYECCIÓN DE CIERRE · ANULACIONES · CANALES')+
+     `<div class="grid kpis">`+
+      kpi(momC,'Momentum (últimos 7 días)',dl(mom),moneyK(s7)+' vs '+moneyK(s7p)+' previos')+
+      kpi(projC,'Proyección de cierre · '+MES[lastM],moneyK(projB),(vsC!=null?pf(vsC)+' del PPTO conservador · ':'')+'rango '+moneyK(projP)+' – '+moneyK(projO))+
+      kpi('','Aporte fin de semana · '+MES[lastM],pf(wk),'sáb+dom sobre el ingreso del mes')+
+      kpi(perdSem(pd),'Órdenes perdidas · '+MES[lastM],pf(pd),fmt(M_[lastM].perd)+' anuladas sin remisionar')+
+     `</div>
+      <div class="xt-grid2">
+       <div class="chart-card"><div class="xt-ct">Ticket promedio por canal</div><div class="xt-cs">Ingreso / órdenes por mes · top 4 canales</div><div class="cw"><canvas id="xt-c-ticket"></canvas></div></div>
+       <div class="chart-card"><div class="xt-ct">Mix de ingreso por canal</div><div class="xt-cs">Participación mensual de cada ecommerce</div><div class="cw"><canvas id="xt-c-mix"></canvas></div></div>
+      </div>
+      <div class="xt-grid2">
+       <div><div class="xt-ct">Pérdida de órdenes por responsable</div><div class="xt-cs" id="xt-ra-sub"></div><div class="mtabs" id="xt-ra-mtabs"></div><div class="tbl-wrap" id="xt-ra-tbl"></div>
+       <div class="xt-note">Anuladas sin remisionar: la orden se captó y murió sin convertirse en venta. Las anuladas por conversión a remisión no cuentan aquí.</div></div>
+       <div><div class="xt-ct">Proyección de cierre — método</div><div class="xt-cs">TRANSPARENCIA DEL CÁLCULO</div>
+        <div class="xt-note" style="font-size:12.3px;line-height:1.6">Base: nivel de los últimos 14 días desestacionalizado y reproyectado con el factor histórico de cada día de semana restante del mes. Pesimista/optimista: ±8% sobre los días por venir. Acumulado a hoy: <b>${moneyK(mtd)}</b> (${corteD} de ${dIn(lastM)} días). PPTO ${MES[lastM]}: ${pp.p?moneyK(pp.p):'—'} / ${pp.c?moneyK(pp.c):'—'} / ${pp.o?moneyK(pp.o):'—'}.</div></div>
+      </div>`;
+    P.appendChild(w);
+    // charts
+    mkChart('xt-c-ticket',{type:'line',data:{labels:mLabels,datasets:topEco.map((e,ix)=>({label:ECO[e],
+      data:MONTHS.map(m=>{const c=CE[m+'|'+e]; return c&&c.ord?c.rev/c.ord:null;}),
+      borderColor:[PURPLE,GREEN,YELLOW,RED][ix],tension:.3,pointRadius:2.5}))},
+      options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+money(c.parsed.y)}}},
+        scales:{y:{ticks:{callback:v=>moneyK(v)}}}}});
+    mkChart('xt-c-mix',{type:'bar',data:{labels:mLabels,datasets:topEco.map((e,ix)=>({label:ECO[e],
+      data:MONTHS.map(m=>{const c=CE[m+'|'+e]; return M_[m].rev?100*((c||{}).rev||0)/M_[m].rev:0;}),
+      backgroundColor:[PURPLE,GREEN,YELLOW,RED][ix]}))},
+      options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+pf(c.parsed.y)}}},
+        scales:{x:{stacked:true},y:{stacked:true,max:100,ticks:{callback:v=>v+'%'}}}}});
+    // responsables
+    let selRA=lastM;
+    function raTbl(){
+      el('xt-ra-sub').textContent='Anuladas sin remisionar · '+MES[selRA]+' · total '+fmt(M_[selRA].perd);
+      el('xt-ra-mtabs').innerHTML=MONTHS.map(m=>`<button class="mtab ${selRA===m?'on':''}" data-m="${m}">${MES[m]}</button>`).join('');
+      const rows=RESP.map((n,i)=>({n,v:RA[selRA+'|'+i]||0})).filter(x=>x.v>0&&x.n!=='(Sin responsable)')
+        .sort((a,b)=>b.v-a.v).slice(0,8);
+      el('xt-ra-tbl').innerHTML=`<table><thead><tr><th>Responsable</th><th>Órdenes perdidas</th><th>% del mes</th></tr></thead><tbody>`+
+        rows.map(x=>`<tr><td>${x.n}</td><td class="mono">${fmt(x.v)}</td><td class="mono">${pf(pct(x.v,M_[selRA].perd))}</td></tr>`).join('')+
+        `</tbody></table>`;
+    }
+    w.addEventListener('click',e=>{const b=e.target.closest('#xt-ra-mtabs .mtab'); if(!b)return; selRA=+b.dataset.m; raTbl();});
+    raTbl();
+  })();
+
+  /* ================= GUÍAS ================= */
+  (function(){
+    const P=el('p-guias'); if(!P)return;
+    const w=document.createElement('div'); w.className='xt-wrap';
+    const rows=topDp.map(i=>{const o=DP[i];
+      const dY=pct(o.dY,o.eY+o.dY), dM=pct(o.dM,o.eM+o.dM);
+      return `<tr><td>${DEPTL[i]}</td><td class="mono">${fmt(o.gY)}</td><td>${B(devSem(dY),pf(dY))}</td><td class="mono">${fmt(o.gM)}</td><td>${o.eM+o.dM>=30?B(devSem(dM),pf(dM)):B('n','—')}</td></tr>`;}).join('');
+    w.innerHTML=head('Geografía de <em>riesgo</em>','% DEVOLUCIÓN POR DEPARTAMENTO · TOP 10 POR VOLUMEN')+
+      `<div class="tbl-wrap"><table><thead><tr><th>Departamento</th><th>Guías año</th><th>% Devol. año</th><th>Guías ${MES[lastM]}</th><th>% Devol. ${MES[lastM]}</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="xt-note">% devolución sobre guías cerradas (entregadas + devueltas). El mes en curso con menos de 30 guías cerradas no se califica. Umbrales: ≤20% verde · ≤25% ámbar · >25% rojo.</div>`;
+    P.appendChild(w);
+  })();
+
+  /* ================= DESPACHOS ================= */
+  (function(){
+    const P=el('p-desp'); if(!P)return;
+    const w=document.createElement('div'); w.className='xt-wrap';
+    const fm=FL[lastM]||{fl:0,n:1,td:1};
+    const rows=topTr.map(i=>{const o=TR[i]; const tot=o.d+o.n, tp=o.ct?o.st/o.ct:0;
+      return `<tr><td>${D.desp.transp[i]}</td><td class="mono">${fmt(tot)}</td><td class="mono">${pf(pct(o.d,tot))}</td><td>${B(tSem(tp),tp.toFixed(2).replace('.',',')+' d')}</td></tr>`;}).join('');
+    w.innerHTML=head('Costo y <em>ranking</em> logístico','FLETE POR GUÍA · TRANSPORTADORAS DEL MES')+
+      `<div class="grid kpis">`+
+      kpi('','Flete por guía · '+MES[lastM],money(fm.n?fm.fl/fm.n:0),'flete total '+moneyK(fm.fl))+
+      kpi('','Flete % sobre venta · '+MES[lastM],pf(fm.td?fm.fl/fm.td*100:0),'venta en guías '+moneyK(fm.td))+
+      `</div>
+      <div class="xt-grid2">
+       <div class="chart-card"><div class="xt-ct">Flete por guía mensual</div><div class="xt-cs">$ promedio por guía generada</div><div class="cw"><canvas id="xt-c-flete"></canvas></div></div>
+       <div><div class="xt-ct">Transportadoras · ${MES[lastM]}</div><div class="xt-cs">TOP 8 POR VOLUMEN · TIEMPO PROMEDIO DE DESPACHO</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Transportadora</th><th>Guías</th><th>Tasa desp.</th><th>Tiempo</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+      </div>`;
+    P.appendChild(w);
+    mkChart('xt-c-flete',{type:'line',data:{labels:mLabels,datasets:[
+      {label:'Flete por guía',data:MONTHS.map(m=>{const o=FL[m]; return o&&o.n?o.fl/o.n:null;}),borderColor:PURPLE,backgroundColor:'rgba(42,163,224,.10)',fill:true,tension:.3,pointRadius:2.5}]},
+      options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>money(c.parsed.y)}}},
+        scales:{y:{ticks:{callback:v=>moneyK(v)}}}}});
+  })();
+
+  /* ================= NOVEDADES ================= */
+  (function(){
+    const P=el('p-nov'); if(!P)return;
+    const w=document.createElement('div'); w.className='xt-wrap';
+    const dom=domTipo(lastM);
+    w.innerHTML=head('Causas y <em>severidad</em>','MIX DE TIPOS POR MES · % DE NOVEDADES QUE TERMINAN EN DEVOLUCIÓN')+
+      `<div class="xt-grid2">
+       <div class="chart-card"><div class="xt-ct">Mix de tipos de novedad</div><div class="xt-cs">Top 6 tipos + otros, por mes</div><div class="cw"><canvas id="xt-c-tipos"></canvas></div></div>
+       <div class="chart-card"><div class="xt-ct">Severidad: novedad → devolución</div><div class="xt-cs">% de novedades validadas como devolución</div><div class="cw"><canvas id="xt-c-sev"></canvas></div></div>
+      </div>
+      <div class="xt-note">${dom?('Causa dominante en '+MES[lastM]+': <b>'+dom.n+'</b> ('+fmt(dom.v)+' novedades, '+pf(pct(dom.v,novM[lastM]||1))+' del mes).'):''}</div>`;
+    P.appendChild(w);
+    const colors=[PURPLE,GREEN,YELLOW,RED,CYAN,'#8b5cf6','#94a3b8'];
+    const dsTop=topTp.map((t,ix)=>({label:TIPOS[t].length>26?TIPOS[t].slice(0,24)+'…':TIPOS[t],
+      data:MONTHS.map(m=>TPm[m+'|'+t]||0),backgroundColor:colors[ix]}));
+    const otros={label:'Otros',backgroundColor:colors[6],
+      data:MONTHS.map(m=>{let s=novM[m]||0; topTp.forEach(t=>s-=TPm[m+'|'+t]||0); return Math.max(s,0);})};
+    mkChart('xt-c-tipos',{type:'bar',data:{labels:mLabels,datasets:dsTop.concat([otros])},
+      options:{plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.parsed.y)}}},
+        scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>fmt(v)}}}}});
+    mkChart('xt-c-sev',{type:'line',data:{labels:mLabels,datasets:[
+      {label:'% nov → devolución',data:MONTHS.map(m=>{const o=SEV[m]; return o&&o.t?o.v/o.t*100:null;}),
+       borderColor:RED,backgroundColor:'rgba(244,63,94,.10)',fill:true,tension:.3,pointRadius:2.5}]},
+      options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>pf(c.parsed.y)}}},
+        scales:{y:{ticks:{callback:v=>v+'%'}}}}});
+  })();
+
+  /* ================= DEVOLUCIONES ================= */
+  (function(){
+    const P=el('p-dev'); if(!P)return;
+    const w=document.createElement('div'); w.className='xt-wrap'; w.id='xt-dev';
+    w.innerHTML=head('Pareto de <em>SKUs</em> devueltos','TOP 5 DEL MES · UNIDADES Y TASA DE DEVOLUCIÓN')+
+      `<div class="mtabs" id="xt-sk-mtabs"></div><div class="tbl-wrap" id="xt-sk-tbl"></div>
+       <div class="xt-note">Tasa = unidades devueltas / (entregadas + devueltas) del producto en el mes. Umbrales: ≤20% verde · ≤30% ámbar · >30% rojo.</div>`;
+    P.appendChild(w);
+    let selSK=lastM;
+    function skTbl(){
+      el('xt-sk-mtabs').innerHTML=MONTHS.map(m=>`<button class="mtab ${selSK===m?'on':''}" data-m="${m}">${MES[m]}</button>`).join('');
+      const tot=devTotM(selSK);
+      const rows=[];
+      Object.keys(DSK).forEach(k=>{const[m,s]=k.split('|').map(Number); if(m!==selSK)return;
+        const o=DSK[k]; if(o.d>0)rows.push({s,d:o.d,r:pct(o.d,o.d+o.e)});});
+      rows.sort((a,b)=>b.d-a.d);
+      let acum=0;
+      el('xt-sk-tbl').innerHTML=`<table><thead><tr><th>Producto</th><th>Unid. devueltas</th><th>% del mes</th><th>% acum.</th><th>Tasa devol.</th></tr></thead><tbody>`+
+        rows.slice(0,5).map(x=>{acum+=pct(x.d,tot);
+          return `<tr><td>${SKUS[x.s].length>55?SKUS[x.s].slice(0,53)+'…':SKUS[x.s]}</td><td class="mono">${fmt(x.d)}</td><td class="mono">${pf(pct(x.d,tot))}</td><td class="mono">${pf(acum)}</td><td>${B(x.r<=20?'g':x.r<=30?'y':'r',pf(x.r))}</td></tr>`;}).join('')+
+        `</tbody></table>`;
+    }
+    w.addEventListener('click',e=>{const b=e.target.closest('#xt-sk-mtabs .mtab'); if(!b)return; selSK=+b.dataset.m; skTbl();});
+    skTbl();
+  })();
+
+  /* ================= DIAGNÓSTICO: síntesis complementaria ================= */
+  (function(){
+    const K=el('dg-kpis'); if(!K)return;
+    const dom=domTipo(lastM);
+    let worstDp=null,worstV=-1;
+    topDp.forEach(i=>{const o=DP[i]; if(o.eM+o.dM>=30){const v=pct(o.dM,o.eM+o.dM); if(v>worstV){worstV=v;worstDp=i;}}});
+    const pd=perdP(lastM);
+    const card=document.createElement('div'); card.className='xt-syn';
+    card.innerHTML=`<div class="xt-ct">Síntesis complementaria · ${MES[lastM]} (corte ${D.meta.corte})</div><ul>
+      <li>Momentum 7 días: ${B(mom>5?'g':mom>=-5?'y':'r',dl(mom))} (${moneyK(s7)} vs ${moneyK(s7p)}).</li>
+      <li>Proyección de cierre: <b>${moneyK(projB)}</b> (rango ${moneyK(projP)} – ${moneyK(projO)})${vsC!=null?' · '+B(vsC>=100?'g':vsC>=92?'y':'r',pf(vsC))+' del PPTO conservador':''}.</li>
+      <li>Órdenes perdidas (anuladas sin remisionar): ${B(perdSem(pd),pf(pd))} del mes (${fmt(M_[lastM].perd)}).</li>
+      ${dom?`<li>Causa de novedad dominante: <b>${dom.n}</b> (${pf(pct(dom.v,novM[lastM]||1))} de las novedades del mes).</li>`:''}
+      ${worstDp!=null?`<li>Departamento más crítico en devolución (top 10 por volumen): <b>${DEPTL[worstDp]}</b> ${B(devSem(worstV),pf(worstV))} en ${MES[lastM]}.</li>`:''}
+    </ul>`;
+    K.insertAdjacentElement('afterend',card);
+  })();
+})();
+
 </script>
 
 </body>
